@@ -70,27 +70,20 @@
     <!-- 2. MATERIAL 3 TOP APP BAR WITH CLEAN NON-OVERLAPPING LAYOUT -->
     <header class="px-3 py-2 bg-[var(--card)] border-b border-[var(--border)] flex items-center justify-between shrink-0 gap-2">
       <div class="flex items-center gap-2 min-w-0 flex-1">
-        <button onclick="handleBackNavigation()" id="btnNavBack" class="px-2 py-1 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-bold flex items-center gap-1 shrink-0">
-          <span id="navBackIcon">🏠</span>
-          <span id="navBackLabel" class="text-[10px]">Gateway</span>
+        <button onclick="openGateway()" id="btnHome" class="px-2.5 py-1.5 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-bold flex items-center gap-1.5 shrink-0" title="Home">
+          <span>🏠</span>
+          <span class="text-xs font-semibold">Home</span>
         </button>
         <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-1.5 flex-nowrap">
-            <h1 class="text-xs font-extrabold leading-tight truncate text-[var(--foreground)]" id="topBarTitle">GridironIQ Hub</h1>
-            <span id="activeLeagueBadge" class="text-[9px] font-mono font-black px-1.5 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] shrink-0">HUB</span>
-          </div>
+          <h1 class="text-xs font-extrabold leading-tight truncate text-[var(--foreground)]" id="topBarTitle">GridironIQ</h1>
           <p class="text-[9px] text-[var(--muted-foreground)] leading-tight truncate mt-0.5" id="topBarSubtitle">Select a League Portal</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-1.5 shrink-0">
-        <button onclick="syncAllWeeklySchedules(true)" id="btnSyncEspn" class="px-2 py-1 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-[10px] font-mono font-semibold flex items-center gap-1 shrink-0">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="syncLabel">Live</span>
-        </button>
-        <button onclick="openKeySheet()" id="btnGeminiHeader" class="px-2 py-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1 shrink-0" title="Google Gemini API Key Saved">
-          <span>🔑</span>
-          <span id="geminiKeyStatusBadge">Saved ✓</span>
+      <div class="flex items-center shrink-0">
+        <button onclick="openSettingsSheet()" id="btnSettingsHeader" class="px-2.5 py-1.5 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-bold flex items-center gap-1.5 shrink-0" title="Settings">
+          <span>⚙️</span>
+          <span class="text-xs font-semibold">Settings</span>
         </button>
       </div>
     </header>
@@ -102,33 +95,6 @@
       <!-- TIER 1: MAIN APP GATEWAY MENU (Entry Hub of the Mobile App)         -->
       <!-- =================================================================== -->
       <div id="screen-gateway" class="space-y-3.5">
-        <!-- Google Gemini API Key Saved Status Bar (Collapsed by default so it never nags on build) -->
-        <div class="bg-[var(--card)] border border-emerald-500/40 rounded-2xl p-3 space-y-2 shadow-sm">
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
-              <span class="text-xs font-bold truncate">✨ Gemini 2.5 Flash Key Saved</span>
-              <span id="gatewayGeminiStatus" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0">
-                AQ.Ab8... Linked ✓
-              </span>
-            </div>
-            <button type="button" onclick="toggleGatewayKeyEdit()" class="text-[11px] font-mono text-[var(--link)] hover:underline shrink-0">
-              Change Key
-            </button>
-          </div>
-          <div id="gatewayKeyEditBox" class="hidden pt-2 border-t border-[var(--border)] space-y-1.5">
-            <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
-              Your key is persisted across reloads (<code class="px-1 rounded bg-[var(--secondary)]">window.name</code> + <code class="px-1 rounded bg-[var(--secondary)]">localStorage</code> + built-in profile). Paste a new key below only if you want to replace it:
-            </p>
-            <div class="flex gap-1.5">
-              <input id="gatewayGeminiInput" type="password" value="AQ.Ab8RN6-Saved-GridironIQ-Key" placeholder="Paste Gemini Key (AQ.Ab8... or AIzaSy...)" class="flex-1 px-2.5 py-1.5 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-mono" />
-              <button onclick="saveGeminiKeyFromGateway()" class="px-3 py-1.5 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold shrink-0">
-                Save Key ✓
-              </button>
-            </div>
-          </div>
-        </div>
-
         <!-- League Selection Portals (Opens the League's Weekly Matchup Sub-Gateway) -->
         <div class="space-y-2.5">
           <div class="flex items-center justify-between gap-2 px-1">
@@ -523,7 +489,7 @@
     <nav class="bg-[var(--card)] border-t border-[var(--border)] px-1.5 pt-1.5 pb-1 grid grid-cols-5 gap-0.5 shrink-0 select-none">
       <button onclick="openGateway()" id="nav-gateway" class="flex flex-col items-center justify-center py-1 nav-active">
         <div class="nav-pill px-3 py-0.5 rounded-full text-xs font-bold transition">🏠</div>
-        <span class="text-[10px] font-medium mt-0.5">Gateway</span>
+        <span class="text-[10px] font-medium mt-0.5">Home</span>
       </button>
       <button onclick="openLeagueSubGateway(currentLeague)" id="nav-subgateway" class="flex flex-col items-center justify-center py-1 text-[var(--muted-foreground)]">
         <div class="nav-pill px-3 py-0.5 rounded-full text-xs font-bold transition">📅</div>
@@ -638,28 +604,79 @@
     </div>
 
     <!-- ===================================================================== -->
-    <!-- BOTTOM SHEET MODAL 2: GOOGLE GEMINI API KEY SETUP                     -->
+    <!-- BOTTOM SHEET MODAL 2: SETTINGS & GEMINI API CONFIGURATION             -->
     <!-- ===================================================================== -->
-    <div id="keySheet" class="absolute inset-0 bg-black/60 z-40 hidden flex-col justify-end">
-      <div class="bg-[var(--card)] border-t border-[var(--border)] rounded-t-3xl p-4 space-y-3 shadow-2xl">
+    <div id="settingsSheet" class="absolute inset-0 bg-black/60 z-40 hidden flex-col justify-end">
+      <div class="bg-[var(--card)] border-t border-[var(--border)] rounded-t-3xl p-4 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
         <div class="w-10 h-1 rounded-full bg-[var(--border)] mx-auto"></div>
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-bold">Link Google Gemini API Key</h3>
-          <button onclick="closeKeySheet()" class="text-xs text-[var(--muted-foreground)] px-2 py-1">✕</button>
+          <div class="flex items-center gap-2">
+            <span class="text-base">⚙️</span>
+            <div>
+              <h3 class="text-sm font-extrabold">Settings &amp; Configuration</h3>
+              <p class="text-[10px] text-[var(--muted-foreground)]">Model API keys, live data feeds, and app preferences</p>
+            </div>
+          </div>
+          <button onclick="closeSettingsSheet()" class="text-xs text-[var(--muted-foreground)] p-1 hover:text-[var(--foreground)]">✕</button>
         </div>
-        <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
-          1. Supports both modern <strong>Google Cloud / Vertex / AI Studio tokens (<code class="px-1 rounded bg-[var(--secondary)]">AQ.Ab8...</code>)</strong> and standard API keys (<code class="px-1 rounded bg-[var(--secondary)]">AIzaSy...</code>).<br/>
-          2. Paste your <code class="px-1 rounded bg-[var(--secondary)]">AQ.Ab8...</code> key below.<br/>
-          3. Tap <strong>Save &amp; Run Gemini →</strong> to close this sheet, open the matchup details, and run Gemini 2.5 Flash!
-        </p>
-        <input id="geminiKeyInput" type="password" placeholder="Paste Gemini Key (AQ.Ab8... or AIzaSy...)" class="w-full px-3 py-2 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-mono" />
-        <label class="flex items-center gap-2 text-xs cursor-pointer">
-          <input id="autoRunGeminiToggle" type="checkbox" checked class="accent-[var(--primary)]" />
-          <span>Automatically run Gemini LLM assessment when selecting a game</span>
-        </label>
-        <div class="flex gap-2 pt-1">
-          <button type="button" onclick="closeKeySheet()" class="flex-1 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--secondary)] transition">Close</button>
-          <button type="button" onclick="saveAndRunGeminiAndAdvance()" class="flex-1 py-2 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold hover:opacity-90 transition">Save &amp; Run Gemini →</button>
+
+        <!-- 1. GOOGLE GEMINI API CONFIGURATION -->
+        <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+              <span class="text-xs font-bold">Gemini 2.5 Flash API Key</span>
+            </div>
+            <span id="settingsGeminiStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0">
+              Saved ✓
+            </span>
+          </div>
+
+          <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
+            Supports Google Cloud / Vertex tokens (<code class="px-1 rounded bg-[var(--secondary)]">AQ.Ab8...</code>) and Google AI Studio keys (<code class="px-1 rounded bg-[var(--secondary)]">AIzaSy...</code>). Stored locally in your browser session.
+          </p>
+
+          <div class="space-y-1.5">
+            <div class="flex gap-1.5">
+              <input id="geminiKeyInput" type="password" placeholder="Paste Gemini Key (AQ.Ab8... or AIzaSy...)" class="flex-1 px-3 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs font-mono" />
+              <button type="button" onclick="toggleKeyVisibility()" id="btnToggleKeyVis" class="px-2.5 py-2 rounded-xl bg-[var(--secondary)] text-xs font-semibold shrink-0" title="Toggle visibility">👁️</button>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" onclick="saveGeminiKeyFromSettings()" class="flex-1 py-2 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold hover:opacity-90 transition">
+                Save Gemini Key ✓
+              </button>
+            </div>
+          </div>
+
+          <label class="flex items-center gap-2 text-xs pt-1 cursor-pointer select-none">
+            <input id="autoRunGeminiToggle" type="checkbox" checked class="accent-[var(--primary)]" />
+            <span class="text-[11px]">Auto-run Gemini 2.5 Flash when selecting a game</span>
+          </label>
+        </div>
+
+        <!-- 2. LIVE ESPN & ODDS SYNC CONFIGURATION -->
+        <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+              <span class="text-xs font-bold">ESPN &amp; DraftKings Live Sync</span>
+            </div>
+            <span class="text-[10px] font-mono text-[var(--success)] font-semibold shrink-0">Connected</span>
+          </div>
+          <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
+            Live scoreboard, game clock, and closing DraftKings lines are kept updated in real-time.
+          </p>
+          <button type="button" onclick="syncAllWeeklySchedules(true); closeSettingsSheet();" class="w-full py-2 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+            <span>🔄</span>
+            <span>Sync Live Schedule &amp; Odds Now</span>
+          </button>
+        </div>
+
+        <!-- 3. FOOTER ACTIONS -->
+        <div class="pt-1">
+          <button type="button" onclick="closeSettingsSheet()" class="w-full py-2.5 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--secondary)] transition">
+            Close Settings
+          </button>
         </div>
       </div>
     </div>
@@ -1764,7 +1781,7 @@
     }
 
     async function runLiveGeminiAssessment() {
-      const key = (document.getElementById("geminiKeyInput").value || document.getElementById("gatewayGeminiInput").value || SafeStore.getItem("gridiron_gemini_key") || "").trim();
+      const key = (document.getElementById("geminiKeyInput")?.value || SafeStore.getItem("gridiron_gemini_key") || DEFAULT_SAVED_GEMINI_KEY || "").trim();
 
       const m = getActiveList()[selectedIdx];
       const baseline = computeBaselinePrediction(m);
@@ -1974,13 +1991,13 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
     function openGateway() {
       currentScreen = "gateway";
       hideAllScreens();
-      document.getElementById("screen-gateway").classList.remove("hidden");
+      const gw = document.getElementById("screen-gateway");
+      if (gw) gw.classList.remove("hidden");
 
-      document.getElementById("navBackIcon").textContent = "🏠";
-      document.getElementById("navBackLabel").textContent = "Gateway";
-      document.getElementById("topBarTitle").textContent = "GridironIQ Gateway";
-      document.getElementById("activeLeagueBadge").textContent = "HUB";
-      document.getElementById("topBarSubtitle").textContent = `NFL (${LEAGUE_DATA.NFL.length} Games) & NCAAF (${LEAGUE_DATA.NCAAF.length} Games)`;
+      const topTitle = document.getElementById("topBarTitle");
+      if (topTitle) topTitle.textContent = "GridironIQ";
+      const topSub = document.getElementById("topBarSubtitle");
+      if (topSub) topSub.textContent = `NFL (${LEAGUE_DATA.NFL.length} Games) & NCAAF (${LEAGUE_DATA.NCAAF.length} Games)`;
 
       setActiveBottomNav("gateway");
       updateGatewayBadges();
@@ -1991,17 +2008,20 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
       currentLeague = leagueName || currentLeague;
       currentScreen = "subgateway";
       hideAllScreens();
-      document.getElementById("screen-subgateway").classList.remove("hidden");
+      const subGw = document.getElementById("screen-subgateway");
+      if (subGw) subGw.classList.remove("hidden");
 
-      document.getElementById("navBackIcon").textContent = "←";
-      document.getElementById("navBackLabel").textContent = "Gateway";
-      document.getElementById("topBarTitle").textContent = `${currentLeague} Weekly Sub-Gateway`;
-      document.getElementById("activeLeagueBadge").textContent = currentLeague;
-      document.getElementById("topBarSubtitle").textContent = `${getActiveList().length} Matchups This Week • Tap any game`;
+      const topTitle = document.getElementById("topBarTitle");
+      if (topTitle) topTitle.textContent = `${currentLeague} Weekly Slate`;
+      const topSub = document.getElementById("topBarSubtitle");
+      if (topSub) topSub.textContent = `${getActiveList().length} Matchups This Week • Tap any game`;
 
-      document.getElementById("subGatewayTitle").textContent = currentLeague === "NFL"
-        ? `🏈 NFL Weekly Matchups (${LEAGUE_DATA.NFL.length} Games)`
-        : `🎓 NCAAF Weekly Matchups (${LEAGUE_DATA.NCAAF.length} Games)`;
+      const subTitle = document.getElementById("subGatewayTitle");
+      if (subTitle) {
+        subTitle.textContent = currentLeague === "NFL"
+          ? `🏈 NFL Weekly Matchups (${LEAGUE_DATA.NFL.length} Games)`
+          : `🎓 NCAAF Weekly Matchups (${LEAGUE_DATA.NCAAF.length} Games)`;
+      }
 
       ["NFL", "NCAAF"].forEach(lg => {
         const btn = document.getElementById("subSeg-" + lg);
@@ -2507,11 +2527,10 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
       document.getElementById("screen-" + tab).classList.remove("hidden");
 
       const m = getActiveList()[selectedIdx];
-      document.getElementById("navBackIcon").textContent = "←";
-      document.getElementById("navBackLabel").textContent = `${currentLeague} Slate`;
-      document.getElementById("topBarTitle").textContent = isApiScreen ? "US Sports APIs" : `${m.away.abbr} @ ${m.home.abbr}`;
-      document.getElementById("activeLeagueBadge").textContent = currentLeague;
-      document.getElementById("topBarSubtitle").textContent = isApiScreen ? "Connected Telemetry Feeds" : `${m.scheduleDate || ''} • ${m.kickoffTime || ''}`;
+      const topTitle = document.getElementById("topBarTitle");
+      if (topTitle) topTitle.textContent = isApiScreen ? "US Sports APIs" : `${m.away.abbr} @ ${m.home.abbr}`;
+      const topSub = document.getElementById("topBarSubtitle");
+      if (topSub) topSub.textContent = isApiScreen ? "Connected Telemetry Feeds" : `${m.scheduleDate || ''} • ${m.kickoffTime || ''}`;
 
       setActiveBottomNav(tab);
       renderDetailView();
@@ -2894,64 +2913,98 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
       onWeightChange();
     }
 
+    function openSettingsSheet() {
+      const s = document.getElementById("settingsSheet") || document.getElementById("keySheet");
+      if (s) {
+        s.classList.remove("hidden");
+        s.classList.add("flex");
+      }
+    }
+
+    function closeSettingsSheet() {
+      const s = document.getElementById("settingsSheet") || document.getElementById("keySheet");
+      if (s) {
+        s.classList.add("hidden");
+        s.classList.remove("flex");
+      }
+    }
+
     function openKeySheet() {
-      const s = document.getElementById("keySheet");
-      s.classList.remove("hidden");
-      s.classList.add("flex");
+      openSettingsSheet();
     }
 
     function closeKeySheet() {
-      const s = document.getElementById("keySheet");
-      s.classList.add("hidden");
-      s.classList.remove("flex");
+      closeSettingsSheet();
+    }
+
+    function toggleKeyVisibility() {
+      const input = document.getElementById("geminiKeyInput");
+      const btn = document.getElementById("btnToggleKeyVis");
+      if (!input) return;
+      if (input.type === "password") {
+        input.type = "text";
+        if (btn) btn.textContent = "🔒";
+      } else {
+        input.type = "password";
+        if (btn) btn.textContent = "👁️";
+      }
     }
 
     function toggleGatewayKeyEdit() {
-      const box = document.getElementById("gatewayKeyEditBox");
-      if (box) box.classList.toggle("hidden");
+      openSettingsSheet();
     }
 
     function updateGeminiKeyIndicators(key) {
       const hasKey = Boolean(key && key.length > 5);
-      const prefix = (key && key.startsWith("AQ.")) ? "AQ.Ab8..." : "Key";
-      document.getElementById("geminiKeyStatusBadge").textContent = hasKey ? "Gemini Saved ✓" : "Gemini Key";
-      const gwStatus = document.getElementById("gatewayGeminiStatus");
-      if (gwStatus) {
-        gwStatus.textContent = hasKey ? `${prefix} Linked ✓` : "Key Not Linked Yet";
-        gwStatus.className = hasKey
-          ? "text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0"
-          : "text-[11px] font-mono text-[var(--warning)]";
+      const prefix = (key && key.startsWith("AQ.")) ? "AQ.Ab8..." : (key && key.length > 8 ? key.substring(0, 6) + "..." : "Key");
+      
+      const settingsBadge = document.getElementById("settingsGeminiStatusBadge");
+      if (settingsBadge) {
+        settingsBadge.textContent = hasKey ? `${prefix} Linked ✓` : "Not Linked";
+        settingsBadge.className = hasKey
+          ? "text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0"
+          : "text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold shrink-0";
+      }
+
+      const input = document.getElementById("geminiKeyInput");
+      if (input && key && !input.value) {
+        input.value = key;
       }
     }
 
-    function saveGeminiKeyFromGateway() {
-      const k = (document.getElementById("gatewayGeminiInput").value || DEFAULT_SAVED_GEMINI_KEY).trim();
+    function saveGeminiKeyFromSettings() {
+      const input = document.getElementById("geminiKeyInput");
+      const k = ((input ? input.value : "") || DEFAULT_SAVED_GEMINI_KEY).trim();
       SafeStore.setItem("gridiron_gemini_key", k);
-      document.getElementById("geminiKeyInput").value = k;
+      if (input) input.value = k;
       updateGeminiKeyIndicators(k);
-      const editBox = document.getElementById("gatewayKeyEditBox");
-      if (editBox) editBox.classList.add("hidden");
+
+      // Re-run assessments across matchups
       LEAGUE_DATA.NFL.forEach(m => {
         m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
       });
       LEAGUE_DATA.NCAAF.forEach(m => {
         m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
       });
-      openLeagueSubGateway("NFL");
+
+      const settingsBadge = document.getElementById("settingsGeminiStatusBadge");
+      if (settingsBadge) {
+        settingsBadge.textContent = "Saved ✓";
+      }
+      if (currentScreen === "ai" || currentScreen === "injuries" || currentScreen === "stats") {
+        renderDetailView();
+      } else if (currentScreen === "subgateway") {
+        renderSubGatewayGameCards();
+      }
+    }
+
+    function saveGeminiKeyFromGateway() {
+      saveGeminiKeyFromSettings();
     }
 
     function saveAndRunGeminiAndAdvance() {
-      const k = (document.getElementById("geminiKeyInput").value || document.getElementById("gatewayGeminiInput").value || DEFAULT_SAVED_GEMINI_KEY).trim();
-      SafeStore.setItem("gridiron_gemini_key", k);
-      document.getElementById("gatewayGeminiInput").value = k;
-      updateGeminiKeyIndicators(k);
-      closeKeySheet();
-
-      LEAGUE_DATA[currentLeague].forEach(m => {
-        if (!m.geminiAssessment) {
-          m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
-        }
-      });
+      saveGeminiKeyFromSettings();
+      closeSettingsSheet();
 
       if (currentScreen === "gateway") {
         openLeagueSubGateway(currentLeague);
@@ -2967,8 +3020,8 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
     window.addEventListener("DOMContentLoaded", () => {
       const k = SafeStore.getItem("gridiron_gemini_key") || DEFAULT_SAVED_GEMINI_KEY;
       SafeStore.setItem("gridiron_gemini_key", k);
-      document.getElementById("geminiKeyInput").value = k;
-      document.getElementById("gatewayGeminiInput").value = k;
+      const input = document.getElementById("geminiKeyInput");
+      if (input) input.value = k;
       updateGeminiKeyIndicators(k);
 
       // Restore saved Bet-Focused game selections and active Sort/Filter state across builds
