@@ -265,7 +265,7 @@
           <div class="p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1.5 text-xs">
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <div class="flex items-center gap-2">
-                <span class="font-bold">Hit/Miss Record:</span>
+                <span class="font-bold">ATS Spread Record:</span>
                 <span id="weeklyAccuracyBadge" class="font-mono font-bold px-2 py-0.5 rounded bg-[var(--secondary)]">0-0 (0%)</span>
               </div>
               <div class="flex items-center gap-1.5">
@@ -1347,14 +1347,15 @@
 
       const predictedWinnerAbbr = pred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
       const actualWinnerAbbr = finalHome >= finalAway ? m.home.abbr : m.away.abbr;
-      const isSuHit = predictedWinnerAbbr === actualWinnerAbbr; // Straight-Up Moneyline winner hit
 
-      // Evaluate live/final score Against The Spread (ATS) based on the DraftKings line
+      // Evaluate live/final score Against The Spread (ATS) based on the official DraftKings line
       const homeMargin = finalHome - finalAway;
       const atsDiff = homeMargin + (Number(m.vegasSpreadHome) || 0);
       const atsCoverAbbr = atsDiff > 0 ? m.home.abbr : (atsDiff < 0 ? m.away.abbr : "PUSH");
-      const atsText = atsCoverAbbr === "PUSH" ? "ATS Push" : `${atsCoverAbbr} Covers`;
-      const isAtsHit = (atsCoverAbbr === "PUSH") ? true : (predictedWinnerAbbr === atsCoverAbbr); // Model's picked team covered spread
+      const isPush = atsCoverAbbr === "PUSH";
+      const atsText = isPush ? "Push" : `${atsCoverAbbr} Covers`;
+      // Hit if the model's picked team covered the DraftKings spread line (or push)
+      const isAtsHit = isPush ? true : (predictedWinnerAbbr === atsCoverAbbr);
 
       const clockLabel = isFinished ? "FINAL" : (m.liveClockDetail || "LIVE");
 
@@ -1362,9 +1363,9 @@
         isFinished,
         isInProgress,
         hasActiveScore: true,
-        isCorrect: isSuHit,
-        isSuHit,
+        isCorrect: isAtsHit, // Against-the-spread accuracy standard
         isAtsHit,
+        isPush,
         predictedWinnerAbbr,
         actualWinnerAbbr,
         finalAway,
@@ -1911,33 +1912,27 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         let statusOutcomeBadgeHtml = "";
         if (outcome.hasActiveScore) {
           const phaseTag = outcome.isInProgress ? `LIVE ${outcome.clockLabel}` : "FINAL";
-          const suBadge = outcome.isSuHit
-            ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
-                ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                <span>✓ ML WINNER HIT (${outcome.actualWinnerAbbr})</span>
-              </span>`
-            : `<span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
-                ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                <span>✗ ML MISSED (${outcome.actualWinnerAbbr} Won)</span>
-              </span>`;
-
-          const atsBadge = outcome.isAtsHit
-            ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
-                <span>✓ ATS COVER HIT (${outcome.atsText})</span>
-              </span>`
-            : `<span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
-                <span>✗ SPREAD MISSED (${outcome.atsText} vs ${dkLineTxt})</span>
-              </span>`;
-
-          statusOutcomeBadgeHtml = `
-            <div class="flex items-center gap-1.5 flex-wrap">
-              ${suBadge}
-              ${atsBadge}
-              <span class="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[10px] font-mono text-[var(--muted-foreground)]">
-                Score: ${outcome.finalAway}–${outcome.finalHome} (${phaseTag})
+          if (outcome.isPush) {
+            statusOutcomeBadgeHtml = `
+              <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                <span>ATS PUSH (${outcome.finalAway}-${outcome.finalHome} • ${phaseTag})</span>
               </span>
-            </div>
-          `;
+            `;
+          } else if (outcome.isCorrect) {
+            statusOutcomeBadgeHtml = `
+              <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
+                <span>✓ ${outcome.isInProgress ? 'ATS COVER HIT LIVE' : 'ATS COVER HIT'} (${outcome.atsText} • ${outcome.finalAway}-${outcome.finalHome} ${phaseTag})</span>
+              </span>
+            `;
+          } else {
+            statusOutcomeBadgeHtml = `
+              <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
+                <span>✗ ${outcome.isInProgress ? 'SPREAD MISSED LIVE' : 'SPREAD MISSED'} (${outcome.atsText} vs ${dkLineTxt} • ${outcome.finalAway}-${outcome.finalHome})</span>
+              </span>
+            `;
+          }
         } else {
           statusOutcomeBadgeHtml = `
             <span class="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono text-[10px] shrink-0">
@@ -2222,31 +2217,21 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         detailGeminiBelowEl.classList.add("hidden");
       }
 
-      if (outcome.hasActiveScore) {
-        detailFinalEl.classList.remove("hidden");
-        const statusPrefix = outcome.isInProgress ? `● LIVE (${outcome.clockLabel})` : "FINAL";
-        detailFinalEl.className = (outcome.isSuHit && outcome.isAtsHit)
-          ? "p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono flex flex-col gap-1"
-          : (outcome.isSuHit
-              ? "p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono flex flex-col gap-1"
-              : "p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-mono flex flex-col gap-1");
+        detailFinalEl.className = outcome.isPush
+          ? "p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono flex items-center justify-between"
+          : (outcome.isCorrect
+              ? "p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono flex items-center justify-between"
+              : "p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-mono flex items-center justify-between");
 
-        const suText = outcome.isSuHit
-          ? `✓ ML WINNER HIT: ${outcome.actualWinnerAbbr} won (${outcome.finalAway}–${outcome.finalHome})`
-          : `✗ ML WINNER MISSED: ${outcome.actualWinnerAbbr} won (${outcome.finalAway}–${outcome.finalHome})`;
-
-        const atsDetailText = outcome.isAtsHit
-          ? `✓ ATS SPREAD HIT: ${outcome.atsText} (DraftKings Line ${dkLineTxt})`
-          : `✗ ATS SPREAD MISSED: ${outcome.atsText} (Did not cover ${dkLineTxt})`;
+        const atsChipText = outcome.isPush
+          ? `ATS PUSH (${dkLineTxt}): ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome}`
+          : (outcome.isCorrect
+              ? `✓ ${outcome.isInProgress ? 'ATS COVER HIT LIVE' : 'ATS COVER HIT'}: ${outcome.atsText} (Covered ${dkLineTxt} • ${outcome.finalAway}-${outcome.finalHome})`
+              : `✗ ${outcome.isInProgress ? 'SPREAD MISSED LIVE' : 'SPREAD MISSED'}: ${outcome.atsText} (Failed to cover ${dkLineTxt} • ${outcome.finalAway}-${outcome.finalHome})`);
 
         detailFinalEl.innerHTML = `
-          <div class="flex items-center justify-between font-bold">
-            <span>${suText}</span>
-            <span class="text-[10px] text-[var(--muted-foreground)]">${statusPrefix}</span>
-          </div>
-          <div class="text-[11px] font-semibold opacity-90">
-            ${atsDetailText}
-          </div>
+          <span class="font-bold">${atsChipText}</span>
+          <span class="text-[10px] text-[var(--muted-foreground)]">${statusPrefix}</span>
         `;
 
         if (detailLiveBelowEl) {
