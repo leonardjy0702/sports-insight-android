@@ -326,24 +326,29 @@
 
           <div class="col-span-3 flex flex-col items-center justify-center space-y-1">
             <div id="predictionSourcePill" class="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)]">
-              1. Sabermetric + FPI Baseline
+              1. Predicted Score
             </div>
-            <div class="flex items-baseline gap-2 font-mono">
-              <span id="awayScore" class="text-xl font-black">23</span>
-              <span class="text-xs text-[var(--muted-foreground)]">–</span>
-              <span id="homeScore" class="text-xl font-black">26</span>
+            <div class="flex items-center justify-center gap-1.5 font-mono flex-wrap">
+              <div class="flex items-baseline gap-1.5">
+                <span id="awayScore" class="text-xl font-black">23</span>
+                <span class="text-xs text-[var(--muted-foreground)]">–</span>
+                <span id="homeScore" class="text-xl font-black">26</span>
+              </div>
+              <span id="detailBaselineSourceTag" class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--link)] border border-[var(--border)]">
+                [nflfastR + ESPN FPI]
+              </span>
             </div>
 
             <!-- 2. GOOGLE GEMINI PREDICTED SCORE (Shown if Gemini processed) -->
             <div id="detailGeminiScoreBelowBox" class="w-full px-2 py-1 rounded-xl bg-[var(--primary)]/15 border border-[var(--primary)]/40 font-mono hidden">
-              <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)]">✨ 2. GEMINI 2.5 FLASH</div>
-              <div id="detailGeminiScoreValue" class="text-xs font-black text-[var(--foreground)]">21 – 28</div>
+              <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)]">✨ 2. GEMINI PREDICTED</div>
+              <div id="detailGeminiScoreValue" class="text-xs font-black text-[var(--foreground)]">21 – 28 [Gemini 2.5]</div>
             </div>
 
             <!-- 3. LIVE / RESULT SCORE BASED ON THE LINE WITH TIMESTAMP -->
             <div id="detailLiveScoreBelowBox" class="w-full px-2 py-1 rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono">
-              <div id="detailLiveScoreValue" class="text-xs font-black text-emerald-400">LIVE: 10 – 35</div>
-              <div id="detailLiveScoreLine" class="text-[9px] font-semibold text-[var(--foreground)]">Line: DET -2.5 (24–27)</div>
+              <div id="detailLiveScoreValue" class="text-xs font-black text-emerald-400">LIVE: 10 – 35 [ESPN Live]</div>
+              <div id="detailLiveScoreLine" class="text-[9px] font-semibold text-[var(--foreground)]">Line: DET -2.5 (24–27) [DraftKings]</div>
               <div id="detailLiveScoreClock" class="text-[8px] text-[var(--muted-foreground)]">4th Qtr • Synced --:--:--</div>
             </div>
 
@@ -1788,6 +1793,9 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
           ? "bg-[var(--primary)]/20 text-[var(--link)] border-[var(--primary)]/50 font-bold"
           : "bg-[var(--background)] text-[var(--muted-foreground)] border-[var(--border)]";
 
+        const baselineSourceLabel = m.league === "NFL" ? "nflfastR + ESPN FPI" : "CFBD + ESPN FPI";
+        const baselineShortTag = m.league === "NFL" ? "[nflfastR+FPI]" : "[CFBD+FPI]";
+
         // Tier 2: Google Gemini Predicted Score (ONLY shown if Gemini has processed this game)
         let geminiScoreTierHtml = "";
         if (geminiPred) {
@@ -1796,10 +1804,11 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
           geminiScoreTierHtml = `
             <div class="pt-1 border-t border-[var(--border)] bg-[var(--primary)]/10 -mx-1 px-1 py-0.5 rounded">
               <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)] leading-none">
-                ✨ GEMINI (${gemWinAbbr} ${gemWinWp}%)
+                ✨ GEMINI PREDICTED (${gemWinAbbr} ${gemWinWp}%)
               </div>
-              <div class="text-xs font-black leading-tight text-[var(--foreground)]">
-                ${geminiPred.awayScore} – ${geminiPred.homeScore}
+              <div class="flex items-center justify-center gap-1 leading-tight mt-0.5">
+                <span class="text-xs font-black text-[var(--foreground)]">${geminiPred.awayScore} – ${geminiPred.homeScore}</span>
+                <span class="text-[8px] font-bold px-1 py-0.2 rounded bg-[var(--primary)]/25 text-[var(--link)]">[Gemini 2.5]</span>
               </div>
             </div>
           `;
@@ -1812,11 +1821,12 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
               <div class="text-[8px] font-bold uppercase tracking-wider leading-none ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
                 ${outcome.isInProgress ? '● LIVE (' + outcome.clockLabel + ')' : 'FINAL RESULT'}
               </div>
-              <div class="text-xs font-black leading-tight ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
-                ${outcome.finalAway} – ${outcome.finalHome}
+              <div class="flex items-center justify-center gap-1 leading-tight mt-0.5">
+                <span class="text-xs font-black ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${outcome.finalAway} – ${outcome.finalHome}</span>
+                <span class="text-[8px] font-bold px-1 py-0.2 rounded bg-[var(--secondary)] text-[var(--foreground)]">[ESPN Live]</span>
               </div>
               <div class="text-[8px] font-semibold text-[var(--foreground)] leading-tight mt-0.5">
-                Line (${dkLineTxt}): ${outcome.lineAwayScore}–${outcome.lineHomeScore} • ${outcome.atsText}
+                Line (${dkLineTxt}): ${outcome.lineAwayScore}–${outcome.lineHomeScore} • ${outcome.atsText} <span class="text-[var(--muted-foreground)]">[DraftKings]</span>
               </div>
               <div class="text-[8px] text-[var(--muted-foreground)] leading-none mt-0.5">
                 🕒 ${lastLiveSyncTimestamp}
@@ -1826,10 +1836,11 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
           : `
             <div class="pt-1 border-t border-[var(--border)]">
               <div class="text-[8px] font-bold uppercase tracking-wider text-amber-300 leading-none">
-                LINE (${dkLineTxt})
+                LINE SCORE (${dkLineTxt})
               </div>
-              <div class="text-xs font-black leading-tight text-amber-300">
-                ${outcome.lineAwayScore} – ${outcome.lineHomeScore}
+              <div class="flex items-center justify-center gap-1 leading-tight mt-0.5">
+                <span class="text-xs font-black text-amber-300">${outcome.lineAwayScore} – ${outcome.lineHomeScore}</span>
+                <span class="text-[8px] font-bold px-1 py-0.2 rounded bg-amber-500/20 text-amber-300">[DraftKings]</span>
               </div>
               <div class="text-[8px] text-[var(--muted-foreground)] leading-none mt-0.5">
                 O/U ${m.overUnder} • Live @ ${m.kickoffTime}
@@ -1837,15 +1848,16 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
             </div>
           `;
 
-        // Stacked Center Score Column: 1. PREDICTED -> 2. GEMINI (if processed) -> 3. LIVE/RESULT (Line)
+        // Stacked Center Score Column: 1. PREDICTED (with source label next to score) -> 2. GEMINI (if processed) -> 3. LIVE/RESULT (Line)
         const centerScoreColumnHtml = `
           <div class="px-1.5 py-1.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
             <div>
               <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] leading-none">
                 PREDICTED (${baseWinTeam.abbr} ${baseWinWp}%)
               </div>
-              <div class="text-xs font-black leading-tight text-[var(--foreground)]">
-                ${basePred.awayScore} – ${basePred.homeScore}
+              <div class="flex items-center justify-center gap-1 leading-tight mt-0.5">
+                <span class="text-xs font-black text-[var(--foreground)]">${basePred.awayScore} – ${basePred.homeScore}</span>
+                <span class="text-[8px] font-bold px-1 py-0.2 rounded bg-[var(--secondary)] text-[var(--link)]" title="Source: ${baselineSourceLabel}">${baselineShortTag}</span>
               </div>
             </div>
             ${geminiScoreTierHtml}
@@ -1966,6 +1978,7 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       const pred = computePrediction(m);
       const outcome = evaluateMatchOutcome(m, pred, selectedIdx);
       const dkLineTxt = m.draftKingsLine || `${m.home.abbr} ${m.vegasSpreadHome > 0 ? '+' + m.vegasSpreadHome : m.vegasSpreadHome}`;
+      const baselineSourceTag = m.league === "NFL" ? "[nflfastR + ESPN FPI]" : "[CFBD + ESPN FPI]";
 
       document.getElementById("backToSlateLeagueLbl").textContent = currentLeague;
       document.getElementById("detailScheduleTimeBadge").textContent = `📅 ${m.scheduleDate || 'Sun'} • ⏰ ${m.kickoffTime || '1:00 PM'}`;
@@ -1987,11 +2000,13 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       const detailLiveValEl = document.getElementById("detailLiveScoreValue");
       const detailLiveLineEl = document.getElementById("detailLiveScoreLine");
       const detailLiveClkEl = document.getElementById("detailLiveScoreClock");
+      const detailBaseSrcEl = document.getElementById("detailBaselineSourceTag");
+      if (detailBaseSrcEl) detailBaseSrcEl.textContent = baselineSourceTag;
 
       if (geminiPred && detailGeminiBelowEl && detailGeminiValEl) {
         detailGeminiBelowEl.classList.remove("hidden");
         const gemWin = geminiPred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
-        detailGeminiValEl.textContent = `${m.away.abbr} ${geminiPred.awayScore} – ${m.home.abbr} ${geminiPred.homeScore} (${gemWin} ${geminiPred.maxWinProb.toFixed(0)}%)`;
+        detailGeminiValEl.textContent = `${m.away.abbr} ${geminiPred.awayScore} – ${m.home.abbr} ${geminiPred.homeScore} (${gemWin} ${geminiPred.maxWinProb.toFixed(0)}%) [Gemini 2.5]`;
       } else if (detailGeminiBelowEl) {
         detailGeminiBelowEl.classList.add("hidden");
       }
@@ -2015,16 +2030,16 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
 
         if (detailLiveBelowEl) {
           detailLiveBelowEl.classList.remove("hidden");
-          detailLiveValEl.textContent = `${outcome.isInProgress ? '● LIVE' : 'FINAL RESULT'}: ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome}`;
+          detailLiveValEl.textContent = `${outcome.isInProgress ? '● LIVE' : 'FINAL RESULT'}: ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome} [ESPN Live]`;
           detailLiveValEl.className = outcome.isCorrect ? "text-xs font-black text-emerald-400" : "text-xs font-black text-rose-400";
-          if (detailLiveLineEl) detailLiveLineEl.textContent = `Line (${dkLineTxt}): ${outcome.lineAwayScore}–${outcome.lineHomeScore} • ${outcome.atsText}`;
+          if (detailLiveLineEl) detailLiveLineEl.textContent = `Line (${dkLineTxt}): ${outcome.lineAwayScore}–${outcome.lineHomeScore} • ${outcome.atsText} [DraftKings]`;
           detailLiveClkEl.textContent = `${outcome.clockLabel} • Synced ${lastLiveSyncTimestamp} (60s auto-refresh)`;
         }
       } else {
         detailFinalEl.classList.add("hidden");
         if (detailLiveBelowEl) {
           detailLiveBelowEl.classList.remove("hidden");
-          detailLiveValEl.textContent = `LINE SCORE (${dkLineTxt}): ${m.away.abbr} ${outcome.lineAwayScore} – ${m.home.abbr} ${outcome.lineHomeScore}`;
+          detailLiveValEl.textContent = `LINE SCORE (${dkLineTxt}): ${m.away.abbr} ${outcome.lineAwayScore} – ${m.home.abbr} ${outcome.lineHomeScore} [DraftKings]`;
           detailLiveValEl.className = "text-xs font-black text-amber-300";
           if (detailLiveLineEl) detailLiveLineEl.textContent = `DraftKings O/U ${m.overUnder} • Live @ ${m.kickoffTime}`;
           detailLiveClkEl.textContent = `Synced ${lastLiveSyncTimestamp} (60s auto-refresh)`;
@@ -2049,7 +2064,7 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
 
       const sourcePill = document.getElementById("predictionSourcePill");
       const btnBanner = document.getElementById("btnRunGeminiBanner");
-      sourcePill.textContent = "1. Predicted (Sabermetric + FPI)";
+      sourcePill.textContent = "1. Predicted Score";
       sourcePill.className = "text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)] mb-0.5";
       if (pred.isGeminiLive) {
         btnBanner.textContent = "🔄 Re-Run Gemini 2.5 Flash Assessment";
