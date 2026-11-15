@@ -393,6 +393,94 @@
           </div>
         </div>
 
+        <!-- DRAFTKINGS BETTING MARKETS & MULTI-MODEL PREDICTIONS (Spread, Over/Under, Moneyline) -->
+        <div id="detailBettingMarketsCard" class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2.5">
+          <div class="flex items-center justify-between gap-2 border-b border-[var(--border)] pb-1.5">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm">🎲</span>
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--foreground)]">DraftKings Betting Options</h3>
+                <p class="text-[9.5px] text-[var(--muted-foreground)]">Model predictions &amp; edges vs official DraftKings lines</p>
+              </div>
+            </div>
+            <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--link)] border border-[var(--border)]">
+              DraftKings Odds
+            </span>
+          </div>
+
+          <!-- Market 1: Against The Spread (ATS) -->
+          <div class="p-2.5 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-1.5 font-bold">
+                <span class="text-[9.5px] px-1.5 py-0.5 rounded bg-[var(--secondary)] font-mono font-extrabold">SPREAD</span>
+                <span class="text-[11px]" id="detailMarketSpreadTitle">Point Spread</span>
+              </div>
+              <span class="font-mono font-extrabold text-[11px] text-[var(--foreground)]" id="detailDkSpreadVal">DET -2.5 (-110)</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+              <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-0.5">
+                <div class="text-[8.5px] font-bold text-[var(--muted-foreground)] uppercase" id="detailBaseSpreadTag">📊 nflfastR Model</div>
+                <div class="font-bold text-emerald-400 truncate" id="detailBaseSpreadPick">Pick: DET -2.5</div>
+                <div class="text-[8.5px] text-[var(--muted-foreground)] truncate" id="detailBaseSpreadEdge">Edge: +3.2 pts • 68% conf</div>
+              </div>
+              <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-0.5">
+                <div class="text-[8.5px] font-bold text-[var(--link)] uppercase">✨ Gemini 2.5</div>
+                <div class="font-bold text-emerald-400 truncate" id="detailGeminiSpreadPick">Pick: DET -2.5</div>
+                <div class="text-[8.5px] text-[var(--muted-foreground)] truncate" id="detailGeminiSpreadEdge">Fair: DET -5.7 • 74% conf</div>
+              </div>
+            </div>
+            <div id="detailSpreadResultBadge" class="hidden text-[9px] font-mono px-2 py-0.5 rounded border flex items-center justify-between"></div>
+          </div>
+
+          <!-- Market 2: Over / Under (Total Points) -->
+          <div class="p-2.5 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-1.5 font-bold">
+                <span class="text-[9.5px] px-1.5 py-0.5 rounded bg-[var(--secondary)] font-mono font-extrabold">TOTAL</span>
+                <span class="text-[11px]">Over / Under Total Points</span>
+              </div>
+              <span class="font-mono font-extrabold text-[11px] text-[var(--foreground)]" id="detailDkOuVal">O/U 50.5 (-110)</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+              <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-0.5">
+                <div class="text-[8.5px] font-bold text-[var(--muted-foreground)] uppercase" id="detailBaseOuTag">📊 nflfastR Total</div>
+                <div class="font-bold text-emerald-400 truncate" id="detailBaseOuPick">Pick: UNDER 50.5</div>
+                <div class="text-[8.5px] text-[var(--muted-foreground)] truncate" id="detailBaseOuEdge">Proj: 45.0 pts • Edge +5.5</div>
+              </div>
+              <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-0.5">
+                <div class="text-[8.5px] font-bold text-[var(--link)] uppercase">✨ Gemini Total</div>
+                <div class="font-bold text-emerald-400 truncate" id="detailGeminiOuPick">Pick: UNDER 50.5</div>
+                <div class="text-[8.5px] text-[var(--muted-foreground)] truncate" id="detailGeminiOuEdge">Proj: 49.0 pts • Edge +1.5</div>
+              </div>
+            </div>
+            <div id="detailOuResultBadge" class="hidden text-[9px] font-mono px-2 py-0.5 rounded border flex items-center justify-between"></div>
+          </div>
+
+          <!-- Market 3: Moneyline (Straight Up Win) -->
+          <div class="p-2.5 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-1.5 font-bold">
+                <span class="text-[9.5px] px-1.5 py-0.5 rounded bg-[var(--secondary)] font-mono font-extrabold">MONEYLINE</span>
+                <span class="text-[11px]">Moneyline (Straight Up)</span>
+              </div>
+              <span class="font-mono font-extrabold text-[11px] text-[var(--foreground)]" id="detailDkMlVal">NE +124 • DET -148</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+              <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-0.5">
+                <div class="text-[8.5px] font-bold text-[var(--muted-foreground)] uppercase" id="detailBaseMlTag">📊 nflfastR ML Value</div>
+                <div class="font-bold text-emerald-400 truncate" id="detailBaseMlPick">Pick: DET (-148)</div>
+                <div class="text-[8.5px] text-[var(--muted-foreground)] truncate" id="detailBaseMlEdge">Model 64.2% vs Implied 59.7%</div>
+              </div>
+              <div class="p-2 rounded-lg bg-[var(--background)] border border-[var(--border)] space-y-0.5">
+                <div class="text-[8.5px] font-bold text-[var(--link)] uppercase">✨ Gemini ML Value</div>
+                <div class="font-bold text-emerald-400 truncate" id="detailGeminiMlPick">Pick: DET (-148)</div>
+                <div class="text-[8.5px] text-[var(--muted-foreground)] truncate" id="detailGeminiMlEdge">Model 68.0% vs Implied 59.7%</div>
+              </div>
+            </div>
+            <div id="detailMlResultBadge" class="hidden text-[9px] font-mono px-2 py-0.5 rounded border flex items-center justify-between"></div>
+          </div>
+        </div>
+
         <!-- Prominent Button to Trigger Live Gemini LLM Assessment & Update Predictions -->
         <button onclick="runLiveGeminiAssessment()" id="btnRunGeminiBanner" class="w-full py-2 px-3 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm hover:opacity-95 transition">
           <span>✨ Run Gemini LLM Assessment to Update Prediction</span>
@@ -1452,6 +1540,17 @@
         lineFavAbbr,
         dkLineTxt
       };
+    }
+
+    function americanOddsToImpliedWp(oddsStr) {
+      if (!oddsStr) return 50.0;
+      const num = parseInt(oddsStr, 10);
+      if (isNaN(num)) return 50.0;
+      if (num < 0) {
+        return Math.round((Math.abs(num) / (Math.abs(num) + 100)) * 1000) / 10;
+      } else {
+        return Math.round((100 / (num + 100)) * 1000) / 10;
+      }
     }
 
     function evaluateMatchOutcome(m, pred, idx) {
@@ -2807,6 +2906,159 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
       document.getElementById("spreadEdgeText").textContent = `DraftKings: ${dkLineTxt} • O/U ${m.overUnder}`;
       document.getElementById("awayWpBar").style.width = `${pred.awayWp}%`;
       document.getElementById("homeWpBar").style.width = `${pred.homeWp}%`;
+
+      // =============================================================
+      // DRAFTKINGS BETTING OPTIONS (Spread, Over/Under, Moneyline)
+      // =============================================================
+      const baseTagLabel = m.league === "NFL" ? "nflfastR" : "CFBD";
+      const baseSpreadTagEl = document.getElementById("detailBaseSpreadTag");
+      if (baseSpreadTagEl) baseSpreadTagEl.textContent = `📊 ${baseTagLabel} Model`;
+      const baseOuTagEl = document.getElementById("detailBaseOuTag");
+      if (baseOuTagEl) baseOuTagEl.textContent = `📊 ${baseTagLabel} Total`;
+      const baseMlTagEl = document.getElementById("detailBaseMlTag");
+      if (baseMlTagEl) baseMlTagEl.textContent = `📊 ${baseTagLabel} ML Value`;
+
+      // 1. Point Spread Market
+      const dkSpreadEl = document.getElementById("detailDkSpreadVal");
+      const baseSpreadPickEl = document.getElementById("detailBaseSpreadPick");
+      const baseSpreadEdgeEl = document.getElementById("detailBaseSpreadEdge");
+      const gemSpreadPickEl = document.getElementById("detailGeminiSpreadPick");
+      const gemSpreadEdgeEl = document.getElementById("detailGeminiSpreadEdge");
+      const spreadResultEl = document.getElementById("detailSpreadResultBadge");
+
+      if (dkSpreadEl) dkSpreadEl.textContent = `${dkLineTxt} (-110)`;
+      if (baseSpreadPickEl) baseSpreadPickEl.textContent = `Pick: ${basePickAbbr} ${basePickAbbr === m.home.abbr ? homeSpreadStr : awaySpreadStr}`;
+      if (baseSpreadEdgeEl) baseSpreadEdgeEl.textContent = `Edge +${basePred.atsEdgePts} pts • ${basePred.atsConfidence}% conf`;
+
+      if (gemSpreadPickEl) {
+        if (geminiPred && geminiPickAbbr) {
+          const gemPickSpread = geminiPickAbbr === m.home.abbr ? homeSpreadStr : awaySpreadStr;
+          gemSpreadPickEl.textContent = `Pick: ${geminiPickAbbr} ${gemPickSpread}`;
+          if (gemSpreadEdgeEl) {
+            const fairStr = geminiPred.modelFairSpreadHome < 0 ? `${m.home.abbr} ${geminiPred.modelFairSpreadHome}` : `${m.away.abbr} -${geminiPred.modelFairSpreadHome}`;
+            gemSpreadEdgeEl.textContent = `Fair: ${fairStr} • ${geminiPred.atsConfidence}% conf`;
+          }
+        } else {
+          gemSpreadPickEl.textContent = "Run Gemini Assessment";
+          if (gemSpreadEdgeEl) gemSpreadEdgeEl.textContent = "Tap button below to generate";
+        }
+      }
+
+      if (spreadResultEl) {
+        if (outcome.hasActiveScore) {
+          spreadResultEl.classList.remove("hidden");
+          if (outcome.isPush) {
+            spreadResultEl.className = "text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center justify-between";
+            spreadResultEl.innerHTML = `<span>Spread Push: ${outcome.atsText} vs ${dkLineTxt}</span><span>${outcome.clockLabel}</span>`;
+          } else {
+            const isHit = outcome.baseAtsHit;
+            spreadResultEl.className = isHit
+              ? "text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-between"
+              : "text-[9px] font-mono px-2 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-between";
+            spreadResultEl.innerHTML = `<span>${isHit ? '✓' : '✗'} ${baseTagLabel} Spread ${isHit ? 'Covered' : 'Missed'} (${outcome.atsText})</span><span>${outcome.clockLabel}</span>`;
+          }
+        } else {
+          spreadResultEl.classList.add("hidden");
+        }
+      }
+
+      // 2. Over / Under Market
+      const ouLine = Number(m.overUnder) || 45.5;
+      const dkOuEl = document.getElementById("detailDkOuVal");
+      const baseOuPickEl = document.getElementById("detailBaseOuPick");
+      const baseOuEdgeEl = document.getElementById("detailBaseOuEdge");
+      const gemOuPickEl = document.getElementById("detailGeminiOuPick");
+      const gemOuEdgeEl = document.getElementById("detailGeminiOuEdge");
+      const ouResultEl = document.getElementById("detailOuResultBadge");
+
+      if (dkOuEl) dkOuEl.textContent = `O/U ${ouLine} (-110)`;
+
+      const baseTotalPts = +(basePred.awayScore + basePred.homeScore).toFixed(1);
+      const baseOuPick = baseTotalPts > ouLine ? `OVER ${ouLine}` : (baseTotalPts < ouLine ? `UNDER ${ouLine}` : `PUSH ${ouLine}`);
+      const baseOuDiff = +Math.abs(baseTotalPts - ouLine).toFixed(1);
+      if (baseOuPickEl) baseOuPickEl.textContent = `Pick: ${baseOuPick}`;
+      if (baseOuEdgeEl) baseOuEdgeEl.textContent = `Proj ${baseTotalPts} pts • Edge +${baseOuDiff} pts`;
+
+      const gemTotalPts = geminiPred ? +(geminiPred.awayScore + geminiPred.homeScore).toFixed(1) : null;
+      if (gemOuPickEl) {
+        if (gemTotalPts) {
+          const gemOuPick = gemTotalPts > ouLine ? `OVER ${ouLine}` : (gemTotalPts < ouLine ? `UNDER ${ouLine}` : `PUSH ${ouLine}`);
+          const gemOuDiff = +Math.abs(gemTotalPts - ouLine).toFixed(1);
+          gemOuPickEl.textContent = `Pick: ${gemOuPick}`;
+          if (gemOuEdgeEl) gemOuEdgeEl.textContent = `Proj ${gemTotalPts} pts • Edge +${gemOuDiff} pts`;
+        } else {
+          gemOuPickEl.textContent = "Run Gemini Assessment";
+          if (gemOuEdgeEl) gemOuEdgeEl.textContent = "Tap button below to generate";
+        }
+      }
+
+      if (ouResultEl) {
+        if (outcome.hasActiveScore) {
+          ouResultEl.classList.remove("hidden");
+          const actualTotal = outcome.finalAway + outcome.finalHome;
+          const actualOu = actualTotal > ouLine ? "OVER" : (actualTotal < ouLine ? "UNDER" : "PUSH");
+          const isOuHit = actualOu === "PUSH" ? true : baseOuPick.startsWith(actualOu);
+          ouResultEl.className = isOuHit
+            ? "text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-between"
+            : "text-[9px] font-mono px-2 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-between";
+          ouResultEl.innerHTML = `<span>${isOuHit ? '✓' : '✗'} Actual: ${actualTotal} pts (${actualOu} ${ouLine})</span><span>${outcome.clockLabel}</span>`;
+        } else {
+          ouResultEl.classList.add("hidden");
+        }
+      }
+
+      // 3. Moneyline Market
+      const dkMlEl = document.getElementById("detailDkMlVal");
+      const baseMlPickEl = document.getElementById("detailBaseMlPick");
+      const baseMlEdgeEl = document.getElementById("detailBaseMlEdge");
+      const gemMlPickEl = document.getElementById("detailGeminiMlPick");
+      const gemMlEdgeEl = document.getElementById("detailGeminiMlEdge");
+      const mlResultEl = document.getElementById("detailMlResultBadge");
+
+      const mlAway = m.moneylineAway || "+100";
+      const mlHome = m.moneylineHome || "-120";
+      if (dkMlEl) dkMlEl.textContent = `${m.away.abbr} ${mlAway} • ${m.home.abbr} ${mlHome}`;
+
+      const awayImpliedWp = americanOddsToImpliedWp(mlAway) || 50;
+      const homeImpliedWp = americanOddsToImpliedWp(mlHome) || 50;
+
+      const baseWinner = basePred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
+      const baseWinnerOdds = basePred.homeWp >= 50 ? mlHome : mlAway;
+      const baseWinnerModelWp = +(basePred.homeWp >= 50 ? basePred.homeWp : basePred.awayWp).toFixed(1);
+      const baseWinnerImpliedWp = basePred.homeWp >= 50 ? homeImpliedWp : awayImpliedWp;
+      const baseMlEdge = +(baseWinnerModelWp - baseWinnerImpliedWp).toFixed(1);
+
+      if (baseMlPickEl) baseMlPickEl.textContent = `Pick: ${baseWinner} (${baseWinnerOdds})`;
+      if (baseMlEdgeEl) baseMlEdgeEl.textContent = `Model ${baseWinnerModelWp}% vs Implied ${baseWinnerImpliedWp}% (${baseMlEdge >= 0 ? '+' : ''}${baseMlEdge}% EV)`;
+
+      if (gemMlPickEl) {
+        if (geminiPred) {
+          const gemWinner = geminiPred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
+          const gemWinnerOdds = geminiPred.homeWp >= 50 ? mlHome : mlAway;
+          const gemWinnerModelWp = +(geminiPred.homeWp >= 50 ? geminiPred.homeWp : geminiPred.awayWp).toFixed(1);
+          const gemWinnerImpliedWp = geminiPred.homeWp >= 50 ? homeImpliedWp : awayImpliedWp;
+          const gemMlEdge = +(gemWinnerModelWp - gemWinnerImpliedWp).toFixed(1);
+          gemMlPickEl.textContent = `Pick: ${gemWinner} (${gemWinnerOdds})`;
+          if (gemMlEdgeEl) gemMlEdgeEl.textContent = `Gemini ${gemWinnerModelWp}% vs Implied ${gemWinnerImpliedWp}% (${gemMlEdge >= 0 ? '+' : ''}${gemMlEdge}% EV)`;
+        } else {
+          gemMlPickEl.textContent = "Run Gemini Assessment";
+          if (gemMlEdgeEl) gemMlEdgeEl.textContent = "Tap button below to generate";
+        }
+      }
+
+      if (mlResultEl) {
+        if (outcome.hasActiveScore) {
+          mlResultEl.classList.remove("hidden");
+          const actualWinner = outcome.actualWinnerAbbr;
+          const isMlHit = actualWinner === "TIE" ? true : (baseWinner === actualWinner);
+          mlResultEl.className = isMlHit
+            ? "text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-between"
+            : "text-[9px] font-mono px-2 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-between";
+          mlResultEl.innerHTML = `<span>${isMlHit ? '✓' : '✗'} ML Winner: ${actualWinner} (${isMlHit ? 'Hit' : 'Missed'})</span><span>${outcome.clockLabel}</span>`;
+        } else {
+          mlResultEl.classList.add("hidden");
+        }
+      }
 
       // Waterfall
       document.getElementById("mobileWaterfall").innerHTML = pred.factors.map(f => {
