@@ -16,17 +16,47 @@ enum class SportLeague(val displayName: String, val ratingLabel: String) {
  * - NFL: ESPN NFL Public API, nflfastR / nflverse (EPA/play, CPOE, Success Rate), DVOA, The Odds API, Open-Meteo
  * - NCAAF: CollegeFootballData API (CFBD), ESPN College Football API, The Odds API, Open-Meteo
  */
+enum class SubGatewaySortOption(val label: String) {
+    DATE_TIME("Date / Kickoff Time"),
+    WIN_PROB_RATIO("Highest Win Probability % Ratio"),
+    FOCUSED_BETS_FIRST("Focused / Bet-Initiated Games First"),
+    VEGAS_VALUE_EDGE("Largest Model Edge vs. DraftKings Spread"),
+    CLOSEST_TOSSUP("Tightest 50/50 Toss-Ups"),
+    INJURY_IMPACT("Highest Starter Injury Impact"),
+    OVER_UNDER_TOTAL("Highest Over/Under Total Points")
+}
+
+enum class SubGatewayFilterOption(val label: String) {
+    ALL("All Weekly Games"),
+    FOCUSED_ONLY("Bet-Initiated Only"),
+    HIGH_CONFIDENCE("High Win % (≥60%)"),
+    UPSET_VALUE("Underdog / Value Edge"),
+    UPCOMING_ONLY("Upcoming Games"),
+    ACTIVE_OR_FINAL("Live / Final (Hits & Misses)")
+}
+
 @Serializable
 data class MatchupTelemetry(
     val id: String,
     val league: SportLeague = SportLeague.NCAAF,
+    val scheduleDate: String = "Sun, Nov 15",
+    val kickoffTime: String = "1:00 PM EST",
+    val sortTimestamp: Long = 200L,
+    val tvNetwork: String = "CBS",
     val conference: String,
     val venue: String,
     val weather: StadiumWeather,
     val vegasSpreadHome: Double,
     val overUnder: Double,
+    val draftKingsLine: String = "",
     val vegasImpliedHomeProb: Double,
     val espnFpiHomeProb: Double,
+    val isCompleted: Boolean = false,
+    val isInProgress: Boolean = false,
+    val liveClockDetail: String = "UPCOMING",
+    val actualAwayScore: Int? = null,
+    val actualHomeScore: Int? = null,
+    val isBetInitiated: Boolean = false,
     val away: TeamSabermetrics,
     val home: TeamSabermetrics,
     val h2h: HeadToHeadHistory,
