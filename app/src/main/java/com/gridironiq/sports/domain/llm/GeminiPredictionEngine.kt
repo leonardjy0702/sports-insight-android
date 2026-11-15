@@ -7,6 +7,7 @@ import com.gridironiq.sports.data.model.FactorAttribution
 import com.gridironiq.sports.data.model.FactorWeights
 import com.gridironiq.sports.data.model.LlmPredictionResult
 import com.gridironiq.sports.data.model.MatchupTelemetry
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.math.abs
@@ -15,23 +16,29 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
- * Transparent Sabermetric + Google Gemini (`gemini-2.5-flash`) Prediction Engine.
- *
- * Ensures complete transparency into HOW the LLM picks the winner:
- * 1. Computes exact, auditable factor-by-factor win probability shifts from each US Sports API metric
- *    (EPA/play, SP+, Injury Impact Points, Havoc Rate, 3rd Down %, Turnover Margin, Stadium Weather).
- * 2. Feeds the structured feature vector + computed shifts into Google Gemini 2.5 Flash to synthesize
- *    a metric-cited chain-of-thought narrative explaining why the winner was chosen.
+ * Structured JSON schema returned by Google Gemini 2.5 Flash (`responseMimeType = "application/json"`)
+ * so that Gemini directly updates the predicted winner, win probability, projected score,
+ * factor attribution shifts, and cited explanations.
  */
+@Serializable
+data class GeminiStructuredAssessmentDto(
+    val homeWinProb: Double,
+    val awayScore: Int,
+    val homeScore: Int,
+    val efficiencyShiftHome: Double,
+    val injuryShiftHome: Double,
+    val trenchShiftHome: Double,
+    val turnoverShiftHome: Double,
+    val situationalShiftHome: Double,
+    val paragraph1: String,
+    val paragraph2: String
+)
+
 class GeminiPredictionEngine(
     private val geminiApiKey: String = ""
 ) {
     private val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
 
-    /**
-     * Evaluates the matchup deterministically first so every percentage point shift is auditable,
-     * and optionally enriches the explanation using live Google Gemini (`gemini-2.5-flash`).
-     */
     suspend fun evaluateMatchup(
         matchup: MatchupTelemetry,
         weights: FactorWeights,
@@ -49,57 +56,51 @@ class GeminiPredictionEngine(
 
         val away = matchup.away
         val home = matchup.home
+        val ratingLabel = matchup.league.ratingLabel
 
-        // 1. Efficiency Differential (CFBD EPA/Play + SP+ + Success Rate)
+        // 1. Efficiency Differential (EPA/Play + DVOA%/SP+ + Vegas Implied Line)
         val homeNetEpa = home.epaOff - home.epaDef
         val awayNetEpa = away.epaOff - away.epaDef
-        val epaDiff = (homeNetEpa - awayNetEpa) * 38.0
-        val spDiff = (home.spPlus - away.spPlus) * 1.35
-        val srDiff = ((home.successRateOff - away.successRateOff) + (away.successRateDef - home.successRateDef)) * 0.45
-        val rawEffShift = (epaDiff * 0.45 + spDiff * 0.35 + srDiff * 0.20) * normEff
+        val spreadShift = (-matchup.vegasSpreadHome) * 2.1
+        val rawEffShift = (((homeNetEpa - awayNetEpa) * 32.0) * 0.45 +
+                ((home.spPlus - away.spPlus) * 0.65) * 0.30 +
+                spreadShift * 0.25) * normEff
 
         // 2. Player Injuries & QB Availability Shift (ESPN /summary Injury Feed)
         val homeMissingPts = matchup.injuries.filter { it.team == "home" && !it.isAvailableToPlay }.sumOf { it.impactPoints }
         val awayMissingPts = matchup.injuries.filter { it.team == "away" && !it.isAvailableToPlay }.sumOf { it.impactPoints }
         val rawInjShift = ((awayMissingPts - homeMissingPts) * 2.4) * normInj
 
-        // 3. Trench Warfare (CFBD Havoc Rate, Sacks/Game, 3rd Down %)
-        val havocDiff = (home.havocRateDef - away.havocRateDef) * 0.85
-        val sackDiff = (home.sacksPerGame - away.sacksPerGame) * 2.2
-        val thirdDownDiff = (home.thirdDownPct - away.thirdDownPct) * 0.45
-        val rawTrenchShift = (havocDiff + sackDiff + thirdDownDiff) * 0.65 * normTrench
+        // 3. Trench Warfare (Pass-Rush Win % / Havoc Rate, Sacks/Game, 3rd Down %)
+        val havocDiff = (home.havocRateDef - away.havocRateDef) * 0.55
+        val sackDiff = (home.sacksPerGame - away.sacksPerGame) * 1.8
+        val rawTrenchShift = (havocDiff + sackDiff) * 0.6 * normTrench
 
-        // 4. Turnovers & Red Zone TD Efficiency (NCAA / ESPN Boxscore)
-        val toDiff = (home.turnoverMargin - away.turnoverMargin) * 0.55
-        val rzDiff = (home.redZoneTdPct - away.redZoneTdPct) * 0.35
+        // 4. Turnovers & Red Zone TD Efficiency
+        val toDiff = (home.turnoverMargin - away.turnoverMargin) * 0.45
+        val rzDiff = (home.redZoneTdPct - away.redZoneTdPct) * 0.25
         val rawFormShift = (toDiff + rzDiff) * normForm
 
         // 5. Situational & Stadium Weather (Open-Meteo API)
-        val weatherMod = if (!matchup.weather.isDome && matchup.weather.windMph >= 14) {
-            if (home.havocRateDef >= away.havocRateDef) 1.4 else -1.4
-        } else 0.0
-        val rawSitShift = (4.2 + weatherMod) * normSit
+        val weatherMod = if (!matchup.weather.isDome && matchup.weather.windMph >= 15) 1.2 else 0.0
+        val rawSitShift = (2.8 + weatherMod) * normSit
 
         val totalShift = rawEffShift + rawInjShift + rawTrenchShift + rawFormShift + rawSitShift
-        val homeWinProb = min(92.0, max(8.0, 50.0 + totalShift))
-        val awayWinProb = 100.0 - homeWinProb
+        val baseHomeWinProb = min(92.0, max(8.0, 50.0 + totalShift))
+        val baseAwayWinProb = 100.0 - baseHomeWinProb
 
-        val impliedHomeMargin = (homeWinProb - 50.0) * 0.36
+        val impliedHomeMargin = (baseHomeWinProb - 50.0) * 0.34
         val rawHomeScore = ((matchup.overUnder / 2.0) + (impliedHomeMargin / 2.0)).roundToInt()
         val rawAwayScore = ((matchup.overUnder / 2.0) - (impliedHomeMargin / 2.0)).roundToInt()
 
-        val homeWins = homeWinProb >= 50.0
-        val winner = if (homeWins) home else away
-        val winnerProb = max(homeWinProb, awayWinProb)
-
-        val factors = listOf(
+        val baseFactors = listOf(
             FactorAttribution(
                 id = "eff",
-                title = "Offensive & Defensive Efficiency (EPA/Play & SP+)",
-                apiSource = "CFBD /stats/season/advanced",
+                title = "Efficiency (EPA/Play & $ratingLabel)",
+                apiSource = if (matchup.league.name == "NFL") "nflfastR + DVOA" else "CFBD /stats/season/advanced",
                 normalizedWeightPct = ((weights.efficiencyWeight / totalW) * 100).roundToInt(),
                 winProbShiftHome = rawEffShift,
-                metricComparisonSummary = "${home.abbr} Net EPA ${formatSigned(homeNetEpa)} (SP+ ${home.spPlus}) vs ${away.abbr} Net EPA ${formatSigned(awayNetEpa)} (SP+ ${away.spPlus})"
+                metricComparisonSummary = "${home.abbr} $ratingLabel ${home.spPlus} vs ${away.abbr} $ratingLabel ${away.spPlus}"
             ),
             FactorAttribution(
                 id = "inj",
@@ -111,16 +112,16 @@ class GeminiPredictionEngine(
             ),
             FactorAttribution(
                 id = "trench",
-                title = "Trench Warfare (Havoc Rate, Sacks & 3rd Down %)",
-                apiSource = "CFBD & ESPN Advanced Boxscore",
+                title = "Trench Warfare (Pass-Rush/Havoc & Sacks)",
+                apiSource = "ESPN & Advanced Boxscore",
                 normalizedWeightPct = ((weights.trenchWeight / totalW) * 100).roundToInt(),
                 winProbShiftHome = rawTrenchShift,
-                metricComparisonSummary = "Def Havoc: ${home.abbr} ${home.havocRateDef}% (${home.sacksPerGame} sacks/g) vs ${away.abbr} ${away.havocRateDef}% (${away.sacksPerGame} sacks/g)"
+                metricComparisonSummary = "Pressure/Havoc: ${home.abbr} ${home.havocRateDef}% (${home.sacksPerGame} sacks/g) vs ${away.abbr} ${away.havocRateDef}%"
             ),
             FactorAttribution(
                 id = "form",
-                title = "Turnover Margin, Red Zone TD% & H2H History",
-                apiSource = "NCAA / ESPN Standings API",
+                title = "Turnover Margin & Red Zone TD%",
+                apiSource = "ESPN Standings API",
                 normalizedWeightPct = ((weights.turnoverFormWeight / totalW) * 100).roundToInt(),
                 winProbShiftHome = rawFormShift,
                 metricComparisonSummary = "TO Margin: ${home.abbr} (${home.turnoverMargin}) vs ${away.abbr} (${away.turnoverMargin}) • RZ TD%: ${home.redZoneTdPct}% vs ${away.redZoneTdPct}%"
@@ -131,11 +132,14 @@ class GeminiPredictionEngine(
                 apiSource = "Open-Meteo Stadium Forecast API",
                 normalizedWeightPct = ((weights.situationalWeight / totalW) * 100).roundToInt(),
                 winProbShiftHome = rawSitShift,
-                metricComparisonSummary = "${matchup.venue} • ${matchup.weather.tempFahrenheit}°F, ${matchup.weather.windMph} mph wind (${matchup.weather.condition})"
+                metricComparisonSummary = "${matchup.venue} • ${matchup.weather.tempFahrenheit}°F, ${matchup.weather.windMph} mph wind"
             )
         )
 
-        val defaultCitations = buildDefaultCitedNarrative(matchup, winner.name, winnerProb, factors, awayMissingPts, homeMissingPts)
+        val homeWinsBase = baseHomeWinProb >= 50.0
+        val baseWinner = if (homeWinsBase) home else away
+        val baseWinnerProb = max(baseHomeWinProb, baseAwayWinProb)
+        val defaultCitations = buildDefaultCitedNarrative(matchup, baseWinner.name, baseWinnerProb, baseFactors)
 
         if (invokeLiveGemini && geminiApiKey.isNotBlank()) {
             return try {
@@ -144,46 +148,69 @@ class GeminiPredictionEngine(
                     apiKey = geminiApiKey,
                     generationConfig = generationConfig {
                         temperature = 0.2f
+                        responseMimeType = "application/json"
                     }
                 )
-                val prompt = buildGeminiPrompt(matchup, factors, winner.name, winnerProb)
+                val prompt = buildStructuredGeminiPrompt(matchup, weights, baseFactors)
                 val response = model.generateContent(prompt)
-                val geminiText = response.text ?: ""
-                val liveBlocks = geminiText.split("\n\n").filter { it.isNotBlank() }.mapIndexed { idx, para ->
+                val rawJson = (response.text ?: "").trim().removePrefix("```json").removeSuffix("```").trim()
+                val dto = json.decodeFromString<GeminiStructuredAssessmentDto>(rawJson)
+
+                val geminiHomeWp = dto.homeWinProb.coerceIn(5.0, 95.0)
+                val geminiAwayWp = 100.0 - geminiHomeWp
+                val geminiHomeWins = geminiHomeWp >= 50.0
+                val geminiWinner = if (geminiHomeWins) home else away
+                val geminiWinnerProb = max(geminiHomeWp, geminiAwayWp)
+
+                val updatedFactors = listOf(
+                    baseFactors[0].copy(winProbShiftHome = dto.efficiencyShiftHome, apiSource = "Gemini 2.5 + ${baseFactors[0].apiSource}"),
+                    baseFactors[1].copy(winProbShiftHome = dto.injuryShiftHome, apiSource = "Gemini 2.5 + ESPN Injuries"),
+                    baseFactors[2].copy(winProbShiftHome = dto.trenchShiftHome, apiSource = "Gemini 2.5 + Trench Stats"),
+                    baseFactors[3].copy(winProbShiftHome = dto.turnoverShiftHome, apiSource = "Gemini 2.5 + Boxscore"),
+                    baseFactors[4].copy(winProbShiftHome = dto.situationalShiftHome, apiSource = "Gemini 2.5 + Open-Meteo")
+                )
+
+                val liveBlocks = listOf(
                     CitedExplanationBlock(
-                        heading = "Gemini 2.5 Flash Analytical Insight #${idx + 1}",
-                        apiCitationTag = "Google Gemini LLM + Multi-API Telemetry",
-                        bodyText = para.trim()
+                        heading = "✨ Gemini 2.5 Flash Efficiency & Matchup Assessment",
+                        apiCitationTag = "Google Gemini Structured JSON Output",
+                        bodyText = dto.paragraph1
+                    ),
+                    CitedExplanationBlock(
+                        heading = "✨ Gemini 2.5 Flash Injury & Trench Breakdown",
+                        apiCitationTag = "Google Gemini + ESPN Injury Telemetry",
+                        bodyText = dto.paragraph2
                     )
-                }
+                )
+
                 LlmPredictionResult(
-                    predictedWinnerName = winner.name,
-                    predictedWinnerAbbr = winner.abbr,
-                    homeWinProbability = homeWinProb,
-                    awayWinProbability = awayWinProb,
-                    projectedHomeScore = if (rawHomeScore == rawAwayScore && homeWins) rawHomeScore + 1 else rawHomeScore,
-                    projectedAwayScore = if (rawHomeScore == rawAwayScore && !homeWins) rawAwayScore + 1 else rawAwayScore,
-                    impliedHomeMargin = impliedHomeMargin,
+                    predictedWinnerName = geminiWinner.name,
+                    predictedWinnerAbbr = geminiWinner.abbr,
+                    homeWinProbability = geminiHomeWp,
+                    awayWinProbability = geminiAwayWp,
+                    projectedHomeScore = dto.homeScore,
+                    projectedAwayScore = dto.awayScore,
+                    impliedHomeMargin = (dto.homeScore - dto.awayScore).toDouble(),
                     confidenceTier = when {
-                        winnerProb >= 68.0 -> "High Confidence"
-                        winnerProb >= 57.0 -> "Moderate-High"
-                        else -> "Tight Toss-Up"
+                        geminiWinnerProb >= 68.0 -> "High Confidence (Gemini Live)"
+                        geminiWinnerProb >= 57.0 -> "Moderate-High (Gemini Live)"
+                        else -> "Tight Toss-Up (Gemini Live)"
                     },
-                    factorAttributions = factors,
-                    narrativeCitations = liveBlocks.ifEmpty { defaultCitations },
+                    factorAttributions = updatedFactors,
+                    narrativeCitations = liveBlocks,
                     isLiveGeminiResponse = true
                 )
             } catch (e: Exception) {
                 LlmPredictionResult(
-                    predictedWinnerName = winner.name,
-                    predictedWinnerAbbr = winner.abbr,
-                    homeWinProbability = homeWinProb,
-                    awayWinProbability = awayWinProb,
+                    predictedWinnerName = baseWinner.name,
+                    predictedWinnerAbbr = baseWinner.abbr,
+                    homeWinProbability = baseHomeWinProb,
+                    awayWinProbability = baseAwayWinProb,
                     projectedHomeScore = rawHomeScore,
                     projectedAwayScore = rawAwayScore,
                     impliedHomeMargin = impliedHomeMargin,
-                    confidenceTier = "Moderate-High",
-                    factorAttributions = factors,
+                    confidenceTier = "Baseline Fallback",
+                    factorAttributions = baseFactors,
                     narrativeCitations = defaultCitations,
                     isLiveGeminiResponse = false
                 )
@@ -191,42 +218,57 @@ class GeminiPredictionEngine(
         }
 
         return LlmPredictionResult(
-            predictedWinnerName = winner.name,
-            predictedWinnerAbbr = winner.abbr,
-            homeWinProbability = homeWinProb,
-            awayWinProbability = awayWinProb,
-            projectedHomeScore = if (rawHomeScore == rawAwayScore && homeWins) rawHomeScore + 1 else rawHomeScore,
-            projectedAwayScore = if (rawHomeScore == rawAwayScore && !homeWins) rawAwayScore + 1 else rawAwayScore,
+            predictedWinnerName = baseWinner.name,
+            predictedWinnerAbbr = baseWinner.abbr,
+            homeWinProbability = baseHomeWinProb,
+            awayWinProbability = baseAwayWinProb,
+            projectedHomeScore = if (rawHomeScore == rawAwayScore && homeWinsBase) rawHomeScore + 1 else rawHomeScore,
+            projectedAwayScore = if (rawHomeScore == rawAwayScore && !homeWinsBase) rawAwayScore + 1 else rawAwayScore,
             impliedHomeMargin = impliedHomeMargin,
             confidenceTier = when {
-                winnerProb >= 68.0 -> "High Confidence"
-                winnerProb >= 57.0 -> "Moderate-High"
+                baseWinnerProb >= 68.0 -> "High Confidence"
+                baseWinnerProb >= 57.0 -> "Moderate-High"
                 else -> "Tight Toss-Up"
             },
-            factorAttributions = factors,
+            factorAttributions = baseFactors,
             narrativeCitations = defaultCitations,
             isLiveGeminiResponse = false
         )
     }
 
-    fun buildGeminiPrompt(
+    private fun buildStructuredGeminiPrompt(
         matchup: MatchupTelemetry,
-        factors: List<FactorAttribution>,
-        winnerName: String,
-        winnerProb: Double
+        weights: FactorWeights,
+        baselineFactors: List<FactorAttribution>
     ): String {
         val serializedMatchup = json.encodeToString(matchup)
-        val serializedFactors = json.encodeToString(factors)
+        val serializedWeights = json.encodeToString(weights)
+        val serializedBaseline = json.encodeToString(baselineFactors)
         return """
-            You are GridironIQ, a quantitative College Football (NCAAF) and US Sports AI analyst.
-            Explain clearly in 3 paragraphs why the model predicts $winnerName (${"%.1f".format(winnerProb)}% win probability).
-            Cite exact metrics from the JSON telemetry below (EPA/play, SP+, Success Rate, Havoc Rate, specific injured players, turnover margin, and stadium weather).
+            You are GridironIQ, a quantitative ${matchup.league.displayName} AI analyst.
+            Evaluate the matchup telemetry, active/out injuries, stadium weather, and user factor weights below.
+            Return ONLY a valid JSON object with these exact keys:
+            {
+              "homeWinProb": <Double between 5.0 and 95.0>,
+              "awayScore": <Int projected score>,
+              "homeScore": <Int projected score>,
+              "efficiencyShiftHome": <Double signed win prob shift>,
+              "injuryShiftHome": <Double signed win prob shift>,
+              "trenchShiftHome": <Double signed win prob shift>,
+              "turnoverShiftHome": <Double signed win prob shift>,
+              "situationalShiftHome": <Double signed win prob shift>,
+              "paragraph1": "<String citing EPA/play, ${matchup.league.ratingLabel}, and efficiency>",
+              "paragraph2": "<String citing specific injured players, trench pressure, and score projection>"
+            }
             
             MATCHUP TELEMETRY:
             $serializedMatchup
             
-            COMPUTED FACTOR ATTRIBUTIONS:
-            $serializedFactors
+            USER WEIGHTS:
+            $serializedWeights
+            
+            BASELINE FACTORS:
+            $serializedBaseline
         """.trimIndent()
     }
 
@@ -234,9 +276,7 @@ class GeminiPredictionEngine(
         m: MatchupTelemetry,
         winnerName: String,
         winnerProb: Double,
-        factors: List<FactorAttribution>,
-        awayMissingPts: Double,
-        homeMissingPts: Double
+        factors: List<FactorAttribution>
     ): List<CitedExplanationBlock> {
         val topFactor = factors.maxByOrNull { abs(it.winProbShiftHome) } ?: factors.first()
         val unavailableList = m.injuries.filter { !it.isAvailableToPlay }
@@ -251,26 +291,15 @@ class GeminiPredictionEngine(
                 heading = "1. Primary Decision Driver: ${topFactor.title}",
                 apiCitationTag = topFactor.apiSource,
                 bodyText = "The model selects $winnerName (${"%.1f".format(winnerProb)}% win probability). " +
-                        "The largest single swing (${"%.1f".format(abs(topFactor.winProbShiftHome))}% WP) stems from ${topFactor.title}: " +
-                        "${m.home.abbr} posts +${m.home.epaOff} Off EPA/play, ${m.home.epaDef} Def EPA/play, and a ${m.home.spPlus} SP+ rating vs " +
-                        "${m.away.abbr}'s +${m.away.epaOff} Off EPA/play, ${m.away.epaDef} Def EPA/play, and ${m.away.spPlus} SP+ rating."
+                        "${m.home.abbr} posts +${m.home.epaOff} Off EPA/play, ${m.home.epaDef} Def EPA/play, and a ${m.home.spPlus} ${m.league.ratingLabel} rating vs " +
+                        "${m.away.abbr}'s +${m.away.epaOff} Off EPA/play, ${m.away.epaDef} Def EPA/play, and ${m.away.spPlus} ${m.league.ratingLabel} rating."
             ),
             CitedExplanationBlock(
                 heading = "2. Starter Injury & Roster Availability Adjustment",
                 apiCitationTag = "ESPN /summary Injuries API",
                 bodyText = "Injury telemetry shifts win probability by ${"%.1f".format(abs(factors[1].winProbShiftHome))}%. " +
                         "Sidelined/unavailable personnel factored into this projection: $injurySummary."
-            ),
-            CitedExplanationBlock(
-                heading = "3. Trench Warfare, Turnovers & Stadium Environment",
-                apiCitationTag = "CFBD + Open-Meteo + The Odds API",
-                bodyText = "On high-leverage downs, ${m.home.abbr} generates a ${m.home.havocRateDef}% defensive havoc rate (${m.home.sacksPerGame} sacks/g) " +
-                        "and converts ${m.home.thirdDownPct}% of 3rd downs vs ${m.away.abbr}'s ${m.away.havocRateDef}% havoc rate and ${m.away.thirdDownPct}% 3rd-down conversion. " +
-                        "Kickoff weather at ${m.venue} (${m.weather.tempFahrenheit}°F, ${m.weather.windMph} mph wind) and turnover margin (${m.home.abbr} ${m.home.turnoverMargin} vs ${m.away.abbr} ${m.away.turnoverMargin}) complete the composite edge."
             )
         )
     }
-
-    private fun formatSigned(value: Double): String =
-        if (value >= 0) "+${"%.2f".format(value)}" else "%.2f".format(value)
 }

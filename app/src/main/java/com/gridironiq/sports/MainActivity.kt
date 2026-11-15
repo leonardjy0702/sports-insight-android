@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,11 +30,16 @@ import com.gridironiq.sports.domain.llm.GeminiPredictionEngine
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
+/**
+ * 3-Tier Navigation Hierarchy:
+ * 1. GATEWAY: Main App Hub to select NFL or College Football
+ * 2. SUB_GATEWAY: League Weekly Slate listing ALL games for the week
+ * 3. MATCHUP_DETAILS: Full AI Pick, Factor Waterfall, Injury Simulator & Metrics for the selected game
+ */
 enum class AppSection(val label: String) {
-    GATEWAY("Gateway Hub"),
-    AI_PICK("AI Pick"),
-    INJURIES("Injuries"),
-    METRICS("Metrics")
+    GATEWAY("Gateway"),
+    SUB_GATEWAY("Weekly Slate"),
+    MATCHUP_DETAILS("Full Details")
 }
 
 class MainActivity : ComponentActivity() {
@@ -96,20 +102,32 @@ fun GridironIqApp(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
-                        onClick = { currentSection = AppSection.GATEWAY },
+                        onClick = {
+                            currentSection = when (currentSection) {
+                                AppSection.MATCHUP_DETAILS -> AppSection.SUB_GATEWAY
+                                else -> AppSection.GATEWAY
+                            }
+                        },
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Text(text = "Gateway", fontSize = 12.sp)
+                        Text(
+                            text = if (currentSection == AppSection.MATCHUP_DETAILS) "← ${currentLeague.name} Slate" else "🏠 Gateway",
+                            fontSize = 12.sp
+                        )
                     }
                     Column {
                         Text(
-                            text = if (currentSection == AppSection.GATEWAY) "GridironIQ Gateway" else currentLeague.displayName,
+                            text = when (currentSection) {
+                                AppSection.GATEWAY -> "GridironIQ Gateway"
+                                AppSection.SUB_GATEWAY -> "${currentLeague.displayName} Weekly Slate"
+                                AppSection.MATCHUP_DETAILS -> "${activeMatchup.away.abbr} @ ${activeMatchup.home.abbr}"
+                            },
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                         Text(
-                            text = "US Sports APIs + Google Gemini 2.5 Flash",
+                            text = "ESPN Weekly Schedule + Google Gemini 2.5 Flash",
                             fontSize = 11.sp,
                             color = Color(0xFF94A3B8)
                         )
@@ -131,45 +149,55 @@ fun GridironIqApp(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            if (currentSection == AppSection.GATEWAY) {
-                GatewaySelectionScreen(
-                    onSelectLeague = { league, targetSection ->
-                        currentLeague = league
-                        selectedIndex = 0
-                        currentSection = targetSection
-                    }
-                )
-            } else {
-                LeaguePredictorScreen(
-                    currentLeague = currentLeague,
-                    matchups = activeList,
-                    selectedIndex = safeIndex,
-                    onSelectLeague = {
-                        currentLeague = it
-                        selectedIndex = 0
-                    },
-                    onSelectMatchup = { selectedIndex = it },
-                    activeMatchup = activeMatchup,
-                    prediction = prediction,
-                    onToggleInjury = { injIdx, isAvailable ->
-                        val updatedInjuries = activeMatchup.injuries.toMutableList()
-                        updatedInjuries[injIdx] = updatedInjuries[injIdx].copy(isAvailableToPlay = isAvailable)
-                        if (currentLeague == SportLeague.NFL) {
-                            val list = nflMatchups.toMutableList()
-                            list[safeIndex] = activeMatchup.copy(injuries = updatedInjuries)
-                            nflMatchups = list
-                        } else {
-                            val list = ncaafMatchups.toMutableList()
-                            list[safeIndex] = activeMatchup.copy(injuries = updatedInjuries)
-                            ncaafMatchups = list
+            when (currentSection) {
+                AppSection.GATEWAY -> {
+                    GatewaySelectionScreen(
+                        onSelectLeague = { league ->
+                            currentLeague = league
+                            selectedIndex = 0
+                            currentSection = AppSection.SUB_GATEWAY
                         }
-                    },
-                    onRunLiveGemini = {
-                        scope.launch {
-                            prediction = engine.evaluateMatchup(activeMatchup, weights, invokeLiveGemini = true)
+                    )
+                }
+                AppSection.SUB_GATEWAY -> {
+                    LeagueWeeklySubGatewayScreen(
+                        currentLeague = currentLeague,
+                        matchups = activeList,
+                        onSwitchLeague = {
+                            currentLeague = it
+                            selectedIndex = 0
+                        },
+                        onSelectGameForFullDetails = { idx ->
+                            selectedIndex = idx
+                            currentSection = AppSection.MATCHUP_DETAILS
                         }
-                    }
-                )
+                    )
+                }
+                AppSection.MATCHUP_DETAILS -> {
+                    MatchupFullDetailsScreen(
+                        activeMatchup = activeMatchup,
+                        prediction = prediction,
+                        onBackToSlate = { currentSection = AppSection.SUB_GATEWAY },
+                        onToggleInjury = { injIdx, isAvailable ->
+                            val updatedInjuries = activeMatchup.injuries.toMutableList()
+                            updatedInjuries[injIdx] = updatedInjuries[injIdx].copy(isAvailableToPlay = isAvailable)
+                            if (currentLeague == SportLeague.NFL) {
+                                val list = nflMatchups.toMutableList()
+                                list[safeIndex] = activeMatchup.copy(injuries = updatedInjuries)
+                                nflMatchups = list
+                            } else {
+                                val list = ncaafMatchups.toMutableList()
+                                list[safeIndex] = activeMatchup.copy(injuries = updatedInjuries)
+                                ncaafMatchups = list
+                            }
+                        },
+                        onRunLiveGemini = {
+                            scope.launch {
+                                prediction = engine.evaluateMatchup(activeMatchup, weights, invokeLiveGemini = true)
+                            }
+                        }
+                    )
+                }
             }
         }
     }
@@ -177,7 +205,7 @@ fun GridironIqApp(
 
 @Composable
 fun GatewaySelectionScreen(
-    onSelectLeague: (SportLeague, AppSection) -> Unit
+    onSelectLeague: (SportLeague) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -193,7 +221,7 @@ fun GatewaySelectionScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        text = "SELECT YOUR SPORTS INTELLIGENCE PORTAL",
+                        text = "STEP 1: SELECT YOUR LEAGUE PORTAL",
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
                         color = Color(0xFF38BDF8)
@@ -205,7 +233,7 @@ fun GatewaySelectionScreen(
                         color = Color.White
                     )
                     Text(
-                        text = "Choose a league or tool below to inspect live multi-API telemetry, starter injury impacts, and how the Gemini LLM picks each winner.",
+                        text = "Choose NFL or College Football to open the Weekly Games Sub-Gateway listing every matchup of the week.",
                         fontSize = 12.sp,
                         color = Color(0xFF94A3B8)
                     )
@@ -218,16 +246,16 @@ fun GatewaySelectionScreen(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF111827)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onSelectLeague(SportLeague.NFL, AppSection.AI_PICK) }
+                    .clickable { onSelectLeague(SportLeague.NFL) }
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(text = "🏈 NFL Pro Football", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = "🏈 NFL Weekly Games Sub-Gateway", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Text(
-                        text = "EPA/Play (nflfastR), DVOA%, Pass-Rush Win Rate, Official NFL Wed/Thu/Fri Injury Reports & Vegas Spreads",
+                        text = "Browse all weekly NFL matchups synced from ESPN. Select any game to open full EPA/play, DVOA%, official injuries & Gemini LLM assessment.",
                         fontSize = 12.sp,
                         color = Color(0xFF94A3B8)
                     )
-                    Text(text = "Featured: KC @ BUF • DET @ GB →", fontSize = 12.sp, color = Color(0xFF38BDF8), fontFamily = FontFamily.Monospace)
+                    Text(text = "Open Full Weekly NFL Slate →", fontSize = 12.sp, color = Color(0xFF38BDF8), fontFamily = FontFamily.Monospace)
                 }
             }
         }
@@ -237,31 +265,126 @@ fun GatewaySelectionScreen(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF111827)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onSelectLeague(SportLeague.NCAAF, AppSection.AI_PICK) }
+                    .clickable { onSelectLeague(SportLeague.NCAAF) }
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(text = "🎓 NCAA College Football (FBS)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = "🎓 NCAA College Football Sub-Gateway", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Text(
-                        text = "CollegeFootballData (CFBD) EPA/Play, Bill Connelly SP+ Ratings, Havoc Rate, Returning Production & CFP Top 25",
+                        text = "Browse all weekly FBS & Top 25 matchups. Select any game to open CFBD SP+, EPA/play, Havoc Rate & Gemini LLM assessment.",
                         fontSize = 12.sp,
                         color = Color(0xFF94A3B8)
                     )
-                    Text(text = "Featured: #3 UGA @ #2 TEX • #1 ORE @ #4 OSU →", fontSize = 12.sp, color = Color(0xFF38BDF8), fontFamily = FontFamily.Monospace)
+                    Text(text = "Open Full Weekly NCAAF Slate →", fontSize = 12.sp, color = Color(0xFF38BDF8), fontFamily = FontFamily.Monospace)
                 }
             }
         }
     }
 }
 
+/**
+ * TIER 2: League Weekly Sub-Gateway Screen listing ALL games for the week.
+ * Tapping any game opens the Full Matchup Details screen (`AppSection.MATCHUP_DETAILS`).
+ */
 @Composable
-fun LeaguePredictorScreen(
+fun LeagueWeeklySubGatewayScreen(
     currentLeague: SportLeague,
     matchups: List<MatchupTelemetry>,
-    selectedIndex: Int,
-    onSelectLeague: (SportLeague) -> Unit,
-    onSelectMatchup: (Int) -> Unit,
+    onSwitchLeague: (SportLeague) -> Unit,
+    onSelectGameForFullDetails: (Int) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "${currentLeague.displayName} — All Weekly Games",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "Select any matchup below to view full LLM & metric details",
+                        fontSize = 12.sp,
+                        color = Color(0xFF94A3B8)
+                    )
+                }
+            }
+        }
+
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SportLeague.entries.forEach { lg ->
+                    FilterChip(
+                        selected = lg == currentLeague,
+                        onClick = { onSwitchLeague(lg) },
+                        label = { Text(text = lg.displayName) }
+                    )
+                }
+            }
+        }
+
+        itemsIndexed(matchups) { idx, m ->
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF111827)),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onSelectGameForFullDetails(idx) }
+            ) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(
+                            text = "Game #${idx + 1} • ${m.conference}",
+                            fontSize = 11.sp,
+                            color = Color(0xFF94A3B8),
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Text(
+                            text = "Line: ${m.home.abbr} ${m.vegasSpreadHome} • O/U ${m.overUnder}",
+                            fontSize = 11.sp,
+                            color = Color(0xFF38BDF8),
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(text = "${m.away.name} (${m.away.record})", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                            Text(text = "at ${m.home.name} (${m.home.record})", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White)
+                        }
+                        Text(
+                            text = "View Details →",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF38BDF8)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * TIER 3: Full Matchup Details View shown when a user selects a specific game from the Weekly Sub-Gateway.
+ */
+@Composable
+fun MatchupFullDetailsScreen(
     activeMatchup: MatchupTelemetry,
     prediction: LlmPredictionResult?,
+    onBackToSlate: () -> Unit,
     onToggleInjury: (Int, Boolean) -> Unit,
     onRunLiveGemini: () -> Unit
 ) {
@@ -271,49 +394,14 @@ fun LeaguePredictorScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Quick League Switcher
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SportLeague.entries.forEach { lg ->
-                    FilterChip(
-                        selected = lg == currentLeague,
-                        onClick = { onSelectLeague(lg) },
-                        label = { Text(text = lg.displayName) }
-                    )
-                }
-            }
-        }
-
-        // Matchup Selector Row
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                matchups.forEachIndexed { idx, m ->
-                    val selected = idx == selectedIndex
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onSelectMatchup(idx) },
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (selected) Color(0xFF1E293B) else Color(0xFF111827)
-                        )
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "${m.away.abbr} @ ${m.home.abbr}",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = Color.White
-                            )
-                            Text(
-                                text = "Spread: ${m.home.abbr} ${m.vegasSpreadHome}",
-                                fontSize = 11.sp,
-                                color = Color(0xFF94A3B8),
-                                fontFamily = FontFamily.Monospace
-                            )
-                        }
-                    }
-                }
-            }
+            Text(
+                text = "← Back to All Weekly ${activeMatchup.league.name} Matchups",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF38BDF8),
+                modifier = Modifier.clickable { onBackToSlate() }
+            )
         }
 
         prediction?.let { pred ->
@@ -424,12 +512,16 @@ fun PredictionBannerCard(
                     Text(text = "${"%.1f".format(pred.awayWinProbability)}% WP", fontSize = 12.sp, color = Color(0xFF94A3B8))
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "LLM WINNER PICK", fontSize = 10.sp, color = Color(0xFF94A3B8))
+                    Text(
+                        text = if (pred.isLiveGeminiResponse) "✨ GEMINI 2.5 LIVE PICK" else "BASELINE PICK",
+                        fontSize = 10.sp,
+                        color = Color(0xFF38BDF8)
+                    )
                     Text(
                         text = pred.predictedWinnerName,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 15.sp,
-                        color = Color(0xFF38BDF8)
+                        color = Color.White
                     )
                     Text(text = pred.confidenceTier, fontSize = 11.sp, color = Color(0xFF94A3B8))
                 }
@@ -444,7 +536,7 @@ fun PredictionBannerCard(
                 onClick = onRunLiveGemini,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Re-Analyze with Google Gemini 2.5 Flash")
+                Text(text = "✨ Run Gemini 2.5 Flash Assessment to Update Prediction")
             }
         }
     }
