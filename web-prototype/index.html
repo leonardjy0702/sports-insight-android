@@ -2132,6 +2132,10 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
         const winTeam = homeWins ? m.home : m.away;
         const winWp = pred.maxWinProb.toFixed(1);
         const dkLineTxt = m.draftKingsLine || `${m.home.abbr} ${m.vegasSpreadHome > 0 ? '+'+m.vegasSpreadHome : m.vegasSpreadHome}`;
+        const awaySpreadStr = m.vegasSpreadHome > 0 ? `-${m.vegasSpreadHome}` : (m.vegasSpreadHome < 0 ? `+${Math.abs(m.vegasSpreadHome)}` : "PK");
+        const homeSpreadStr = m.vegasSpreadHome < 0 ? `${m.vegasSpreadHome}` : (m.vegasSpreadHome > 0 ? `+${m.vegasSpreadHome}` : "PK");
+        const basePickSpread = (outcome.basePickAbbr === m.home.abbr) ? homeSpreadStr : awaySpreadStr;
+        const gemPickSpread = geminiPred ? ((outcome.geminiPickAbbr === m.home.abbr) ? homeSpreadStr : awaySpreadStr) : "";
 
         let statusOutcomeBadgeHtml = "";
         if (outcome.hasActiveScore) {
@@ -2143,21 +2147,21 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           if (outcome.isPush) {
             baseChipHtml = `
               <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
-                <span>[${baselineSrcName}] ATS PUSH (${outcome.atsText} vs ${dkLineTxt} • ${outcome.finalAway}-${outcome.finalHome})</span>
+                <span>[${baselineSrcName}] ATS PUSH: Picked ${outcome.basePickAbbr} ${basePickSpread} (${outcome.finalAway}-${outcome.finalHome} vs ${dkLineTxt})</span>
               </span>
             `;
           } else if (outcome.baseAtsHit) {
             baseChipHtml = `
               <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                <span>✓ [${baselineSrcName}] LINE HIT: ${outcome.basePickAbbr} Covered (${outcome.finalAway}-${outcome.finalHome} ${phaseTag})</span>
+                <span>✓ [${baselineSrcName}] LINE HIT: Picked ${outcome.basePickAbbr} ${basePickSpread} (Covered ${outcome.finalAway}-${outcome.finalHome} ${phaseTag})</span>
               </span>
             `;
           } else {
             baseChipHtml = `
               <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                <span>✗ [${baselineSrcName}] LINE MISSED: ${outcome.basePickAbbr} Failed Cover (${outcome.atsText} vs ${dkLineTxt})</span>
+                <span>✗ [${baselineSrcName}] LINE MISSED: Picked ${outcome.basePickAbbr} ${basePickSpread} (Failed Cover; ${outcome.atsCoverAbbr} Covered ${dkLineTxt})</span>
               </span>
             `;
           }
@@ -2168,21 +2172,21 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
             if (outcome.isPush) {
               geminiChipHtml = `
                 <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
-                  <span>[✨ Gemini 2.5] ATS PUSH (${outcome.atsText} vs ${dkLineTxt})</span>
+                  <span>[✨ Gemini 2.5] ATS PUSH: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (${outcome.atsText} vs ${dkLineTxt})</span>
                 </span>
               `;
             } else if (outcome.geminiAtsHit) {
               geminiChipHtml = `
                 <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                   ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                  <span>✓ [✨ Gemini 2.5] LINE HIT: ${outcome.geminiPickAbbr} Covered (${outcome.atsText})</span>
+                  <span>✓ [✨ Gemini 2.5] LINE HIT: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (Covered ${outcome.finalAway}-${outcome.finalHome} ${phaseTag})</span>
                 </span>
               `;
             } else {
               geminiChipHtml = `
                 <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                   ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                  <span>✗ [✨ Gemini 2.5] LINE MISSED: ${outcome.geminiPickAbbr} Failed Cover (${outcome.atsText} vs ${dkLineTxt})</span>
+                  <span>✗ [✨ Gemini 2.5] LINE MISSED: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (Failed Cover; ${outcome.atsCoverAbbr} Covered ${dkLineTxt})</span>
                 </span>
               `;
             }
@@ -2296,7 +2300,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           <div class="px-2.5 py-2.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
             <div class="space-y-0.5">
               <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] leading-none">
-                PREDICTED (${baseWinTeam.abbr} ${baseWinWp}%)
+                PREDICTED (ATS: ${basePred.atsCoverPick} • +${basePred.atsEdgePts} pts)
               </div>
               <div class="flex items-center justify-center gap-1.5 leading-tight mt-0.5">
                 <span class="text-xs font-black text-[var(--foreground)]">${basePred.awayScore} – ${basePred.homeScore}</span>
@@ -2308,9 +2312,10 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           </div>
         `;
 
-        // Green Bounding Box + Pick Indicator on whichever team is predicted to win
-        const awayIsPick = !homeWins;
-        const homeIsPick = homeWins;
+        // Green Bounding Box + Pick Indicator on whichever team is picked Against The Spread (ATS)
+        const atsPickAbbr = pred.atsCoverPick || (pred.homeWp >= 50 ? m.home.abbr : m.away.abbr);
+        const awayIsPick = atsPickAbbr === m.away.abbr;
+        const homeIsPick = atsPickAbbr === m.home.abbr;
         const awayBoxClass = awayIsPick
           ? "border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)]"
           : "border border-[var(--border)] bg-[var(--background)]/40 opacity-90";
@@ -2319,12 +2324,12 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           : "border border-[var(--border)] bg-[var(--background)]/40 opacity-90";
 
         const awayPickChipHtml = awayIsPick
-          ? `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm">✓ PICK ${pred.awayWp.toFixed(0)}%</span>`
-          : `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none">${pred.awayWp.toFixed(0)}%</span>`;
+          ? `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm">✓ ATS PICK (${awaySpreadStr})</span>`
+          : `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none">${awaySpreadStr}</span>`;
 
         const homePickChipHtml = homeIsPick
-          ? `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm">✓ PICK ${pred.homeWp.toFixed(0)}%</span>`
-          : `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none">${pred.homeWp.toFixed(0)}%</span>`;
+          ? `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm">✓ ATS PICK (${homeSpreadStr})</span>`
+          : `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none">${homeSpreadStr}</span>`;
 
         const awayLogoHtml = m.away.logoUrl
           ? `<img src="${m.away.logoUrl}" alt="${m.away.abbr}" class="w-11 h-11 object-contain drop-shadow-md mx-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="w-10 h-10 rounded-xl items-center justify-center font-black text-xs text-white mx-auto hidden" style="background:${m.away.color}">${m.away.abbr}</div>`
@@ -2564,28 +2569,33 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
         }
       }
 
-      // Update Team Logos, Next-Line Team Names, and Green Bounding Box on the Picked Team in Detail View
-      const homeWins = pred.homeWp >= 50;
+      // Update Team Logos, Next-Line Team Names, and Green Bounding Box on the Picked Team in Detail View (ATS Standard)
+      const atsPickAbbr = pred.atsCoverPick || (pred.homeWp >= 50 ? m.home.abbr : m.away.abbr);
+      const awayIsAtsPick = atsPickAbbr === m.away.abbr;
+      const homeIsAtsPick = atsPickAbbr === m.home.abbr;
+      const awaySpreadStr = m.vegasSpreadHome > 0 ? `-${m.vegasSpreadHome}` : (m.vegasSpreadHome < 0 ? `+${Math.abs(m.vegasSpreadHome)}` : "PK");
+      const homeSpreadStr = m.vegasSpreadHome < 0 ? `${m.vegasSpreadHome}` : (m.vegasSpreadHome > 0 ? `+${m.vegasSpreadHome}` : "PK");
+
       const awayBoxEl = document.getElementById("awayTeamBox");
       const homeBoxEl = document.getElementById("homeTeamBox");
       const awayPickBadgeEl = document.getElementById("awayPickBadge");
       const homePickBadgeEl = document.getElementById("homePickBadge");
 
       if (awayBoxEl && homeBoxEl) {
-        awayBoxEl.className = !homeWins
+        awayBoxEl.className = awayIsAtsPick
           ? "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)] transition"
           : "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 opacity-90 transition";
-        homeBoxEl.className = homeWins
+        homeBoxEl.className = homeIsAtsPick
           ? "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)] transition"
           : "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 opacity-90 transition";
       }
       if (awayPickBadgeEl && homePickBadgeEl) {
-        awayPickBadgeEl.textContent = !homeWins ? `✓ PICK ${pred.awayWp.toFixed(0)}%` : `${pred.awayWp.toFixed(0)}%`;
-        awayPickBadgeEl.className = !homeWins
+        awayPickBadgeEl.textContent = awayIsAtsPick ? `✓ ATS PICK (${awaySpreadStr})` : awaySpreadStr;
+        awayPickBadgeEl.className = awayIsAtsPick
           ? "px-1.5 py-0.5 mb-1 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm"
           : "px-1.5 py-0.5 mb-1 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none";
-        homePickBadgeEl.textContent = homeWins ? `✓ PICK ${pred.homeWp.toFixed(0)}%` : `${pred.homeWp.toFixed(0)}%`;
-        homePickBadgeEl.className = homeWins
+        homePickBadgeEl.textContent = homeIsAtsPick ? `✓ ATS PICK (${homeSpreadStr})` : homeSpreadStr;
+        homePickBadgeEl.className = homeIsAtsPick
           ? "px-1.5 py-0.5 mb-1 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm"
           : "px-1.5 py-0.5 mb-1 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none";
       }
@@ -2637,9 +2647,9 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
         btnBanner.textContent = "✨ Run Gemini LLM Assessment to Add Gemini Score";
       }
 
-      const winTeam = pred.homeWp >= 50 ? m.home : m.away;
-      const winProb = Math.max(pred.homeWp, pred.awayWp).toFixed(1);
-      document.getElementById("winnerChip").textContent = `✓ PICK: ${winTeam.abbr} (${winProb}%)`;
+      const atsConfPct = pred.atsConfidence || 65;
+      const atsEdgeVal = pred.atsEdgePts || 1.5;
+      document.getElementById("winnerChip").textContent = `✓ ATS COVER PICK: ${atsPickAbbr} (${atsConfPct}% conf • Edge +${atsEdgeVal} pts)`;
 
       document.getElementById("awayWpText").textContent = `${m.away.abbr} ${pred.awayWp.toFixed(1)}%`;
       document.getElementById("homeWpText").textContent = `${m.home.abbr} ${pred.homeWp.toFixed(1)}%`;
