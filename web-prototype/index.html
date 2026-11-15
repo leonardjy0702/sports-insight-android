@@ -65,30 +65,30 @@
       </div>
     </div>
 
-    <!-- 2. MATERIAL 3 TOP APP BAR WITH CONTEXTUAL BACK NAVIGATION -->
-    <header class="px-3.5 py-2.5 bg-[var(--card)] border-b border-[var(--border)] flex items-center justify-between shrink-0 gap-2">
-      <div class="flex items-center gap-2 min-w-0">
-        <button onclick="handleBackNavigation()" id="btnNavBack" class="px-2.5 py-1.5 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-bold flex items-center gap-1 shrink-0">
+    <!-- 2. MATERIAL 3 TOP APP BAR WITH CLEAN NON-OVERLAPPING LAYOUT -->
+    <header class="px-3 py-2 bg-[var(--card)] border-b border-[var(--border)] flex items-center justify-between shrink-0 gap-2">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <button onclick="handleBackNavigation()" id="btnNavBack" class="px-2 py-1 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-bold flex items-center gap-1 shrink-0">
           <span id="navBackIcon">🏠</span>
-          <span id="navBackLabel" class="text-[11px]">Gateway</span>
+          <span id="navBackLabel" class="text-[10px]">Gateway</span>
         </button>
-        <div class="min-w-0">
-          <div class="flex items-center gap-1.5">
-            <h1 class="text-sm font-bold leading-none truncate" id="topBarTitle">GridironIQ Hub</h1>
-            <span id="activeLeagueBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-bold shrink-0">HUB</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 flex-nowrap">
+            <h1 class="text-xs font-extrabold leading-tight truncate text-[var(--foreground)]" id="topBarTitle">GridironIQ Hub</h1>
+            <span id="activeLeagueBadge" class="text-[9px] font-mono font-black px-1.5 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] shrink-0">HUB</span>
           </div>
-          <p class="text-[10px] text-[var(--muted-foreground)] mt-0.5 truncate" id="topBarSubtitle">Select a League Portal</p>
+          <p class="text-[9px] text-[var(--muted-foreground)] leading-tight truncate mt-0.5" id="topBarSubtitle">Select a League Portal</p>
         </div>
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <button onclick="syncAllWeeklySchedules(true)" id="btnSyncEspn" class="px-2 py-1.5 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-medium flex items-center gap-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-[var(--success)]"></span>
-          <span id="syncLabel" class="text-[10px] font-mono">Sync ESPN</span>
+        <button onclick="syncAllWeeklySchedules(true)" id="btnSyncEspn" class="px-2 py-1 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-[10px] font-mono font-semibold flex items-center gap-1 shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="syncLabel">Live</span>
         </button>
-        <button onclick="openKeySheet()" id="btnGeminiHeader" class="px-2 py-1.5 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 text-[11px] font-bold flex items-center gap-1" title="Google Gemini API Key Saved">
+        <button onclick="openKeySheet()" id="btnGeminiHeader" class="px-2 py-1 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1 shrink-0" title="Google Gemini API Key Saved">
           <span>🔑</span>
-          <span id="geminiKeyStatusBadge">Gemini Saved ✓</span>
+          <span id="geminiKeyStatusBadge">Saved ✓</span>
         </button>
       </div>
     </header>
@@ -129,9 +129,9 @@
 
         <!-- League Selection Portals (Opens the League's Weekly Matchup Sub-Gateway) -->
         <div class="space-y-2.5">
-          <div class="flex items-center justify-between px-1">
-            <span class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)]">1. Choose League Sub-Gateway</span>
-            <span id="liveScheduleWeekBadge" class="text-[10px] font-mono text-[var(--success)]">● Live ESPN Schedule</span>
+          <div class="flex items-center justify-between gap-2 px-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] shrink-0">1. Choose League Sub-Gateway</span>
+            <span id="liveScheduleWeekBadge" class="text-[10px] font-mono text-[var(--success)] truncate max-w-[50%] text-right font-semibold">● Live ESPN Schedule</span>
           </div>
 
           <!-- NFL Pro Football Sub-Gateway Card -->
@@ -1026,11 +1026,11 @@
         }
         lastLiveSyncTimestamp = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
         liveRefreshSecondsRemaining = 60;
-        syncLbl.textContent = `Live (${lastLiveSyncTimestamp}) ✓`;
+        syncLbl.textContent = "Live ✓";
       } catch (err) {
         lastLiveSyncTimestamp = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
         liveRefreshSecondsRemaining = 60;
-        syncLbl.textContent = `Live (${lastLiveSyncTimestamp}) ✓`;
+        syncLbl.textContent = "Live ✓";
       }
 
       applySavedBetFocusToLeagueData();
