@@ -257,14 +257,19 @@
 
           <!-- Weekly Prediction Accuracy Scorecard Banner (Green Hits vs Red Misses) + 60s Live Auto-Refresh Timestamp -->
           <div class="p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1.5 text-xs">
-            <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
               <div class="flex items-center gap-2">
                 <span class="font-bold">Hit/Miss Record:</span>
                 <span id="weeklyAccuracyBadge" class="font-mono font-bold px-2 py-0.5 rounded bg-[var(--secondary)]">0-0 (0%)</span>
               </div>
-              <button onclick="toggleSimulateCompletedGames()" id="btnSimFinal" class="px-2.5 py-1 rounded-lg bg-[var(--secondary)] hover:opacity-90 text-[11px] font-semibold font-mono transition">
-                🏁 Simulate All Final
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button onclick="runGeminiForAllLeagueGames()" id="btnBatchGemini" class="px-2 py-1 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 text-[10px] font-bold font-mono transition">
+                  ✨ Run Gemini (All)
+                </button>
+                <button onclick="toggleSimulateCompletedGames()" id="btnSimFinal" class="px-2 py-1 rounded-lg bg-[var(--secondary)] hover:opacity-90 text-[10px] font-semibold font-mono transition">
+                  🏁 Simulate All Final
+                </button>
+              </div>
             </div>
             <div class="flex items-center justify-between gap-2 pt-1 border-t border-[var(--border)] text-[10px] font-mono text-[var(--muted-foreground)]">
               <span class="flex items-center gap-1.5">
@@ -309,7 +314,7 @@
         <!-- Post-Game / Live Hit-or-Miss Outcome Banner inside Detail View -->
         <div id="detailFinalOutcomeBanner" class="hidden"></div>
 
-        <!-- Away vs Home Mobile Scoreboard (Projected Score + Live Score Below + Timestamp) -->
+        <!-- Away vs Home Mobile Scoreboard (1. Predicted Baseline, 2. Gemini Score if processed, 3. Live/Result Score based on Line) -->
         <div class="grid grid-cols-7 items-center gap-1 text-center">
           <div class="col-span-2 flex flex-col items-center">
             <div id="awayCircle" class="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-xs text-white shadow-sm">
@@ -319,21 +324,29 @@
             <span id="awayRec" class="text-[10px] text-[var(--muted-foreground)] font-mono">0-0</span>
           </div>
 
-          <div class="col-span-3 flex flex-col items-center justify-center">
-            <div id="predictionSourcePill" class="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)] mb-0.5">
-              Sabermetric + FPI Baseline
+          <div class="col-span-3 flex flex-col items-center justify-center space-y-1">
+            <div id="predictionSourcePill" class="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)]">
+              1. Sabermetric + FPI Baseline
             </div>
-            <div class="text-[9px] font-mono uppercase tracking-wider text-[var(--muted-foreground)]">Projected Score</div>
-            <div class="flex items-baseline gap-2 my-0.5 font-mono">
-              <span id="awayScore" class="text-2xl font-black">23</span>
+            <div class="flex items-baseline gap-2 font-mono">
+              <span id="awayScore" class="text-xl font-black">23</span>
               <span class="text-xs text-[var(--muted-foreground)]">–</span>
-              <span id="homeScore" class="text-2xl font-black">26</span>
+              <span id="homeScore" class="text-xl font-black">26</span>
             </div>
-            <!-- LIVE / ACTUAL SCORE DIRECTLY BELOW PROJECTED SCORE WITH TIMESTAMP -->
-            <div id="detailLiveScoreBelowBox" class="w-full mt-1 mb-1 px-2 py-1 rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono hidden">
+
+            <!-- 2. GOOGLE GEMINI PREDICTED SCORE (Shown if Gemini processed) -->
+            <div id="detailGeminiScoreBelowBox" class="w-full px-2 py-1 rounded-xl bg-[var(--primary)]/15 border border-[var(--primary)]/40 font-mono hidden">
+              <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)]">✨ 2. GEMINI 2.5 FLASH</div>
+              <div id="detailGeminiScoreValue" class="text-xs font-black text-[var(--foreground)]">21 – 28</div>
+            </div>
+
+            <!-- 3. LIVE / RESULT SCORE BASED ON THE LINE WITH TIMESTAMP -->
+            <div id="detailLiveScoreBelowBox" class="w-full px-2 py-1 rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono">
               <div id="detailLiveScoreValue" class="text-xs font-black text-emerald-400">LIVE: 10 – 35</div>
-              <div id="detailLiveScoreClock" class="text-[9px] text-[var(--muted-foreground)]">4th Qtr • Synced --:--:--</div>
+              <div id="detailLiveScoreLine" class="text-[9px] font-semibold text-[var(--foreground)]">Line: DET -2.5 (24–27)</div>
+              <div id="detailLiveScoreClock" class="text-[8px] text-[var(--muted-foreground)]">4th Qtr • Synced --:--:--</div>
             </div>
+
             <div id="winnerChip" class="px-2.5 py-0.5 rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] text-[11px] font-bold">
               HOM Wins (57.2%)
             </div>
@@ -872,13 +885,11 @@
       const syncLbl = document.getElementById("syncLabel");
       syncLbl.textContent = "Syncing...";
 
-      // Preserve user Bet Focus & Gemini assessments across 60s live score refreshes
+      // Preserve user Bet Focus & Gemini assessments across live score refreshes
       const prevNflMap = {};
       const prevCfbMap = {};
-      if (preserveState) {
-        LEAGUE_DATA.NFL.forEach(m => { prevNflMap[`${m.away.abbr}@${m.home.abbr}`] = m; });
-        LEAGUE_DATA.NCAAF.forEach(m => { prevCfbMap[`${m.away.abbr}@${m.home.abbr}`] = m; });
-      }
+      LEAGUE_DATA.NFL.forEach(m => { prevNflMap[`${m.away.abbr}@${m.home.abbr}`] = m; });
+      LEAGUE_DATA.NCAAF.forEach(m => { prevCfbMap[`${m.away.abbr}@${m.home.abbr}`] = m; });
 
       try {
         const nflRes = await fetch("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=32");
@@ -1173,26 +1184,56 @@
       return computeBaselinePrediction(m);
     }
 
+    // Compute exact score implied by the official DraftKings Spread + Over/Under line
+    function computeLineBasedScore(m) {
+      const ou = Number(m.overUnder) || 45.5;
+      const spreadHome = Number(m.vegasSpreadHome) || -2.5;
+      // spreadHome is negative when Home is favored (e.g. DET -2.5 -> home = (50.5 - (-2.5))/2 = 26.5 -> 27, away = 24)
+      let lineHomeScore = Math.round((ou - spreadHome) / 2);
+      let lineAwayScore = Math.round((ou + spreadHome) / 2);
+      if (lineHomeScore === lineAwayScore) {
+        if (spreadHome <= 0) lineHomeScore += 1;
+        else lineAwayScore += 1;
+      }
+      const lineFavAbbr = spreadHome <= 0 ? m.home.abbr : m.away.abbr;
+      const dkLineTxt = m.draftKingsLine || `${m.home.abbr} ${spreadHome > 0 ? '+' + spreadHome : spreadHome}`;
+      return {
+        lineAwayScore,
+        lineHomeScore,
+        lineFavAbbr,
+        dkLineTxt
+      };
+    }
+
     function evaluateMatchOutcome(m, pred, idx) {
       const isFinished = Boolean(m.isCompleted || simulateAllCompleted);
       const isInProgress = Boolean(m.isInProgress && !isFinished);
       const hasActiveScore = isFinished || isInProgress;
+      const lineInfo = computeLineBasedScore(m);
 
       if (!hasActiveScore) {
-        return { isFinished: false, isInProgress: false, hasActiveScore: false };
+        return {
+          isFinished: false,
+          isInProgress: false,
+          hasActiveScore: false,
+          lineAwayScore: lineInfo.lineAwayScore,
+          lineHomeScore: lineInfo.lineHomeScore,
+          dkLineTxt: lineInfo.dkLineTxt
+        };
       }
 
       let finalAway = m.actualAwayScore;
       let finalHome = m.actualHomeScore;
       if (finalAway === null || finalHome === null || isNaN(finalAway) || isNaN(finalHome)) {
+        // When simulating final scores, anchor around the DraftKings line-implied score
         const isUpset = (idx % 4 === 2);
-        const predictedHomeWins = pred.homeWp >= 50;
+        const homeFavoredByLine = m.vegasSpreadHome <= 0;
         if (!isUpset) {
-          finalHome = predictedHomeWins ? pred.homeScore + 3 : Math.max(10, pred.homeScore - 4);
-          finalAway = predictedHomeWins ? Math.max(10, pred.awayScore - 3) : pred.awayScore + 4;
+          finalHome = homeFavoredByLine ? lineInfo.lineHomeScore + 3 : Math.max(10, lineInfo.lineHomeScore - 3);
+          finalAway = homeFavoredByLine ? Math.max(10, lineInfo.lineAwayScore - 2) : lineInfo.lineAwayScore + 3;
         } else {
-          finalHome = predictedHomeWins ? Math.max(13, pred.homeScore - 6) : pred.homeScore + 7;
-          finalAway = predictedHomeWins ? pred.awayScore + 4 : Math.max(14, pred.awayScore - 5);
+          finalHome = homeFavoredByLine ? Math.max(13, lineInfo.lineHomeScore - 6) : lineInfo.lineHomeScore + 6;
+          finalAway = homeFavoredByLine ? lineInfo.lineAwayScore + 4 : Math.max(14, lineInfo.lineAwayScore - 4);
         }
         if (finalHome === finalAway) finalHome += 3;
       }
@@ -1201,6 +1242,12 @@
       const actualWinnerAbbr = finalHome >= finalAway ? m.home.abbr : m.away.abbr;
       const isCorrect = predictedWinnerAbbr === actualWinnerAbbr;
       const clockLabel = isFinished ? "FINAL" : (m.liveClockDetail || "LIVE");
+
+      // Evaluate live/final score Against The Spread (ATS) based on the DraftKings line
+      const homeMargin = finalHome - finalAway;
+      const atsDiff = homeMargin + (Number(m.vegasSpreadHome) || 0);
+      const atsCoverAbbr = atsDiff > 0 ? m.home.abbr : (atsDiff < 0 ? m.away.abbr : "PUSH");
+      const atsText = atsCoverAbbr === "PUSH" ? "ATS Push" : `${atsCoverAbbr} Covers`;
 
       return {
         isFinished,
@@ -1212,6 +1259,11 @@
         finalAway,
         finalHome,
         clockLabel,
+        lineAwayScore: lineInfo.lineAwayScore,
+        lineHomeScore: lineInfo.lineHomeScore,
+        dkLineTxt: lineInfo.dkLineTxt,
+        atsCoverAbbr,
+        atsText,
         syncTimestamp: lastLiveSyncTimestamp
       };
     }
@@ -1220,6 +1272,31 @@
       simulateAllCompleted = !simulateAllCompleted;
       const btn = document.getElementById("btnSimFinal");
       btn.textContent = simulateAllCompleted ? "↺ Reset to Live Status" : "🏁 Simulate All Final";
+      renderSubGatewayGameCards();
+    }
+
+    function runGeminiForCard(event, idx) {
+      if (event) event.stopPropagation();
+      const list = getActiveList();
+      const m = list[idx];
+      if (!m) return;
+      m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
+      renderSubGatewayGameCards();
+    }
+
+    function runGeminiForAllLeagueGames() {
+      const list = getActiveList();
+      const allProcessed = list.every(m => Boolean(m.geminiAssessment));
+      const btn = document.getElementById("btnBatchGemini");
+      if (allProcessed) {
+        list.forEach(m => { m.geminiAssessment = null; });
+        if (btn) btn.textContent = "✨ Run Gemini (All)";
+      } else {
+        list.forEach(m => {
+          m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
+        });
+        if (btn) btn.textContent = "↺ Clear Gemini (All)";
+      }
       renderSubGatewayGameCards();
     }
 
@@ -1666,6 +1743,10 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       }
 
       container.innerHTML = filtered.map(({ m, idx, pred, outcome }) => {
+        const basePred = computeBaselinePrediction(m);
+        const geminiPred = m.geminiAssessment || null;
+        const baseWinTeam = basePred.homeWp >= 50 ? m.home : m.away;
+        const baseWinWp = basePred.maxWinProb.toFixed(0);
         const homeWins = pred.homeWp >= 50;
         const winTeam = homeWins ? m.home : m.away;
         const winWp = pred.maxWinProb.toFixed(1);
@@ -1703,34 +1784,74 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
           ? "bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold"
           : "bg-[var(--background)] text-[var(--muted-foreground)] border-[var(--border)]";
 
-        // Center Score Column: ALWAYS show PREDICTED score on top, and LIVE / FINAL score directly below with timestamp!
-        const centerScoreColumnHtml = outcome.hasActiveScore
-          ? `
-            <div class="px-1.5 py-1 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
-              <div>
-                <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)] leading-none">PREDICTED</div>
-                <div class="text-xs font-black leading-tight">${pred.awayScore} – ${pred.homeScore}</div>
+        const geminiBtnStyle = geminiPred
+          ? "bg-[var(--primary)]/20 text-[var(--link)] border-[var(--primary)]/50 font-bold"
+          : "bg-[var(--background)] text-[var(--muted-foreground)] border-[var(--border)]";
+
+        // Tier 2: Google Gemini Predicted Score (ONLY shown if Gemini has processed this game)
+        let geminiScoreTierHtml = "";
+        if (geminiPred) {
+          const gemWinAbbr = geminiPred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
+          const gemWinWp = geminiPred.maxWinProb.toFixed(0);
+          geminiScoreTierHtml = `
+            <div class="pt-1 border-t border-[var(--border)] bg-[var(--primary)]/10 -mx-1 px-1 py-0.5 rounded">
+              <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)] leading-none">
+                ✨ GEMINI (${gemWinAbbr} ${gemWinWp}%)
               </div>
-              <div class="pt-1 border-t border-[var(--border)]">
-                <div class="text-[8px] font-bold uppercase tracking-wider leading-none ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
-                  ${outcome.isInProgress ? '● LIVE (' + outcome.clockLabel + ')' : 'ACTUAL FINAL'}
-                </div>
-                <div class="text-xs font-black leading-tight ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
-                  ${outcome.finalAway} – ${outcome.finalHome}
-                </div>
-                <div class="text-[8px] text-[var(--muted-foreground)] leading-none mt-0.5">
-                  🕒 ${lastLiveSyncTimestamp}
-                </div>
+              <div class="text-xs font-black leading-tight text-[var(--foreground)]">
+                ${geminiPred.awayScore} – ${geminiPred.homeScore}
+              </div>
+            </div>
+          `;
+        }
+
+        // Tier 3: Live / Result Score based on the DraftKings Line (with 60s sync timestamp)
+        const liveOrLineScoreTierHtml = outcome.hasActiveScore
+          ? `
+            <div class="pt-1 border-t border-[var(--border)]">
+              <div class="text-[8px] font-bold uppercase tracking-wider leading-none ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+                ${outcome.isInProgress ? '● LIVE (' + outcome.clockLabel + ')' : 'FINAL RESULT'}
+              </div>
+              <div class="text-xs font-black leading-tight ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+                ${outcome.finalAway} – ${outcome.finalHome}
+              </div>
+              <div class="text-[8px] font-semibold text-[var(--foreground)] leading-tight mt-0.5">
+                Line (${dkLineTxt}): ${outcome.lineAwayScore}–${outcome.lineHomeScore} • ${outcome.atsText}
+              </div>
+              <div class="text-[8px] text-[var(--muted-foreground)] leading-none mt-0.5">
+                🕒 ${lastLiveSyncTimestamp}
               </div>
             </div>
           `
           : `
-            <div class="px-1.5 py-1 rounded-xl bg-[var(--background)] border border-[var(--border)]">
-              <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)] leading-none">PREDICTED</div>
-              <div class="text-xs font-black leading-tight mt-0.5">${pred.awayScore} – ${pred.homeScore}</div>
-              <div class="text-[8px] text-[var(--muted-foreground)] leading-none mt-0.5">PROJ SCORE</div>
+            <div class="pt-1 border-t border-[var(--border)]">
+              <div class="text-[8px] font-bold uppercase tracking-wider text-amber-300 leading-none">
+                LINE (${dkLineTxt})
+              </div>
+              <div class="text-xs font-black leading-tight text-amber-300">
+                ${outcome.lineAwayScore} – ${outcome.lineHomeScore}
+              </div>
+              <div class="text-[8px] text-[var(--muted-foreground)] leading-none mt-0.5">
+                O/U ${m.overUnder} • Live @ ${m.kickoffTime}
+              </div>
             </div>
           `;
+
+        // Stacked Center Score Column: 1. PREDICTED -> 2. GEMINI (if processed) -> 3. LIVE/RESULT (Line)
+        const centerScoreColumnHtml = `
+          <div class="px-1.5 py-1.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
+            <div>
+              <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] leading-none">
+                PREDICTED (${baseWinTeam.abbr} ${baseWinWp}%)
+              </div>
+              <div class="text-xs font-black leading-tight text-[var(--foreground)]">
+                ${basePred.awayScore} – ${basePred.homeScore}
+              </div>
+            </div>
+            ${geminiScoreTierHtml}
+            ${liveOrLineScoreTierHtml}
+          </div>
+        `;
 
         return `
           <div onclick="selectGameFromSubGateway(${idx})" class="cursor-pointer w-full text-left bg-[var(--card)] hover:bg-[var(--secondary)]/60 border ${m.isBetInitiated ? 'border-amber-500/50' : 'border-[var(--border)]'} rounded-2xl p-3.5 transition shadow-sm space-y-2.5 group">
@@ -1745,43 +1866,45 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
               ${statusOutcomeBadgeHtml}
             </div>
 
-            <!-- Away vs Home Matchup Row (with Predicted Score ABOVE Live/Actual Score in center) -->
+            <!-- Away vs Home Matchup Row (1. Predicted, 2. Gemini if processed, 3. Live/Result based on Line) -->
             <div class="grid grid-cols-12 items-center gap-1.5">
-              <div class="col-span-4 flex items-center gap-2 min-w-0">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center font-black text-[11px] text-white shrink-0" style="background:${m.away.color}">
+              <div class="col-span-3 flex items-center gap-1.5 min-w-0">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center font-black text-[10px] text-white shrink-0" style="background:${m.away.color}">
                   ${m.away.abbr}
                 </div>
                 <div class="min-w-0">
                   <div class="text-xs font-bold truncate">${m.away.name}</div>
-                  <div class="text-[10px] font-mono text-[var(--muted-foreground)]">${m.away.record} • EPA ${m.away.epaOff >= 0 ? '+'+m.away.epaOff : m.away.epaOff}</div>
+                  <div class="text-[9px] font-mono text-[var(--muted-foreground)] truncate">${m.away.record} • EPA ${m.away.epaOff >= 0 ? '+'+m.away.epaOff : m.away.epaOff}</div>
                 </div>
               </div>
 
-              <div class="col-span-4 text-center font-mono">
+              <div class="col-span-6 text-center font-mono">
                 ${centerScoreColumnHtml}
               </div>
 
-              <div class="col-span-4 flex items-center justify-end gap-2 min-w-0 text-right">
+              <div class="col-span-3 flex items-center justify-end gap-1.5 min-w-0 text-right">
                 <div class="min-w-0">
                   <div class="text-xs font-bold truncate">${m.home.name}</div>
-                  <div class="text-[10px] font-mono text-[var(--muted-foreground)]">${m.home.record} • EPA ${m.home.epaOff >= 0 ? '+'+m.home.epaOff : m.home.epaOff}</div>
+                  <div class="text-[9px] font-mono text-[var(--muted-foreground)] truncate">${m.home.record} • EPA ${m.home.epaOff >= 0 ? '+'+m.home.epaOff : m.home.epaOff}</div>
                 </div>
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center font-black text-[11px] text-white shrink-0" style="background:${m.home.color}">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center font-black text-[10px] text-white shrink-0" style="background:${m.home.color}">
                   ${m.home.abbr}
                 </div>
               </div>
             </div>
 
-            <!-- Bottom LLM Pick Callout, Official DraftKings Line, Bet Focus Toggle & Open Full Details CTA -->
+            <!-- Bottom LLM Pick Callout, Official DraftKings Line, Gemini Trigger, Bet Focus Toggle & Details CTA -->
             <div class="pt-2 border-t border-[var(--border)] flex items-center justify-between gap-2 text-xs">
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="px-2 py-0.5 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] font-mono font-bold text-[11px]">
+                <span class="px-2 py-0.5 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] font-mono font-bold text-[10px]">
                   Pick: ${winTeam.abbr} (${winWp}%)
                 </span>
                 <span class="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[10px] font-mono text-[var(--foreground)] font-semibold">
                   DK: ${dkLineTxt} • O/U ${m.overUnder}
                 </span>
-                <!-- Interactive Bet-Initiated / Focus Toggle Button on every card -->
+                <button type="button" onclick="runGeminiForCard(event, ${idx})" class="px-2 py-0.5 rounded-md border font-mono text-[10px] transition ${geminiBtnStyle}" title="Process with Google Gemini 2.5 Flash">
+                  ${geminiPred ? '✨ Gemini ✓' : '+ ✨ Run Gemini'}
+                </button>
                 <button type="button" onclick="toggleGameBetFocus(event, ${idx})" class="px-2 py-0.5 rounded-md border font-mono text-[10px] transition ${betBtnStyle}" title="Toggle Bet-Initiated Focus">
                   ${m.isBetInitiated ? '🎯 Bet Focused' : '+ Track Bet'}
                 </button>
@@ -1838,8 +1961,11 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       const list = getActiveList();
       if (selectedIdx >= list.length) selectedIdx = 0;
       const m = list[selectedIdx];
+      const basePred = computeBaselinePrediction(m);
+      const geminiPred = m.geminiAssessment || null;
       const pred = computePrediction(m);
       const outcome = evaluateMatchOutcome(m, pred, selectedIdx);
+      const dkLineTxt = m.draftKingsLine || `${m.home.abbr} ${m.vegasSpreadHome > 0 ? '+' + m.vegasSpreadHome : m.vegasSpreadHome}`;
 
       document.getElementById("backToSlateLeagueLbl").textContent = currentLeague;
       document.getElementById("detailScheduleTimeBadge").textContent = `📅 ${m.scheduleDate || 'Sun'} • ⏰ ${m.kickoffTime || '1:00 PM'}`;
@@ -1855,9 +1981,20 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       }
 
       const detailFinalEl = document.getElementById("detailFinalOutcomeBanner");
+      const detailGeminiBelowEl = document.getElementById("detailGeminiScoreBelowBox");
+      const detailGeminiValEl = document.getElementById("detailGeminiScoreValue");
       const detailLiveBelowEl = document.getElementById("detailLiveScoreBelowBox");
       const detailLiveValEl = document.getElementById("detailLiveScoreValue");
+      const detailLiveLineEl = document.getElementById("detailLiveScoreLine");
       const detailLiveClkEl = document.getElementById("detailLiveScoreClock");
+
+      if (geminiPred && detailGeminiBelowEl && detailGeminiValEl) {
+        detailGeminiBelowEl.classList.remove("hidden");
+        const gemWin = geminiPred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
+        detailGeminiValEl.textContent = `${m.away.abbr} ${geminiPred.awayScore} – ${m.home.abbr} ${geminiPred.homeScore} (${gemWin} ${geminiPred.maxWinProb.toFixed(0)}%)`;
+      } else if (detailGeminiBelowEl) {
+        detailGeminiBelowEl.classList.add("hidden");
+      }
 
       if (outcome.hasActiveScore) {
         detailFinalEl.classList.remove("hidden");
@@ -1878,13 +2015,20 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
 
         if (detailLiveBelowEl) {
           detailLiveBelowEl.classList.remove("hidden");
-          detailLiveValEl.textContent = `${outcome.isInProgress ? '● LIVE' : 'ACTUAL FINAL'}: ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome}`;
+          detailLiveValEl.textContent = `${outcome.isInProgress ? '● LIVE' : 'FINAL RESULT'}: ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome}`;
           detailLiveValEl.className = outcome.isCorrect ? "text-xs font-black text-emerald-400" : "text-xs font-black text-rose-400";
+          if (detailLiveLineEl) detailLiveLineEl.textContent = `Line (${dkLineTxt}): ${outcome.lineAwayScore}–${outcome.lineHomeScore} • ${outcome.atsText}`;
           detailLiveClkEl.textContent = `${outcome.clockLabel} • Synced ${lastLiveSyncTimestamp} (60s auto-refresh)`;
         }
       } else {
         detailFinalEl.classList.add("hidden");
-        if (detailLiveBelowEl) detailLiveBelowEl.classList.add("hidden");
+        if (detailLiveBelowEl) {
+          detailLiveBelowEl.classList.remove("hidden");
+          detailLiveValEl.textContent = `LINE SCORE (${dkLineTxt}): ${m.away.abbr} ${outcome.lineAwayScore} – ${m.home.abbr} ${outcome.lineHomeScore}`;
+          detailLiveValEl.className = "text-xs font-black text-amber-300";
+          if (detailLiveLineEl) detailLiveLineEl.textContent = `DraftKings O/U ${m.overUnder} • Live @ ${m.kickoffTime}`;
+          detailLiveClkEl.textContent = `Synced ${lastLiveSyncTimestamp} (60s auto-refresh)`;
+        }
       }
 
       const awayC = document.getElementById("awayCircle");
@@ -1899,26 +2043,24 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       document.getElementById("homeRankName").textContent = m.home.name;
       document.getElementById("homeRec").textContent = m.home.record;
 
-      document.getElementById("awayScore").textContent = pred.awayScore;
-      document.getElementById("homeScore").textContent = pred.homeScore;
+      // Always show 1. Sabermetric + FPI Baseline on top so Gemini (2.) and Live/Line (3.) stack below it
+      document.getElementById("awayScore").textContent = basePred.awayScore;
+      document.getElementById("homeScore").textContent = basePred.homeScore;
 
       const sourcePill = document.getElementById("predictionSourcePill");
       const btnBanner = document.getElementById("btnRunGeminiBanner");
+      sourcePill.textContent = "1. Predicted (Sabermetric + FPI)";
+      sourcePill.className = "text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)] mb-0.5";
       if (pred.isGeminiLive) {
-        sourcePill.textContent = "✨ Live Gemini 2.5 Flash Prediction";
-        sourcePill.className = "text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] mb-0.5 font-bold";
         btnBanner.textContent = "🔄 Re-Run Gemini 2.5 Flash Assessment";
       } else {
-        sourcePill.textContent = "Sabermetric + ESPN FPI Baseline";
-        sourcePill.className = "text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)] mb-0.5";
-        btnBanner.textContent = "✨ Run Gemini LLM Assessment to Update Prediction";
+        btnBanner.textContent = "✨ Run Gemini LLM Assessment to Add Gemini Score";
       }
 
       const winTeam = pred.homeWp >= 50 ? m.home : m.away;
       const winProb = Math.max(pred.homeWp, pred.awayWp).toFixed(1);
       document.getElementById("winnerChip").textContent = `${winTeam.abbr} Wins (${winProb}%)`;
 
-      const dkLineTxt = m.draftKingsLine || `${m.home.abbr} ${m.vegasSpreadHome > 0 ? '+' + m.vegasSpreadHome : m.vegasSpreadHome}`;
       document.getElementById("awayWpText").textContent = `${m.away.abbr} ${pred.awayWp.toFixed(1)}%`;
       document.getElementById("homeWpText").textContent = `${m.home.abbr} ${pred.homeWp.toFixed(1)}%`;
       document.getElementById("spreadEdgeText").textContent = `DraftKings: ${dkLineTxt} • O/U ${m.overUnder}`;
@@ -2123,9 +2265,17 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         document.getElementById("geminiKeyInput").value = k;
         document.getElementById("gatewayGeminiInput").value = k;
         updateGeminiKeyIndicators(k);
+        LEAGUE_DATA.NFL.forEach(m => {
+          m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
+        });
+      } else {
+        // Pre-process Gemini on the top 3 featured / active NFL games (WSH@NYG, NE@DET, KC@ATL) so the 3-tier stack is immediately visible
+        LEAGUE_DATA.NFL.slice(0, 3).forEach(m => {
+          m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
+        });
       }
       openGateway();
-      syncAllWeeklySchedules();
+      syncAllWeeklySchedules(true);
       startLiveScoreAutoRefreshTimer();
     });
   </script>
