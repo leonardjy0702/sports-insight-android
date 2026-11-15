@@ -1347,20 +1347,24 @@
 
       const predictedWinnerAbbr = pred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
       const actualWinnerAbbr = finalHome >= finalAway ? m.home.abbr : m.away.abbr;
-      const isCorrect = predictedWinnerAbbr === actualWinnerAbbr;
-      const clockLabel = isFinished ? "FINAL" : (m.liveClockDetail || "LIVE");
+      const isSuHit = predictedWinnerAbbr === actualWinnerAbbr; // Straight-Up Moneyline winner hit
 
       // Evaluate live/final score Against The Spread (ATS) based on the DraftKings line
       const homeMargin = finalHome - finalAway;
       const atsDiff = homeMargin + (Number(m.vegasSpreadHome) || 0);
       const atsCoverAbbr = atsDiff > 0 ? m.home.abbr : (atsDiff < 0 ? m.away.abbr : "PUSH");
       const atsText = atsCoverAbbr === "PUSH" ? "ATS Push" : `${atsCoverAbbr} Covers`;
+      const isAtsHit = (atsCoverAbbr === "PUSH") ? true : (predictedWinnerAbbr === atsCoverAbbr); // Model's picked team covered spread
+
+      const clockLabel = isFinished ? "FINAL" : (m.liveClockDetail || "LIVE");
 
       return {
         isFinished,
         isInProgress,
         hasActiveScore: true,
-        isCorrect,
+        isCorrect: isSuHit,
+        isSuHit,
+        isAtsHit,
         predictedWinnerAbbr,
         actualWinnerAbbr,
         finalAway,
@@ -1907,23 +1911,33 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         let statusOutcomeBadgeHtml = "";
         if (outcome.hasActiveScore) {
           const phaseTag = outcome.isInProgress ? `LIVE ${outcome.clockLabel}` : "FINAL";
-          if (outcome.isCorrect) {
-            statusOutcomeBadgeHtml = `
-              <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+          const suBadge = outcome.isSuHit
+            ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                <span>✓ ${outcome.isInProgress ? 'HIT LIVE' : 'PREDICTION HIT'}</span>
-                <span>(${outcome.finalAway}-${outcome.finalHome} • ${phaseTag})</span>
-              </span>
-            `;
-          } else {
-            statusOutcomeBadgeHtml = `
-              <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                <span>✓ ML WINNER HIT (${outcome.actualWinnerAbbr})</span>
+              </span>`
+            : `<span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                <span>✗ ${outcome.isInProgress ? 'MISS LIVE' : 'PREDICTION MISSED'}</span>
-                <span>(${outcome.finalAway}-${outcome.finalHome} • ${phaseTag})</span>
+                <span>✗ ML MISSED (${outcome.actualWinnerAbbr} Won)</span>
+              </span>`;
+
+          const atsBadge = outcome.isAtsHit
+            ? `<span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                <span>✓ ATS COVER HIT (${outcome.atsText})</span>
+              </span>`
+            : `<span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                <span>✗ SPREAD MISSED (${outcome.atsText} vs ${dkLineTxt})</span>
+              </span>`;
+
+          statusOutcomeBadgeHtml = `
+            <div class="flex items-center gap-1.5 flex-wrap">
+              ${suBadge}
+              ${atsBadge}
+              <span class="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[10px] font-mono text-[var(--muted-foreground)]">
+                Score: ${outcome.finalAway}–${outcome.finalHome} (${phaseTag})
               </span>
-            `;
-          }
+            </div>
+          `;
         } else {
           statusOutcomeBadgeHtml = `
             <span class="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono text-[10px] shrink-0">
@@ -2211,19 +2225,29 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       if (outcome.hasActiveScore) {
         detailFinalEl.classList.remove("hidden");
         const statusPrefix = outcome.isInProgress ? `● LIVE (${outcome.clockLabel})` : "FINAL";
-        if (outcome.isCorrect) {
-          detailFinalEl.className = "p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono flex items-center justify-between";
-          detailFinalEl.innerHTML = `
-            <span class="font-bold">✓ ${outcome.isInProgress ? 'PREDICTION HITTING LIVE' : 'PREDICTION HIT'} (${outcome.actualWinnerAbbr} Leading/Won)</span>
-            <span>${statusPrefix}: ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome}</span>
-          `;
-        } else {
-          detailFinalEl.className = "p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-mono flex items-center justify-between";
-          detailFinalEl.innerHTML = `
-            <span class="font-bold">✗ ${outcome.isInProgress ? 'PREDICTION TRAILING LIVE' : 'PREDICTION MISSED'} (${outcome.actualWinnerAbbr} Leading/Won)</span>
-            <span>${statusPrefix}: ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome}</span>
-          `;
-        }
+        detailFinalEl.className = (outcome.isSuHit && outcome.isAtsHit)
+          ? "p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono flex flex-col gap-1"
+          : (outcome.isSuHit
+              ? "p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono flex flex-col gap-1"
+              : "p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-mono flex flex-col gap-1");
+
+        const suText = outcome.isSuHit
+          ? `✓ ML WINNER HIT: ${outcome.actualWinnerAbbr} won (${outcome.finalAway}–${outcome.finalHome})`
+          : `✗ ML WINNER MISSED: ${outcome.actualWinnerAbbr} won (${outcome.finalAway}–${outcome.finalHome})`;
+
+        const atsDetailText = outcome.isAtsHit
+          ? `✓ ATS SPREAD HIT: ${outcome.atsText} (DraftKings Line ${dkLineTxt})`
+          : `✗ ATS SPREAD MISSED: ${outcome.atsText} (Did not cover ${dkLineTxt})`;
+
+        detailFinalEl.innerHTML = `
+          <div class="flex items-center justify-between font-bold">
+            <span>${suText}</span>
+            <span class="text-[10px] text-[var(--muted-foreground)]">${statusPrefix}</span>
+          </div>
+          <div class="text-[11px] font-semibold opacity-90">
+            ${atsDetailText}
+          </div>
+        `;
 
         if (detailLiveBelowEl) {
           detailLiveBelowEl.classList.remove("hidden");
