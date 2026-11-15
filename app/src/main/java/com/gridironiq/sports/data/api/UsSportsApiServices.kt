@@ -4,10 +4,39 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
- * 1. CollegeFootballData API v2 (https://api.collegefootballdata.com)
+ * 1. ESPN Public Site API for BOTH NFL (`nfl`) and College Football (`college-football`)
+ * Base URL: https://site.api.espn.com/apis/site/v2/sports/football/
+ * Zero-key public JSON endpoints for live scoreboards, official injury reports, depth charts, and FPI.
+ */
+interface EspnPublicApiService {
+    @GET("nfl/scoreboard")
+    suspend fun getNflScoreboard(
+        @Query("limit") limit: Int = 25
+    ): EspnScoreboardResponseDto
+
+    @GET("nfl/summary")
+    suspend fun getNflGameSummaryAndInjuries(
+        @Query("event") eventId: String
+    ): EspnGameSummaryDto
+
+    @GET("college-football/scoreboard")
+    suspend fun getCollegeFootballScoreboard(
+        @Query("groups") divisionGroup: Int = 80, // 80 = FBS, 81 = FCS
+        @Query("limit") limit: Int = 25
+    ): EspnScoreboardResponseDto
+
+    @GET("college-football/summary")
+    suspend fun getCollegeGameSummaryAndInjuries(
+        @Query("event") eventId: String
+    ): EspnGameSummaryDto
+}
+
+/**
+ * 2. CollegeFootballData API v2 (https://api.collegefootballdata.com)
  * Primary source for NCAAF advanced sabermetrics: EPA/play, SP+ ratings, Success Rate, Havoc, H2H history.
  */
 interface CfbdApiService {
@@ -44,8 +73,8 @@ data class CfbdAdvancedStatDto(
 
 @Serializable
 data class CfbdUnitMetricsDto(
-    val ppa: Double? = null,         // Predicted Points Added / EPA per play
-    val successRate: Double? = null, // Efficiency success rate (0.0 - 1.0)
+    val ppa: Double? = null,
+    val successRate: Double? = null,
     val explosiveness: Double? = null,
     val havoc: CfbdHavocDto? = null
 )
@@ -73,23 +102,6 @@ data class CfbdMatchupHistoryDto(
     val team2Wins: Int,
     val ties: Int
 )
-
-/**
- * 2. ESPN Public Site API (https://site.api.espn.com/apis/site/v2/sports/football/college-football/)
- * Zero-configuration public API providing live NCAAF scoreboard, injuries, depth chart status, and ESPN FPI.
- */
-interface EspnPublicApiService {
-    @GET("scoreboard")
-    suspend fun getCollegeFootballScoreboard(
-        @Query("groups") divisionGroup: Int = 80, // 80 = FBS, 81 = FCS
-        @Query("limit") limit: Int = 25
-    ): EspnScoreboardResponseDto
-
-    @GET("summary")
-    suspend fun getGameSummaryAndInjuries(
-        @Query("event") eventId: String
-    ): EspnGameSummaryDto
-}
 
 @Serializable
 data class EspnScoreboardResponseDto(
@@ -153,11 +165,12 @@ data class EspnPredictionProbDto(
 
 /**
  * 3. The Odds API v4 (https://api.the-odds-api.com/v4/)
- * Provides live US sportsbook spreads, moneylines, and totals (DraftKings, FanDuel, BetMGM, Caesars).
+ * Supports both `americanfootball_nfl` (NFL) and `americanfootball_ncaaf` (College Football).
  */
 interface TheOddsApiService {
-    @GET("sports/americanfootball_ncaaf/odds")
-    suspend fun getNcaafMarketOdds(
+    @GET("sports/{sportKey}/odds")
+    suspend fun getFootballMarketOdds(
+        @Path("sportKey") sportKey: String, // "americanfootball_nfl" or "americanfootball_ncaaf"
         @Query("apiKey") apiKey: String,
         @Query("regions") regions: String = "us",
         @Query("markets") markets: String = "h2h,spreads,totals",
@@ -174,7 +187,7 @@ data class OddsEventDto(
 
 /**
  * 4. Open-Meteo Weather API (https://api.open-meteo.com/v1/)
- * Keyless stadium weather telemetry for wind speed, temperature, and precipitation impact on passing/kicking.
+ * Keyless stadium weather telemetry for wind speed, temperature, and precipitation impact.
  */
 interface OpenMeteoWeatherService {
     @GET("forecast")

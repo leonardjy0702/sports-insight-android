@@ -23,10 +23,18 @@ import com.gridironiq.sports.data.model.FactorAttribution
 import com.gridironiq.sports.data.model.FactorWeights
 import com.gridironiq.sports.data.model.LlmPredictionResult
 import com.gridironiq.sports.data.model.MatchupTelemetry
+import com.gridironiq.sports.data.model.SportLeague
 import com.gridironiq.sports.data.repository.SportsTelemetryRepository
 import com.gridironiq.sports.domain.llm.GeminiPredictionEngine
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+
+enum class AppSection(val label: String) {
+    GATEWAY("Gateway Hub"),
+    AI_PICK("AI Pick"),
+    INJURIES("Injuries"),
+    METRICS("Metrics")
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +48,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color(0xFF0B0F17)
                 ) {
-                    GridironIqScreen(
+                    GridironIqApp(
                         repository = repository,
                         engine = geminiEngine
                     )
@@ -51,40 +59,229 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GridironIqScreen(
+fun GridironIqApp(
     repository: SportsTelemetryRepository,
     engine: GeminiPredictionEngine
 ) {
     val scope = rememberCoroutineScope()
-    var matchups by remember { mutableStateOf(repository.getFeaturedCollegeFootballMatchups()) }
+    var currentSection by remember { mutableStateOf(AppSection.GATEWAY) }
+    var currentLeague by remember { mutableStateOf(SportLeague.NFL) }
+    var nflMatchups by remember { mutableStateOf(repository.getFeaturedNflMatchups()) }
+    var ncaafMatchups by remember { mutableStateOf(repository.getFeaturedCollegeFootballMatchups()) }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var weights by remember { mutableStateOf(FactorWeights()) }
     var prediction by remember { mutableStateOf<LlmPredictionResult?>(null) }
 
-    val activeMatchup = matchups[selectedIndex]
+    val activeList = if (currentLeague == SportLeague.NFL) nflMatchups else ncaafMatchups
+    val safeIndex = selectedIndex.coerceIn(0, activeList.lastIndex)
+    val activeMatchup = activeList[safeIndex]
 
-    LaunchedEffect(activeMatchup, weights) {
+    LaunchedEffect(activeMatchup, weights, currentLeague) {
         prediction = engine.evaluateMatchup(activeMatchup, weights, invokeLiveGemini = false)
     }
 
+    Scaffold(
+        containerColor = Color(0xFF0B0F17),
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF111827))
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = { currentSection = AppSection.GATEWAY },
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(text = "Gateway", fontSize = 12.sp)
+                    }
+                    Column {
+                        Text(
+                            text = if (currentSection == AppSection.GATEWAY) "GridironIQ Gateway" else currentLeague.displayName,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "US Sports APIs + Google Gemini 2.5 Flash",
+                            fontSize = 11.sp,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
+                }
+            }
+        },
+        bottomBar = {
+            NavigationBar(containerColor = Color(0xFF111827)) {
+                AppSection.entries.forEach { section ->
+                    NavigationBarItem(
+                        selected = currentSection == section,
+                        onClick = { currentSection = section },
+                        icon = { Text(text = section.label.take(2), fontWeight = FontWeight.Bold) },
+                        label = { Text(text = section.label, fontSize = 11.sp) }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            if (currentSection == AppSection.GATEWAY) {
+                GatewaySelectionScreen(
+                    onSelectLeague = { league, targetSection ->
+                        currentLeague = league
+                        selectedIndex = 0
+                        currentSection = targetSection
+                    }
+                )
+            } else {
+                LeaguePredictorScreen(
+                    currentLeague = currentLeague,
+                    matchups = activeList,
+                    selectedIndex = safeIndex,
+                    onSelectLeague = {
+                        currentLeague = it
+                        selectedIndex = 0
+                    },
+                    onSelectMatchup = { selectedIndex = it },
+                    activeMatchup = activeMatchup,
+                    prediction = prediction,
+                    onToggleInjury = { injIdx, isAvailable ->
+                        val updatedInjuries = activeMatchup.injuries.toMutableList()
+                        updatedInjuries[injIdx] = updatedInjuries[injIdx].copy(isAvailableToPlay = isAvailable)
+                        if (currentLeague == SportLeague.NFL) {
+                            val list = nflMatchups.toMutableList()
+                            list[safeIndex] = activeMatchup.copy(injuries = updatedInjuries)
+                            nflMatchups = list
+                        } else {
+                            val list = ncaafMatchups.toMutableList()
+                            list[safeIndex] = activeMatchup.copy(injuries = updatedInjuries)
+                            ncaafMatchups = list
+                        }
+                    },
+                    onRunLiveGemini = {
+                        scope.launch {
+                            prediction = engine.evaluateMatchup(activeMatchup, weights, invokeLiveGemini = true)
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GatewaySelectionScreen(
+    onSelectLeague: (SportLeague, AppSection) -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item {
-            Text(
-                text = "GridironIQ • NCAAF & US Sports AI",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Text(
-                text = "Multi-API Telemetry (CFBD + ESPN + Odds + Open-Meteo) & Gemini LLM Decision Inspector",
-                fontSize = 12.sp,
-                color = Color(0xFF94A3B8)
-            )
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF161F30)),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = "SELECT YOUR SPORTS INTELLIGENCE PORTAL",
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = Color(0xFF38BDF8)
+                    )
+                    Text(
+                        text = "NFL & College Football AI Gateway",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "Choose a league or tool below to inspect live multi-API telemetry, starter injury impacts, and how the Gemini LLM picks each winner.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF94A3B8)
+                    )
+                }
+            }
+        }
+
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF111827)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onSelectLeague(SportLeague.NFL, AppSection.AI_PICK) }
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(text = "🏈 NFL Pro Football", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        text = "EPA/Play (nflfastR), DVOA%, Pass-Rush Win Rate, Official NFL Wed/Thu/Fri Injury Reports & Vegas Spreads",
+                        fontSize = 12.sp,
+                        color = Color(0xFF94A3B8)
+                    )
+                    Text(text = "Featured: KC @ BUF • DET @ GB →", fontSize = 12.sp, color = Color(0xFF38BDF8), fontFamily = FontFamily.Monospace)
+                }
+            }
+        }
+
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF111827)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onSelectLeague(SportLeague.NCAAF, AppSection.AI_PICK) }
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(text = "🎓 NCAA College Football (FBS)", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        text = "CollegeFootballData (CFBD) EPA/Play, Bill Connelly SP+ Ratings, Havoc Rate, Returning Production & CFP Top 25",
+                        fontSize = 12.sp,
+                        color = Color(0xFF94A3B8)
+                    )
+                    Text(text = "Featured: #3 UGA @ #2 TEX • #1 ORE @ #4 OSU →", fontSize = 12.sp, color = Color(0xFF38BDF8), fontFamily = FontFamily.Monospace)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LeaguePredictorScreen(
+    currentLeague: SportLeague,
+    matchups: List<MatchupTelemetry>,
+    selectedIndex: Int,
+    onSelectLeague: (SportLeague) -> Unit,
+    onSelectMatchup: (Int) -> Unit,
+    activeMatchup: MatchupTelemetry,
+    prediction: LlmPredictionResult?,
+    onToggleInjury: (Int, Boolean) -> Unit,
+    onRunLiveGemini: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        // Quick League Switcher
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SportLeague.entries.forEach { lg ->
+                    FilterChip(
+                        selected = lg == currentLeague,
+                        onClick = { onSelectLeague(lg) },
+                        label = { Text(text = lg.displayName) }
+                    )
+                }
+            }
         }
 
         // Matchup Selector Row
@@ -95,14 +292,14 @@ fun GridironIqScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { selectedIndex = idx },
+                            .clickable { onSelectMatchup(idx) },
                         colors = CardDefaults.cardColors(
                             containerColor = if (selected) Color(0xFF1E293B) else Color(0xFF111827)
                         )
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
-                                text = "${m.away.rank} ${m.away.abbr} @ ${m.home.rank} ${m.home.abbr}",
+                                text = "${m.away.abbr} @ ${m.home.abbr}",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
                                 color = Color.White
@@ -119,17 +316,11 @@ fun GridironIqScreen(
             }
         }
 
-        // Prediction Winner Banner
         prediction?.let { pred ->
             item {
-                PredictionBannerCard(matchup = activeMatchup, pred = pred, onRunLiveGemini = {
-                    scope.launch {
-                        prediction = engine.evaluateMatchup(activeMatchup, weights, invokeLiveGemini = true)
-                    }
-                })
+                PredictionBannerCard(matchup = activeMatchup, pred = pred, onRunLiveGemini = onRunLiveGemini)
             }
 
-            // Factor-by-Factor Attribution Waterfall
             item {
                 Text(
                     text = "How the LLM Chose the Winner (Factor Attribution)",
@@ -142,10 +333,9 @@ fun GridironIqScreen(
                 FactorAttributionCard(factor = factor, awayAbbr = activeMatchup.away.abbr, homeAbbr = activeMatchup.home.abbr)
             }
 
-            // Interactive Injury Overrides
             item {
                 Text(
-                    text = "Injury & Availability Telemetry (Toggle to Simulate)",
+                    text = "Injury & Availability Simulator",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = Color.White
@@ -179,13 +369,7 @@ fun GridironIqScreen(
                                 }
                                 Switch(
                                     checked = inj.isAvailableToPlay,
-                                    onCheckedChange = { isChecked ->
-                                        val updatedInjuries = activeMatchup.injuries.toMutableList()
-                                        updatedInjuries[injIdx] = inj.copy(isAvailableToPlay = isChecked)
-                                        val updatedList = matchups.toMutableList()
-                                        updatedList[selectedIndex] = activeMatchup.copy(injuries = updatedInjuries)
-                                        matchups = updatedList
-                                    }
+                                    onCheckedChange = { isChecked -> onToggleInjury(injIdx, isChecked) }
                                 )
                             }
                         }
@@ -193,7 +377,6 @@ fun GridironIqScreen(
                 }
             }
 
-            // Cited Chain-of-Thought Narrative
             item {
                 Text(
                     text = "Gemini LLM Cited Decision Explanation",

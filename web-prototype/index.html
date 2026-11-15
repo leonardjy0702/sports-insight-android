@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>GridironIQ — Android Mobile App</title>
+  <title>GridironIQ — NFL & College Football AI Predictor (Android App)</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -11,7 +11,7 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
     input[type="range"] { accent-color: var(--primary); cursor: pointer; }
 
-    /* Constrain to authentic Android Pixel (412px) mobile viewport centered in the preview pane */
+    /* Authentic Android Pixel (412dp) mobile frame */
     .android-shell {
       width: 100%;
       max-width: 420px;
@@ -27,9 +27,7 @@
     }
 
     @media (min-height: 760px) and (min-width: 460px) {
-      body {
-        padding: 12px 0;
-      }
+      body { padding: 12px 0; }
       .android-shell {
         height: calc(100vh - 24px);
         border: 2px solid var(--border);
@@ -58,44 +56,54 @@
 
     <!-- 1. ANDROID SYSTEM STATUS BAR -->
     <div class="px-5 pt-2.5 pb-1.5 flex items-center justify-between text-xs font-mono select-none bg-[var(--card)] shrink-0">
-      <span id="androidClock" class="font-semibold">12:30</span>
+      <span class="font-semibold">12:45</span>
       <div class="w-3 h-3 rounded-full bg-[var(--background)] border border-[var(--border)]" title="Front Camera Cutout"></div>
       <div class="flex items-center gap-1.5 text-[11px]">
         <span>5G</span>
         <span>▲▼</span>
-        <span class="px-1 rounded bg-[var(--secondary)] font-bold">94%</span>
+        <span class="px-1 rounded bg-[var(--secondary)] font-bold">96%</span>
       </div>
     </div>
 
-    <!-- 2. MATERIAL 3 TOP APP BAR -->
-    <header class="px-4 py-2.5 bg-[var(--card)] border-b border-[var(--border)] flex items-center justify-between shrink-0">
-      <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center font-black text-xs shadow-sm">
-          GIQ
-        </div>
+    <!-- 2. MATERIAL 3 TOP APP BAR WITH GATEWAY MENU BUTTON & LEAGUE SWITCHER -->
+    <header class="px-3.5 py-2.5 bg-[var(--card)] border-b border-[var(--border)] flex items-center justify-between shrink-0 gap-2">
+      <div class="flex items-center gap-2">
+        <!-- Back to Gateway Button (shown when inside a league) -->
+        <button onclick="openGateway()" id="btnGatewayBack" class="px-2 py-1.5 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-bold flex items-center gap-1" title="Open App Gateway Menu">
+          <span>🏠</span>
+          <span id="headerGatewayLabel" class="text-[11px]">Gateway</span>
+        </button>
         <div>
           <div class="flex items-center gap-1.5">
-            <h1 class="text-sm font-bold leading-none">GridironIQ</h1>
-            <span id="liveSyncChip" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)]">NCAAF</span>
+            <h1 class="text-sm font-bold leading-none" id="topBarTitle">GridironIQ Hub</h1>
+            <span id="activeLeagueBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] font-bold">ALL</span>
           </div>
-          <p class="text-[11px] text-[var(--muted-foreground)] mt-0.5">US Sports APIs + Gemini LLM</p>
+          <p class="text-[10px] text-[var(--muted-foreground)] mt-0.5" id="topBarSubtitle">Select a League or AI Tool</p>
         </div>
       </div>
 
       <div class="flex items-center gap-1.5">
-        <button onclick="fetchLiveEspnScoreboard()" id="btnSyncEspn" class="px-2.5 py-1.5 rounded-lg bg-[var(--secondary)] hover:opacity-90 text-xs font-medium flex items-center gap-1">
+        <button onclick="fetchLiveEspnForCurrentLeague()" id="btnSyncEspn" class="px-2.5 py-1.5 rounded-xl bg-[var(--secondary)] hover:opacity-90 text-xs font-medium flex items-center gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-[var(--success)]"></span>
-          <span id="syncLabel">Live ESPN</span>
+          <span id="syncLabel" class="text-[11px]">Sync ESPN</span>
         </button>
-        <button onclick="toggleKeySheet()" class="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] text-xs" title="Gemini API Key">
+        <button onclick="toggleKeySheet()" class="p-1.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs" title="Gemini API Key">
           ⚙️
         </button>
       </div>
     </header>
 
-    <!-- 3. HORIZONTAL MATCHUP CAROUSEL (Sticky under Top App Bar) -->
-    <div class="bg-[var(--card)]/70 border-b border-[var(--border)] px-3 py-2 shrink-0">
-      <div id="matchupPills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+    <!-- 3. STICKY MATCHUP CAROUSEL (Hidden when on Gateway Hub screen) -->
+    <div id="matchupCarouselBar" class="bg-[var(--card)]/70 border-b border-[var(--border)] px-3 py-2 shrink-0 hidden">
+      <div class="flex items-center justify-between mb-1.5">
+        <!-- Quick Segmented League Switcher inside League View -->
+        <div class="inline-flex rounded-lg bg-[var(--background)] p-0.5 border border-[var(--border)] text-[11px]">
+          <button onclick="enterLeague('NFL')" id="seg-NFL" class="px-2.5 py-0.5 rounded-md font-bold transition">🏈 NFL</button>
+          <button onclick="enterLeague('NCAAF')" id="seg-NCAAF" class="px-2.5 py-0.5 rounded-md font-bold transition">🎓 NCAAF</button>
+        </div>
+        <span id="leagueSourceHint" class="text-[10px] font-mono text-[var(--muted-foreground)]">NFL NextGen + ESPN</span>
+      </div>
+      <div id="matchupPills" class="flex items-center gap-1.5 overflow-x-auto pb-0.5">
         <!-- Populated by JS -->
       </div>
     </div>
@@ -103,21 +111,160 @@
     <!-- 4. SCROLLABLE MOBILE SCREEN CONTENT AREA -->
     <main class="flex-1 overflow-y-auto p-3.5 space-y-3.5" id="mobileViewportContent">
 
-      <!-- ALWAYS-VISIBLE COMPACT SCOREBOARD & WIN PROBABILITY CARD -->
-      <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-3 shadow-sm">
+      <!-- =================================================================== -->
+      <!-- GATEWAY SELECTION MENU SCREEN (Entry Hub of the Mobile App)         -->
+      <!-- =================================================================== -->
+      <div id="screen-gateway" class="space-y-3.5">
+        <!-- Hero Welcome Banner -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 space-y-2 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold">
+              GridironIQ Gateway v2.0
+            </span>
+            <span class="text-[11px] font-mono text-[var(--success)] flex items-center gap-1">
+              ● 9 US APIs Linked
+            </span>
+          </div>
+          <h2 class="text-base font-extrabold tracking-tight">Select Your Sports Intelligence Portal</h2>
+          <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">
+            Choose a league below to inspect live matchups, injury impacts, sabermetrics, and how the <strong>Google Gemini LLM</strong> picks each winner.
+          </p>
+        </div>
+
+        <!-- Primary League Selection Cards (NFL & College Football) -->
+        <div class="space-y-2.5">
+          <div class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] px-1">
+            1. Select Football League
+          </div>
+
+          <!-- NFL Pro Football Gateway Card -->
+          <button onclick="enterLeague('NFL')" class="w-full text-left bg-[var(--card)] hover:bg-[var(--secondary)]/60 border border-[var(--border)] rounded-2xl p-4 transition shadow-sm flex items-center justify-between gap-3 group">
+            <div class="flex items-start gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-[var(--primary)] text-[var(--primary-foreground)] flex flex-col items-center justify-center font-black shrink-0 shadow-sm">
+                <span class="text-sm leading-none">NFL</span>
+                <span class="text-[9px] font-mono opacity-80 mt-0.5">PRO</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-extrabold">NFL Pro Football</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--secondary)]">3 Featured + Live</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] leading-snug">
+                  EPA/Play, DVOA, CPOE, Pressure Rate, Official Wed/Thu/Fri Injury Designations &amp; Vegas Spreads
+                </p>
+                <div class="flex flex-wrap gap-1 pt-0.5 text-[10px] font-mono text-[var(--link)]">
+                  <span>• KC @ BUF</span>
+                  <span>• DET @ GB</span>
+                  <span>• BAL @ PHI</span>
+                </div>
+              </div>
+            </div>
+            <span class="text-sm font-bold text-[var(--muted-foreground)] group-hover:translate-x-0.5 transition">→</span>
+          </button>
+
+          <!-- NCAA College Football Gateway Card -->
+          <button onclick="enterLeague('NCAAF')" class="w-full text-left bg-[var(--card)] hover:bg-[var(--secondary)]/60 border border-[var(--border)] rounded-2xl p-4 transition shadow-sm flex items-center justify-between gap-3 group">
+            <div class="flex items-start gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] flex flex-col items-center justify-center font-black shrink-0 shadow-sm">
+                <span class="text-xs leading-none">NCAAF</span>
+                <span class="text-[9px] font-mono text-[var(--muted-foreground)] mt-0.5">FBS</span>
+              </div>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-extrabold">NCAA College Football</span>
+                  <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--secondary)]">3 Featured + Live</span>
+                </div>
+                <p class="text-xs text-[var(--muted-foreground)] leading-snug">
+                  CFBD EPA/Play, Bill Connelly SP+ Ratings, Havoc Rate, Returning Production &amp; CFP Top 25
+                </p>
+                <div class="flex flex-wrap gap-1 pt-0.5 text-[10px] font-mono text-[var(--link)]">
+                  <span>• #3 UGA @ #2 TEX</span>
+                  <span>• #1 ORE @ #4 OSU</span>
+                  <span>• #5 ND @ #7 BAMA</span>
+                </div>
+              </div>
+            </div>
+            <span class="text-sm font-bold text-[var(--muted-foreground)] group-hover:translate-x-0.5 transition">→</span>
+          </button>
+        </div>
+
+        <!-- Quick-Jump Gateway Action Grid (Direct Navigation to Specific App Modules) -->
+        <div class="space-y-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-[var(--muted-foreground)] px-1">
+            2. Direct Module Navigation
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button onclick="jumpFromGateway('NFL', 'injuries')" class="p-3 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--secondary)]/50 text-left space-y-1 transition">
+              <div class="text-xs font-bold flex items-center justify-between">
+                <span>🩹 Injury Simulator</span>
+                <span class="text-[10px] font-mono text-[var(--muted-foreground)]">NFL/CFB</span>
+              </div>
+              <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
+                Toggle QB &amp; starter status to watch real-time WP shifts
+              </p>
+            </button>
+
+            <button onclick="jumpFromGateway('NFL', 'stats')" class="p-3 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--secondary)]/50 text-left space-y-1 transition">
+              <div class="text-xs font-bold flex items-center justify-between">
+                <span>📊 Sabermetrics</span>
+                <span class="text-[10px] font-mono text-[var(--muted-foreground)]">EPA/DVOA</span>
+              </div>
+              <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
+                Side-by-side EPA/play, SP+, DVOA &amp; trench metrics
+              </p>
+            </button>
+
+            <button onclick="switchScreen('apis')" class="p-3 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--secondary)]/50 text-left space-y-1 transition">
+              <div class="text-xs font-bold flex items-center justify-between">
+                <span>🔌 US Sports APIs</span>
+                <span class="text-[10px] font-mono text-[var(--success)]">9 Feeds</span>
+              </div>
+              <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
+                Inspect NFLverse, ESPN, CFBD, Odds &amp; Open-Meteo
+              </p>
+            </button>
+
+            <button onclick="toggleKeySheet()" class="p-3 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--secondary)]/50 text-left space-y-1 transition">
+              <div class="text-xs font-bold flex items-center justify-between">
+                <span>✨ Gemini LLM Key</span>
+                <span class="text-[10px] font-mono text-[var(--link)]">2.5 Flash</span>
+              </div>
+              <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
+                Connect your Google AI Studio key for live inference
+              </p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Cross-League Top Edge Picks Summary Card on Gateway -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider">🔥 Today's Highest-Confidence LLM Picks</span>
+            <span class="text-[10px] font-mono text-[var(--muted-foreground)]">Tap any game to inspect</span>
+          </div>
+          <div id="gatewayQuickPicks" class="space-y-2">
+            <!-- Populated dynamically by JS across both NFL and NCAAF -->
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- SCOREBOARD CARD (Shown inside AI Pick, Injuries, and Metrics tabs)  -->
+      <!-- =================================================================== -->
+      <section id="activeMatchupBanner" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-3 shadow-sm hidden">
         <div class="flex items-center justify-between text-[11px] text-[var(--muted-foreground)]">
-          <span id="mConf" class="font-semibold truncate">SEC Championship Preview</span>
-          <span id="mWeather" class="font-mono shrink-0">🌤️ 68°F • 7 mph</span>
+          <span id="mConf" class="font-semibold truncate">AFC Game of the Week</span>
+          <span id="mWeather" class="font-mono shrink-0">🌤️ 34°F • 11 mph</span>
         </div>
 
         <!-- Away vs Home Mobile Scoreboard -->
         <div class="grid grid-cols-7 items-center gap-1 text-center">
           <div class="col-span-2 flex flex-col items-center">
             <div id="awayCircle" class="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-xs text-white shadow-sm">
-              UGA
+              KC
             </div>
-            <span id="awayRankName" class="text-xs font-bold mt-1 leading-tight">#3 Georgia</span>
-            <span id="awayRec" class="text-[10px] text-[var(--muted-foreground)] font-mono">10-1</span>
+            <span id="awayRankName" class="text-xs font-bold mt-1 leading-tight">Chiefs</span>
+            <span id="awayRec" class="text-[10px] text-[var(--muted-foreground)] font-mono">9-1</span>
           </div>
 
           <div class="col-span-3 flex flex-col items-center justify-center">
@@ -128,35 +275,35 @@
               <span id="homeScore" class="text-2xl font-black">27</span>
             </div>
             <div id="winnerChip" class="px-2.5 py-0.5 rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] text-[11px] font-bold">
-              TEX Wins (58.4%)
+              BUF Wins (56.8%)
             </div>
           </div>
 
           <div class="col-span-2 flex flex-col items-center">
             <div id="homeCircle" class="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-xs text-white shadow-sm">
-              TEX
+              BUF
             </div>
-            <span id="homeRankName" class="text-xs font-bold mt-1 leading-tight">#2 Texas</span>
-            <span id="homeRec" class="text-[10px] text-[var(--muted-foreground)] font-mono">11-0</span>
+            <span id="homeRankName" class="text-xs font-bold mt-1 leading-tight">Bills</span>
+            <span id="homeRec" class="text-[10px] text-[var(--muted-foreground)] font-mono">8-2</span>
           </div>
         </div>
 
         <!-- Win Probability Tug of War Bar -->
         <div class="space-y-1 pt-1">
           <div class="flex justify-between text-[11px] font-mono font-bold">
-            <span id="awayWpText">UGA 41.6%</span>
-            <span id="spreadEdgeText" class="text-[var(--muted-foreground)] font-normal">Vegas: TEX -2.5</span>
-            <span id="homeWpText">TEX 58.4%</span>
+            <span id="awayWpText">KC 43.2%</span>
+            <span id="spreadEdgeText" class="text-[var(--muted-foreground)] font-normal">Vegas: BUF -2.5</span>
+            <span id="homeWpText">BUF 56.8%</span>
           </div>
           <div class="w-full h-2.5 rounded-full bg-[var(--secondary)] overflow-hidden flex">
-            <div id="awayWpBar" class="h-full bar-transition" style="width: 41.6%; background: var(--chart-2);"></div>
-            <div id="homeWpBar" class="h-full bar-transition" style="width: 58.4%; background: var(--chart-1);"></div>
+            <div id="awayWpBar" class="h-full bar-transition" style="width: 43.2%; background: var(--chart-2);"></div>
+            <div id="homeWpBar" class="h-full bar-transition" style="width: 56.8%; background: var(--chart-1);"></div>
           </div>
         </div>
       </section>
 
-      <!-- SCREEN 1: AI PICK & WHY THE LLM CHOSE THE WINNER (Default Bottom Nav Tab) -->
-      <div id="screen-ai" class="space-y-3">
+      <!-- SCREEN 1: AI PICK & WHY THE LLM CHOSE THE WINNER -->
+      <div id="screen-ai" class="space-y-3 hidden">
         <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-2.5">
           <div class="flex items-center justify-between">
             <div>
@@ -202,15 +349,15 @@
 
           <div class="space-y-2 text-xs">
             <div>
-              <div class="flex justify-between"><span>Efficiency (CFBD EPA/Play &amp; SP+)</span><span id="wEffVal" class="font-mono">30%</span></div>
+              <div class="flex justify-between"><span id="lblWeightEff">Efficiency (EPA/Play &amp; DVOA/SP+)</span><span id="wEffVal" class="font-mono">30%</span></div>
               <input id="wEff" type="range" min="5" max="60" value="30" oninput="onWeightChange()" class="w-full" />
             </div>
             <div>
-              <div class="flex justify-between"><span>Player Injuries (ESPN Status)</span><span id="wInjVal" class="font-mono">25%</span></div>
+              <div class="flex justify-between"><span>Player Injuries (ESPN / Official Report)</span><span id="wInjVal" class="font-mono">25%</span></div>
               <input id="wInj" type="range" min="0" max="60" value="25" oninput="onWeightChange()" class="w-full" />
             </div>
             <div>
-              <div class="flex justify-between"><span>Trench Warfare (Havoc &amp; Sacks)</span><span id="wTrenchVal" class="font-mono">15%</span></div>
+              <div class="flex justify-between"><span>Trench Warfare (Pass Rush / Havoc / 3rd Dn)</span><span id="wTrenchVal" class="font-mono">15%</span></div>
               <input id="wTrench" type="range" min="5" max="50" value="15" oninput="onWeightChange()" class="w-full" />
             </div>
             <div>
@@ -228,7 +375,7 @@
       <!-- SCREEN 3: TALE OF THE TAPE (SABERMETRICS & HISTORY) -->
       <div id="screen-stats" class="space-y-3 hidden">
         <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-2.5">
-          <h2 class="text-xs font-bold uppercase tracking-wider">CFBD &amp; ESPN Sabermetric Comparison</h2>
+          <h2 class="text-xs font-bold uppercase tracking-wider" id="statsHeaderTitle">Sabermetric Telemetry Comparison</h2>
           <div id="mobileStatsList" class="space-y-1.5">
             <!-- Populated by JS -->
           </div>
@@ -243,7 +390,7 @@
       <!-- SCREEN 4: CONNECTED US PUBLIC SPORTS APIS & RAW LLM PAYLOAD -->
       <div id="screen-apis" class="space-y-3 hidden">
         <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-2.5">
-          <h2 class="text-xs font-bold uppercase tracking-wider">Connected US Public Sports APIs</h2>
+          <h2 class="text-xs font-bold uppercase tracking-wider">Connected US Public Sports APIs (NFL + NCAAF)</h2>
           <div id="mobileApiCards" class="space-y-2">
             <!-- Populated by JS -->
           </div>
@@ -257,23 +404,27 @@
 
     </main>
 
-    <!-- 5. ANDROID MATERIAL 3 BOTTOM NAVIGATION BAR -->
-    <nav class="bg-[var(--card)] border-t border-[var(--border)] px-2 pt-1.5 pb-1 grid grid-cols-4 gap-1 shrink-0 select-none">
-      <button onclick="switchScreen('ai')" id="nav-ai" class="flex flex-col items-center justify-center py-1 nav-active">
-        <div class="nav-pill px-4 py-0.5 rounded-full text-xs font-bold transition">🧠</div>
-        <span class="text-[11px] font-medium mt-0.5">AI Pick</span>
+    <!-- 5. ANDROID MATERIAL 3 BOTTOM NAVIGATION BAR (5 Tabs including Gateway) -->
+    <nav class="bg-[var(--card)] border-t border-[var(--border)] px-1.5 pt-1.5 pb-1 grid grid-cols-5 gap-0.5 shrink-0 select-none">
+      <button onclick="openGateway()" id="nav-gateway" class="flex flex-col items-center justify-center py-1 nav-active">
+        <div class="nav-pill px-3 py-0.5 rounded-full text-xs font-bold transition">🏠</div>
+        <span class="text-[10px] font-medium mt-0.5">Gateway</span>
+      </button>
+      <button onclick="switchScreen('ai')" id="nav-ai" class="flex flex-col items-center justify-center py-1 text-[var(--muted-foreground)]">
+        <div class="nav-pill px-3 py-0.5 rounded-full text-xs font-bold transition">🧠</div>
+        <span class="text-[10px] font-medium mt-0.5">AI Pick</span>
       </button>
       <button onclick="switchScreen('injuries')" id="nav-injuries" class="flex flex-col items-center justify-center py-1 text-[var(--muted-foreground)]">
-        <div class="nav-pill px-4 py-0.5 rounded-full text-xs font-bold transition">🩹</div>
-        <span class="text-[11px] font-medium mt-0.5">Injuries</span>
+        <div class="nav-pill px-3 py-0.5 rounded-full text-xs font-bold transition">🩹</div>
+        <span class="text-[10px] font-medium mt-0.5">Injuries</span>
       </button>
       <button onclick="switchScreen('stats')" id="nav-stats" class="flex flex-col items-center justify-center py-1 text-[var(--muted-foreground)]">
-        <div class="nav-pill px-4 py-0.5 rounded-full text-xs font-bold transition">📊</div>
-        <span class="text-[11px] font-medium mt-0.5">Metrics</span>
+        <div class="nav-pill px-3 py-0.5 rounded-full text-xs font-bold transition">📊</div>
+        <span class="text-[10px] font-medium mt-0.5">Metrics</span>
       </button>
       <button onclick="switchScreen('apis')" id="nav-apis" class="flex flex-col items-center justify-center py-1 text-[var(--muted-foreground)]">
-        <div class="nav-pill px-4 py-0.5 rounded-full text-xs font-bold transition">🔌</div>
-        <span class="text-[11px] font-medium mt-0.5">US APIs</span>
+        <div class="nav-pill px-3 py-0.5 rounded-full text-xs font-bold transition">🔌</div>
+        <span class="text-[10px] font-medium mt-0.5">US APIs</span>
       </button>
     </nav>
 
@@ -291,7 +442,7 @@
           <button onclick="toggleKeySheet()" class="text-xs text-[var(--muted-foreground)]">✕</button>
         </div>
         <p class="text-xs text-[var(--muted-foreground)]">
-          Enter an optional Google Gemini key to run live `gemini-2.5-flash` inference on the current matchup telemetry.
+          Enter an optional Google Gemini key to run live `gemini-2.5-flash` inference on the current NFL or NCAAF matchup telemetry.
         </p>
         <input id="geminiKeyInput" type="password" placeholder="Google Gemini API Key (AIzaSy...)" class="w-full px-3 py-2 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-mono" />
         <div class="flex gap-2 pt-1">
@@ -304,92 +455,191 @@
   </div>
 
   <script>
-    const MATCHUPS = [
-      {
-        id: "ncaaf-1",
-        conference: "SEC Championship Preview • ABC",
-        venue: "DKR Stadium • Austin, TX",
-        weather: { tempF: 68, windMph: 7, condition: "Clear", dome: false },
-        vegasSpreadHome: -2.5,
-        overUnder: 49.5,
-        away: {
-          abbr: "UGA", name: "Georgia", rank: "#3", record: "10-1", color: "#BA0C2F",
-          epaOff: 0.24, epaDef: -0.19, spPlus: 26.4, successRateOff: 47.8, successRateDef: 33.4,
-          havocRateDef: 19.8, thirdDownPct: 45.2, redZoneTdPct: 68.5, turnoverMargin: +5, sacksPerGame: 3.1
+    // =========================================================================
+    // 1. MULTI-LEAGUE TELEMETRY DATASET: NFL PRO FOOTBALL + NCAA COLLEGE FOOTBALL
+    // =========================================================================
+    const LEAGUE_DATA = {
+      NFL: [
+        {
+          id: "nfl-1",
+          league: "NFL",
+          conference: "AFC Heavyweight Clash • CBS 4:25 ET",
+          venue: "Highmark Stadium • Orchard Park, NY",
+          weather: { tempF: 36, windMph: 14, condition: "Crisp & Breezy", dome: false },
+          vegasSpreadHome: -2.5,
+          overUnder: 47.5,
+          ratingLabel: "DVOA%",
+          away: {
+            abbr: "KC", name: "Chiefs", rank: "AFC #1", record: "9-1", color: "#E31837",
+            epaOff: 0.16, epaDef: -0.09, powerRating: 24.5, successRateOff: 48.9, successRateDef: 41.2,
+            havocRateDef: 36.4, thirdDownPct: 49.5, redZoneTdPct: 58.2, turnoverMargin: +3, sacksPerGame: 2.8
+          },
+          home: {
+            abbr: "BUF", name: "Bills", rank: "AFC #2", record: "8-2", color: "#00338D",
+            epaOff: 0.21, epaDef: -0.11, powerRating: 27.2, successRateOff: 50.4, successRateDef: 39.8,
+            havocRateDef: 38.9, thirdDownPct: 46.8, redZoneTdPct: 66.7, turnoverMargin: +11, sacksPerGame: 3.2
+          },
+          h2h: "Bills won last 3 regular-season meetings; Chiefs won last 3 NFL Playoff meetings",
+          injuries: [
+            { player: "Isiah Pacheco (RB1)", team: "away", impactPts: 1.8, active: false, note: "Fibula — IR / Out; Kareem Hunt taking early-down snaps" },
+            { player: "Dalton Kincaid (TE1)", team: "home", impactPts: 1.6, active: false, note: "Knee — Ruled Out on Friday NFL Injury Report" },
+            { player: "Amari Cooper (WR1)", team: "home", impactPts: 1.9, active: true, note: "Wrist — Questionable, expected to play" },
+            { player: "Chris Jones (DT1)", team: "away", impactPts: 2.7, active: true, note: "Active — Leads NFL interior DL in pass-rush win rate" }
+          ]
         },
-        home: {
-          abbr: "TEX", name: "Texas", rank: "#2", record: "11-0", color: "#BF5700",
-          epaOff: 0.29, epaDef: -0.22, spPlus: 28.9, successRateOff: 49.6, successRateDef: 31.8,
-          havocRateDef: 21.4, thirdDownPct: 47.9, redZoneTdPct: 71.2, turnoverMargin: +9, sacksPerGame: 3.6
+        {
+          id: "nfl-2",
+          league: "NFL",
+          conference: "NFC North Showdown • FOX America's Game",
+          venue: "Lambeau Field • Green Bay, WI",
+          weather: { tempF: 31, windMph: 17, condition: "Cold & Gusty", dome: false },
+          vegasSpreadHome: +3.0,
+          overUnder: 48.5,
+          ratingLabel: "DVOA%",
+          away: {
+            abbr: "DET", name: "Lions", rank: "NFC #1", record: "9-1", color: "#0076B6",
+            epaOff: 0.27, epaDef: -0.14, powerRating: 33.8, successRateOff: 52.8, successRateDef: 37.5,
+            havocRateDef: 37.2, thirdDownPct: 48.1, redZoneTdPct: 69.5, turnoverMargin: +9, sacksPerGame: 2.9
+          },
+          home: {
+            abbr: "GB", name: "Packers", rank: "NFC #5", record: "7-3", color: "#203731",
+            epaOff: 0.18, epaDef: -0.07, powerRating: 21.4, successRateOff: 47.6, successRateDef: 42.1,
+            havocRateDef: 34.8, thirdDownPct: 42.9, redZoneTdPct: 57.8, turnoverMargin: +6, sacksPerGame: 2.6
+          },
+          h2h: "Lions have won 5 of last 6 meetings at Lambeau Field & Ford Field",
+          injuries: [
+            { player: "Sam LaPorta (TE1)", team: "away", impactPts: 1.7, active: false, note: "Shoulder — Doubtful on official NFL practice report" },
+            { player: "Jaire Alexander (CB1)", team: "home", impactPts: 2.4, active: false, note: "Knee — Questionable; key coverage vs Amon-Ra St. Brown" },
+            { player: "Jordan Love (QB1)", team: "home", impactPts: 7.0, active: true, note: "Groin — Full participant in Thursday/Friday practice" }
+          ]
         },
-        h2h: "Texas leads 4-2 • Last meeting: UGA 30, TEX 15 (7 sacks by UGA)",
-        injuries: [
-          { player: "Trevor Etienne (RB1)", team: "away", impactPts: 2.1, active: false, note: "Ribs — Questionable (5.4 YPC)" },
-          { player: "Earnest Greene III (LT)", team: "away", impactPts: 2.4, active: false, note: "Upper body — Blindside tackle" },
-          { player: "Quinn Ewers (QB1)", team: "home", impactPts: 6.5, active: true, note: "Ankle — Probable, full practice" },
-          { player: "Kelvin Banks Jr. (LT)", team: "home", impactPts: 2.8, active: true, note: "Active — 91.2 Pass Block grade" }
-        ]
-      },
-      {
-        id: "ncaaf-2",
-        conference: "Big Ten Showdown • FOX",
-        venue: "Ohio Stadium • Columbus, OH",
-        weather: { tempF: 41, windMph: 16, condition: "Windy", dome: false },
-        vegasSpreadHome: -3.5,
-        overUnder: 52.5,
-        away: {
-          abbr: "ORE", name: "Oregon", rank: "#1", record: "11-0", color: "#154733",
-          epaOff: 0.33, epaDef: -0.17, spPlus: 27.8, successRateOff: 52.1, successRateDef: 35.1,
-          havocRateDef: 18.2, thirdDownPct: 50.4, redZoneTdPct: 73.0, turnoverMargin: +8, sacksPerGame: 2.9
+        {
+          id: "nfl-3",
+          league: "NFL",
+          conference: "Prime Time Interconference • NBC SNF",
+          venue: "Lincoln Financial Field • Philadelphia, PA",
+          weather: { tempF: 44, windMph: 8, condition: "Clear Night", dome: false },
+          vegasSpreadHome: -1.5,
+          overUnder: 51.0,
+          ratingLabel: "DVOA%",
+          away: {
+            abbr: "BAL", name: "Ravens", rank: "AFC #3", record: "8-3", color: "#241773",
+            epaOff: 0.29, epaDef: -0.04, powerRating: 29.6, successRateOff: 53.1, successRateDef: 43.4,
+            havocRateDef: 35.5, thirdDownPct: 50.2, redZoneTdPct: 72.4, turnoverMargin: +5, sacksPerGame: 3.4
+          },
+          home: {
+            abbr: "PHI", name: "Eagles", rank: "NFC #2", record: "8-2", color: "#004C54",
+            epaOff: 0.22, epaDef: -0.16, powerRating: 28.9, successRateOff: 49.8, successRateDef: 36.9,
+            havocRateDef: 40.1, thirdDownPct: 47.4, redZoneTdPct: 64.0, turnoverMargin: +7, sacksPerGame: 3.5
+          },
+          h2h: "Dual-threat QB showcase: Lamar Jackson vs Jalen Hurts & Saquon Barkley",
+          injuries: [
+            { player: "Kyle Hamilton (S1)", team: "away", impactPts: 2.3, active: true, note: "Ankle — Active; versatile box/slot defender vs Saquon Barkley" },
+            { player: "DeVonta Smith (WR2)", team: "home", impactPts: 2.1, active: false, note: "Hamstring — Questionable after limited Wednesday/Thursday sessions" },
+            { player: "Lane Johnson (RT1)", team: "home", impactPts: 2.6, active: true, note: "Active — All-Pro RT anchoring Philly pass protection" }
+          ]
+        }
+      ],
+      NCAAF: [
+        {
+          id: "ncaaf-1",
+          league: "NCAAF",
+          conference: "SEC Championship Preview • ABC",
+          venue: "DKR Stadium • Austin, TX",
+          weather: { tempF: 68, windMph: 7, condition: "Clear", dome: false },
+          vegasSpreadHome: -2.5,
+          overUnder: 49.5,
+          ratingLabel: "SP+",
+          away: {
+            abbr: "UGA", name: "Georgia", rank: "#3", record: "10-1", color: "#BA0C2F",
+            epaOff: 0.24, epaDef: -0.19, powerRating: 26.4, successRateOff: 47.8, successRateDef: 33.4,
+            havocRateDef: 19.8, thirdDownPct: 45.2, redZoneTdPct: 68.5, turnoverMargin: +5, sacksPerGame: 3.1
+          },
+          home: {
+            abbr: "TEX", name: "Texas", rank: "#2", record: "11-0", color: "#BF5700",
+            epaOff: 0.29, epaDef: -0.22, powerRating: 28.9, successRateOff: 49.6, successRateDef: 31.8,
+            havocRateDef: 21.4, thirdDownPct: 47.9, redZoneTdPct: 71.2, turnoverMargin: +9, sacksPerGame: 3.6
+          },
+          h2h: "Texas leads 4-2 • Last meeting: UGA 30, TEX 15 (7 sacks by UGA)",
+          injuries: [
+            { player: "Trevor Etienne (RB1)", team: "away", impactPts: 2.1, active: false, note: "Ribs — Questionable (5.4 YPC)" },
+            { player: "Earnest Greene III (LT)", team: "away", impactPts: 2.4, active: false, note: "Upper body — Blindside tackle" },
+            { player: "Quinn Ewers (QB1)", team: "home", impactPts: 6.5, active: true, note: "Ankle — Probable, full practice" },
+            { player: "Kelvin Banks Jr. (LT)", team: "home", impactPts: 2.8, active: true, note: "Active — 91.2 Pass Block grade" }
+          ]
         },
-        home: {
-          abbr: "OSU", name: "Ohio State", rank: "#4", record: "10-1", color: "#CE0F3D",
-          epaOff: 0.31, epaDef: -0.26, spPlus: 30.1, successRateOff: 50.3, successRateDef: 29.9,
-          havocRateDef: 22.8, thirdDownPct: 48.1, redZoneTdPct: 74.5, turnoverMargin: +7, sacksPerGame: 3.8
+        {
+          id: "ncaaf-2",
+          league: "NCAAF",
+          conference: "Big Ten Showdown • FOX",
+          venue: "Ohio Stadium • Columbus, OH",
+          weather: { tempF: 41, windMph: 16, condition: "Windy", dome: false },
+          vegasSpreadHome: -3.5,
+          overUnder: 52.5,
+          ratingLabel: "SP+",
+          away: {
+            abbr: "ORE", name: "Oregon", rank: "#1", record: "11-0", color: "#154733",
+            epaOff: 0.33, epaDef: -0.17, powerRating: 27.8, successRateOff: 52.1, successRateDef: 35.1,
+            havocRateDef: 18.2, thirdDownPct: 50.4, redZoneTdPct: 73.0, turnoverMargin: +8, sacksPerGame: 2.9
+          },
+          home: {
+            abbr: "OSU", name: "Ohio State", rank: "#4", record: "10-1", color: "#CE0F3D",
+            epaOff: 0.31, epaDef: -0.26, powerRating: 30.1, successRateOff: 50.3, successRateDef: 29.9,
+            havocRateDef: 22.8, thirdDownPct: 48.1, redZoneTdPct: 74.5, turnoverMargin: +7, sacksPerGame: 3.8
+          },
+          h2h: "Ohio State leads 9-2 • Last: Oregon 32, Ohio State 31",
+          injuries: [
+            { player: "Tez Johnson (WR1)", team: "away", impactPts: 3.2, active: true, note: "Shoulder — Primary 3rd down slot" },
+            { player: "Seth McLaughlin (C)", team: "home", impactPts: 3.1, active: false, note: "Achilles — Out for season" },
+            { player: "Josh Simmons (LT)", team: "home", impactPts: 2.6, active: false, note: "Knee — Starting LT sidelined" }
+          ]
         },
-        h2h: "Ohio State leads 9-2 • Last: Oregon 32, Ohio State 31",
-        injuries: [
-          { player: "Tez Johnson (WR1)", team: "away", impactPts: 3.2, active: true, note: "Shoulder — Primary 3rd down slot" },
-          { player: "Seth McLaughlin (C)", team: "home", impactPts: 3.1, active: false, note: "Achilles — Out for season" },
-          { player: "Josh Simmons (LT)", team: "home", impactPts: 2.6, active: false, note: "Knee — Starting LT sidelined" }
-        ]
-      },
-      {
-        id: "ncaaf-3",
-        conference: "CFP Rose Bowl • ESPN",
-        venue: "Hard Rock • Miami, FL",
-        weather: { tempF: 74, windMph: 9, condition: "Humid", dome: false },
-        vegasSpreadHome: -4.5,
-        overUnder: 56.5,
-        away: {
-          abbr: "ND", name: "Notre Dame", rank: "#5", record: "10-1", color: "#0C2340",
-          epaOff: 0.25, epaDef: -0.25, spPlus: 25.9, successRateOff: 46.9, successRateDef: 31.2,
-          havocRateDef: 23.1, thirdDownPct: 43.8, redZoneTdPct: 70.1, turnoverMargin: +13, sacksPerGame: 3.4
-        },
-        home: {
-          abbr: "BAMA", name: "Alabama", rank: "#7", record: "9-2", color: "#9E1B32",
-          epaOff: 0.28, epaDef: -0.18, spPlus: 26.8, successRateOff: 48.7, successRateDef: 34.8,
-          havocRateDef: 19.5, thirdDownPct: 46.5, redZoneTdPct: 69.4, turnoverMargin: +4, sacksPerGame: 3.0
-        },
-        h2h: "Notre Dame leads 5-3 • Last: Alabama 31, ND 14",
-        injuries: [
-          { player: "Benjamin Morrison (CB1)", team: "away", impactPts: 2.9, active: false, note: "Hip — Shutdown corner out" },
-          { player: "Riley Leonard (QB1)", team: "away", impactPts: 6.8, active: true, note: "Active — 68.5 rush yds/g" },
-          { player: "Deontae Lawson (LB)", team: "home", impactPts: 2.4, active: false, note: "Lower leg — Questionable" }
-        ]
-      }
-    ];
+        {
+          id: "ncaaf-3",
+          league: "NCAAF",
+          conference: "CFP Rose Bowl • ESPN",
+          venue: "Hard Rock • Miami, FL",
+          weather: { tempF: 74, windMph: 9, condition: "Humid", dome: false },
+          vegasSpreadHome: -4.5,
+          overUnder: 56.5,
+          ratingLabel: "SP+",
+          away: {
+            abbr: "ND", name: "Notre Dame", rank: "#5", record: "10-1", color: "#0C2340",
+            epaOff: 0.25, epaDef: -0.25, powerRating: 25.9, successRateOff: 46.9, successRateDef: 31.2,
+            havocRateDef: 23.1, thirdDownPct: 43.8, redZoneTdPct: 70.1, turnoverMargin: +13, sacksPerGame: 3.4
+          },
+          home: {
+            abbr: "BAMA", name: "Alabama", rank: "#7", record: "9-2", color: "#9E1B32",
+            epaOff: 0.28, epaDef: -0.18, powerRating: 26.8, successRateOff: 48.7, successRateDef: 34.8,
+            havocRateDef: 19.5, thirdDownPct: 46.5, redZoneTdPct: 69.4, turnoverMargin: +4, sacksPerGame: 3.0
+          },
+          h2h: "Notre Dame leads 5-3 • Last: Alabama 31, ND 14",
+          injuries: [
+            { player: "Benjamin Morrison (CB1)", team: "away", impactPts: 2.9, active: false, note: "Hip — Shutdown corner out" },
+            { player: "Riley Leonard (QB1)", team: "away", impactPts: 6.8, active: true, note: "Active — 68.5 rush yds/g" },
+            { player: "Deontae Lawson (LB)", team: "home", impactPts: 2.4, active: false, note: "Lower leg — Questionable" }
+          ]
+        }
+      ]
+    };
 
     const US_APIS = [
-      { name: "CollegeFootballData (CFBD)", auth: "Bearer Key", role: "EPA/play, SP+, Havoc, Success %, H2H" },
-      { name: "ESPN Public Site API", auth: "Zero-Key JSON", role: "Live Scoreboard, Injuries, Depth Chart, FPI" },
-      { name: "The Odds API v4", auth: "Free Key", role: "DraftKings/FanDuel Spreads, Moneylines, Totals" },
-      { name: "Open-Meteo Weather API", auth: "Zero-Key JSON", role: "Stadium Wind Speed, Temp, Precipitation" },
-      { name: "NCAA Data API", auth: "Zero-Key JSON", role: "Official Standings, Turnover Margin, Red Zone" }
+      { name: "ESPN NFL Public API", auth: "Zero-Key JSON", role: "NFL Live Scoreboard, Official Practice/Injury Reports, Boxscores (`sports/football/nfl/scoreboard`)" },
+      { name: "nflverse / nflfastR Open Data", auth: "Public Open Data", role: "NFL Play-by-Play EPA/play, CPOE, Success Rate, Pass Block / Rush Win Rates" },
+      { name: "CollegeFootballData (CFBD)", auth: "Bearer Key", role: "NCAAF EPA/play, Bill Connelly SP+, Havoc Rate, Success %, H2H History" },
+      { name: "ESPN College Football API", auth: "Zero-Key JSON", role: "NCAAF Scoreboard, Injuries, Depth Chart, ESPN FPI (`sports/football/college-football`)" },
+      { name: "The Odds API v4 (NFL & NCAAF)", auth: "Free Key", role: "DraftKings/FanDuel Spreads, Moneylines, Totals (`americanfootball_nfl` & `americanfootball_ncaaf`)" },
+      { name: "Open-Meteo Stadium Forecast", auth: "Zero-Key JSON", role: "Outdoor NFL/CFB Stadium Wind Speed, Temperature, Precipitation Probability" }
     ];
 
+    let currentLeague = "NFL";
     let selectedIdx = 0;
+    let currentScreen = "gateway";
     let liveGeminiOverride = null;
+
+    function getActiveList() {
+      return LEAGUE_DATA[currentLeague];
+    }
 
     function computePrediction(m) {
       const wEff = parseFloat(document.getElementById("wEff").value) || 30;
@@ -403,7 +653,7 @@
       const homeNetEpa = home.epaOff - home.epaDef;
       const awayNetEpa = away.epaOff - away.epaDef;
 
-      const effShift = (((homeNetEpa - awayNetEpa) * 38) * 0.5 + ((home.spPlus - away.spPlus) * 1.35) * 0.5) * ((wEff / total) / 0.30);
+      const effShift = (((homeNetEpa - awayNetEpa) * 38) * 0.5 + ((home.powerRating - away.powerRating) * 1.15) * 0.5) * ((wEff / total) / 0.30);
 
       let homeOut = 0, awayOut = 0;
       m.injuries.forEach(i => {
@@ -413,36 +663,161 @@
         }
       });
       const injShift = ((awayOut - homeOut) * 2.4) * ((wInj / total) / 0.25);
-      const trenchShift = (((home.havocRateDef - away.havocRateDef) * 0.85) + ((home.sacksPerGame - away.sacksPerGame) * 2.0)) * 0.7 * ((wTrench / total) / 0.15);
+      const trenchShift = (((home.havocRateDef - away.havocRateDef) * 0.65) + ((home.sacksPerGame - away.sacksPerGame) * 2.0)) * 0.7 * ((wTrench / total) / 0.15);
       const formShift = (((home.turnoverMargin - away.turnoverMargin) * 0.55) + ((home.redZoneTdPct - away.redZoneTdPct) * 0.35)) * ((wForm / total) / 0.15);
-      const sitShift = (4.2 + (m.weather.windMph >= 15 ? 1.2 : 0)) * ((wSit / total) / 0.15);
+      const sitShift = (3.4 + (m.weather.windMph >= 15 ? 1.3 : 0)) * ((wSit / total) / 0.15);
 
       const homeWp = Math.max(8, Math.min(92, 50 + effShift + injShift + trenchShift + formShift + sitShift));
       const awayWp = 100 - homeWp;
-      const margin = (homeWp - 50) * 0.36;
+      const margin = (homeWp - 50) * 0.34;
       const hScore = Math.round((m.overUnder / 2) + (margin / 2));
       const aScore = Math.round((m.overUnder / 2) - (margin / 2));
+
+      const effSource = m.league === "NFL" ? "nflfastR + DVOA" : "CFBD";
+      const trenchLabel = m.league === "NFL" ? "Pass-Rush Win % & 3rd Dn" : "Havoc Rate & Sacks";
 
       return {
         homeWp, awayWp,
         homeScore: hScore === aScore ? hScore + 1 : hScore,
         awayScore: aScore,
         factors: [
-          { title: "Efficiency (EPA/Play & SP+)", src: "CFBD", shift: effShift, detail: `${home.abbr} SP+ ${home.spPlus} vs ${away.abbr} ${away.spPlus}` },
-          { title: "Starter Injury Impact", src: "ESPN", shift: injShift, detail: `Out: ${away.abbr} -${awayOut.toFixed(1)} pts vs ${home.abbr} -${homeOut.toFixed(1)} pts` },
-          { title: "Trench Warfare & Havoc", src: "CFBD", shift: trenchShift, detail: `Havoc: ${home.abbr} ${home.havocRateDef}% vs ${away.abbr} ${away.havocRateDef}%` },
-          { title: "Turnovers & Red Zone TD%", src: "NCAA", shift: formShift, detail: `TO Margin: ${home.abbr} ${home.turnoverMargin} vs ${away.abbr} ${away.turnoverMargin}` },
+          { title: `Efficiency (EPA/Play & ${m.ratingLabel})`, src: effSource, shift: effShift, detail: `${home.abbr} ${m.ratingLabel} ${home.powerRating} vs ${away.abbr} ${away.powerRating}` },
+          { title: "Starter Injury Impact", src: "ESPN Report", shift: injShift, detail: `Out: ${away.abbr} -${awayOut.toFixed(1)} pts vs ${home.abbr} -${homeOut.toFixed(1)} pts` },
+          { title: trenchLabel, src: effSource, shift: trenchShift, detail: `Pressure/Havoc: ${home.abbr} ${home.havocRateDef}% vs ${away.abbr} ${away.havocRateDef}%` },
+          { title: "Turnovers & Red Zone TD%", src: "ESPN Box", shift: formShift, detail: `TO Margin: ${home.abbr} ${home.turnoverMargin >= 0 ? '+' : ''}${home.turnoverMargin} vs ${away.abbr} ${away.turnoverMargin >= 0 ? '+' : ''}${away.turnoverMargin}` },
           { title: "Home Field & Weather", src: "Open-Meteo", shift: sitShift, detail: `${m.venue.split('•')[0]} (${m.weather.tempF}°F, ${m.weather.windMph} mph)` }
         ]
       };
     }
 
+    // Navigation: Gateway vs League Screens
+    function openGateway() {
+      currentScreen = "gateway";
+      document.getElementById("topBarTitle").textContent = "GridironIQ Gateway";
+      document.getElementById("activeLeagueBadge").textContent = "HUB";
+      document.getElementById("topBarSubtitle").textContent = "NFL & College Football AI";
+      document.getElementById("matchupCarouselBar").classList.add("hidden");
+      document.getElementById("activeMatchupBanner").classList.add("hidden");
+
+      ["gateway", "ai", "injuries", "stats", "apis"].forEach(t => {
+        document.getElementById("screen-" + t).classList.toggle("hidden", t !== "gateway");
+        const btn = document.getElementById("nav-" + t);
+        if (btn) {
+          if (t === "gateway") {
+            btn.classList.add("nav-active");
+            btn.classList.remove("text-[var(--muted-foreground)]");
+          } else {
+            btn.classList.remove("nav-active");
+            btn.classList.add("text-[var(--muted-foreground)]");
+          }
+        }
+      });
+      renderGatewayQuickPicks();
+    }
+
+    function enterLeague(leagueName, targetTab = "ai") {
+      currentLeague = leagueName;
+      selectedIdx = 0;
+      liveGeminiOverride = null;
+      switchScreen(targetTab);
+      renderAll();
+    }
+
+    function jumpFromGateway(leagueName, targetTab) {
+      currentLeague = leagueName;
+      selectedIdx = 0;
+      switchScreen(targetTab);
+      renderAll();
+    }
+
+    function openSpecificGameFromGateway(leagueName, idx) {
+      currentLeague = leagueName;
+      selectedIdx = idx;
+      switchScreen("ai");
+      renderAll();
+    }
+
+    function switchScreen(tab) {
+      if (tab === "gateway") {
+        openGateway();
+        return;
+      }
+      currentScreen = tab;
+      const isApiScreen = tab === "apis";
+
+      document.getElementById("topBarTitle").textContent = currentLeague === "NFL" ? "NFL Pro Predictor" : "NCAAF Predictor";
+      document.getElementById("activeLeagueBadge").textContent = currentLeague;
+      document.getElementById("topBarSubtitle").textContent = currentLeague === "NFL"
+        ? "nflfastR + ESPN NFL + Odds API"
+        : "CFBD + ESPN NCAAF + Odds API";
+
+      document.getElementById("matchupCarouselBar").classList.toggle("hidden", isApiScreen);
+      document.getElementById("activeMatchupBanner").classList.toggle("hidden", isApiScreen);
+
+      ["gateway", "ai", "injuries", "stats", "apis"].forEach(t => {
+        document.getElementById("screen-" + t).classList.toggle("hidden", t !== tab);
+        const btn = document.getElementById("nav-" + t);
+        if (btn) {
+          if (t === tab) {
+            btn.classList.add("nav-active");
+            btn.classList.remove("text-[var(--muted-foreground)]");
+          } else {
+            btn.classList.remove("nav-active");
+            btn.classList.add("text-[var(--muted-foreground)]");
+          }
+        }
+      });
+      renderAll();
+    }
+
+    function renderGatewayQuickPicks() {
+      const allGames = [
+        ...LEAGUE_DATA.NFL.map((m, idx) => ({ m, idx, league: "NFL", pred: computePrediction(m) })),
+        ...LEAGUE_DATA.NCAAF.map((m, idx) => ({ m, idx, league: "NCAAF", pred: computePrediction(m) }))
+      ];
+      allGames.sort((a, b) => Math.max(b.pred.homeWp, b.pred.awayWp) - Math.max(a.pred.homeWp, a.pred.awayWp));
+
+      document.getElementById("gatewayQuickPicks").innerHTML = allGames.slice(0, 4).map(item => {
+        const winTeam = item.pred.homeWp >= 50 ? item.m.home : item.m.away;
+        const winWp = Math.max(item.pred.homeWp, item.pred.awayWp).toFixed(1);
+        return `
+          <button onclick="openSpecificGameFromGateway('${item.league}', ${item.idx})" class="w-full p-2.5 rounded-xl bg-[var(--background)] hover:bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-between text-xs transition">
+            <div class="flex items-center gap-2">
+              <span class="px-1.5 py-0.5 rounded bg-[var(--secondary)] font-mono text-[10px] font-bold">${item.league}</span>
+              <span class="font-bold">${item.m.away.abbr} @ ${item.m.home.abbr}</span>
+              <span class="text-[11px] text-[var(--muted-foreground)] font-mono">(${item.pred.awayScore}-${item.pred.homeScore})</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] font-mono font-bold text-[11px]">
+              ${winTeam.abbr} ${winWp}%
+            </span>
+          </button>
+        `;
+      }).join("");
+    }
+
     function renderAll() {
-      const m = MATCHUPS[selectedIdx];
+      // Update Segmented League Buttons
+      ["NFL", "NCAAF"].forEach(lg => {
+        const segBtn = document.getElementById("seg-" + lg);
+        if (segBtn) {
+          if (lg === currentLeague) {
+            segBtn.className = "px-2.5 py-0.5 rounded-md font-bold transition bg-[var(--primary)] text-[var(--primary-foreground)]";
+          } else {
+            segBtn.className = "px-2.5 py-0.5 rounded-md font-bold transition text-[var(--muted-foreground)]";
+          }
+        }
+      });
+      document.getElementById("leagueSourceHint").textContent = currentLeague === "NFL"
+        ? "nflfastR EPA + ESPN NFL"
+        : "CFBD SP+ + ESPN CFB";
+
+      const list = getActiveList();
+      if (selectedIdx >= list.length) selectedIdx = 0;
+      const m = list[selectedIdx];
       const pred = computePrediction(m);
 
       // Pills
-      document.getElementById("matchupPills").innerHTML = MATCHUPS.map((item, i) => `
+      document.getElementById("matchupPills").innerHTML = list.map((item, i) => `
         <button onclick="selectMatchup(${i})" class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 ${i === selectedIdx ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm' : 'bg-[var(--background)] border border-[var(--border)] text-[var(--muted-foreground)]'}">
           <span>${item.away.abbr} @ ${item.home.abbr}</span>
         </button>
@@ -472,7 +847,7 @@
 
       document.getElementById("awayWpText").textContent = `${m.away.abbr} ${pred.awayWp.toFixed(1)}%`;
       document.getElementById("homeWpText").textContent = `${m.home.abbr} ${pred.homeWp.toFixed(1)}%`;
-      document.getElementById("spreadEdgeText").textContent = `Vegas: ${m.home.abbr} ${m.vegasSpreadHome}`;
+      document.getElementById("spreadEdgeText").textContent = `Vegas: ${m.home.abbr} ${m.vegasSpreadHome > 0 ? '+' + m.vegasSpreadHome : m.vegasSpreadHome}`;
       document.getElementById("awayWpBar").style.width = `${pred.awayWp}%`;
       document.getElementById("homeWpBar").style.width = `${pred.homeWp}%`;
 
@@ -508,23 +883,24 @@
         narrativeBox.innerHTML = liveGeminiOverride.html;
       } else {
         const outPlayers = m.injuries.filter(i => !i.active).map(i => i.player).join(", ") || "None (Full strength)";
+        const apiTag = m.league === "NFL" ? "nflfastR + NextGen Stats" : "CFBD API";
         narrativeBox.innerHTML = `
           <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-1.5 text-xs">
             <div class="flex justify-between font-bold">
-              <span>1. Sabermetric Edge (EPA &amp; SP+)</span>
-              <span class="font-mono text-[11px] text-[var(--link)]">[CFBD API]</span>
+              <span>1. Sabermetric Edge (EPA &amp; ${m.ratingLabel})</span>
+              <span class="font-mono text-[11px] text-[var(--link)]">[${apiTag}]</span>
             </div>
             <p class="text-[var(--muted-foreground)] leading-relaxed">
-              <strong>${winTeam.name} (${winProb}%)</strong> holds the composite efficiency edge. ${m.home.abbr} posts <code class="px-1 rounded bg-[var(--secondary)]">+${m.home.epaOff}</code> Off EPA/play and a <strong>${m.home.spPlus} SP+</strong> rating vs ${m.away.abbr}'s <code class="px-1 rounded bg-[var(--secondary)]">+${m.away.epaOff}</code> Off EPA/play (<strong>${m.away.spPlus} SP+</strong>).
+              <strong>${winTeam.name} (${winProb}%)</strong> holds the composite efficiency edge. ${m.home.abbr} posts <code class="px-1 rounded bg-[var(--secondary)]">+${m.home.epaOff}</code> Off EPA/play and a <strong>${m.home.powerRating} ${m.ratingLabel}</strong> rating vs ${m.away.abbr}'s <code class="px-1 rounded bg-[var(--secondary)]">+${m.away.epaOff}</code> Off EPA/play (<strong>${m.away.powerRating} ${m.ratingLabel}</strong>).
             </p>
           </div>
           <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-1.5 text-xs">
             <div class="flex justify-between font-bold">
               <span>2. Injury &amp; Trench Impact</span>
-              <span class="font-mono text-[11px] text-[var(--link)]">[ESPN API]</span>
+              <span class="font-mono text-[11px] text-[var(--link)]">[ESPN ${m.league} Report]</span>
             </div>
             <p class="text-[var(--muted-foreground)] leading-relaxed">
-              Sidelined starters factored in: <strong>${outPlayers}</strong>. On defense, ${m.home.abbr} generates a <strong>${m.home.havocRateDef}% havoc rate</strong> (${m.home.sacksPerGame} sacks/g) vs ${m.away.abbr}'s ${m.away.havocRateDef}%. Tap the <strong>🩹 Injuries</strong> tab below to toggle players.
+              Sidelined starters factored in: <strong>${outPlayers}</strong>. On defense, ${m.home.abbr} generates a <strong>${m.home.havocRateDef}% ${m.league === 'NFL' ? 'pass-rush win/pressure' : 'havoc'} rate</strong> (${m.home.sacksPerGame} sacks/g) vs ${m.away.abbr}'s ${m.away.havocRateDef}%. Tap <strong>🩹 Injuries</strong> below to simulate lineup changes.
             </p>
           </div>
         `;
@@ -545,15 +921,16 @@
       `).join("");
 
       // Metrics Tab
+      document.getElementById("statsHeaderTitle").textContent = `${m.league} Sabermetric Telemetry Comparison`;
       const rows = [
-        ["SP+ Overall Rating", m.away.spPlus, m.home.spPlus],
+        [`Overall ${m.ratingLabel} Rating`, m.away.powerRating, m.home.powerRating],
         ["Offensive EPA / Play", "+" + m.away.epaOff, "+" + m.home.epaOff],
         ["Defensive EPA / Play", m.away.epaDef, m.home.epaDef],
         ["Success Rate %", m.away.successRateOff + "%", m.home.successRateOff + "%"],
-        ["Defensive Havoc %", m.away.havocRateDef + "%", m.home.havocRateDef + "%"],
+        [m.league === "NFL" ? "Pass-Rush Win %" : "Defensive Havoc %", m.away.havocRateDef + "%", m.home.havocRateDef + "%"],
         ["3rd Down Conv %", m.away.thirdDownPct + "%", m.home.thirdDownPct + "%"],
         ["Red Zone TD %", m.away.redZoneTdPct + "%", m.home.redZoneTdPct + "%"],
-        ["Turnover Margin", m.away.turnoverMargin, m.home.turnoverMargin]
+        ["Turnover Margin", (m.away.turnoverMargin >= 0 ? "+" : "") + m.away.turnoverMargin, (m.home.turnoverMargin >= 0 ? "+" : "") + m.home.turnoverMargin]
       ];
       document.getElementById("mobileStatsList").innerHTML = rows.map(r => `
         <div class="grid grid-cols-3 items-center p-2 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-mono">
@@ -563,7 +940,7 @@
         </div>
       `).join("");
       document.getElementById("mobileH2hBox").innerHTML = `
-        <div><strong>Series:</strong> ${m.h2h}</div>
+        <div><strong>Matchup Note:</strong> ${m.h2h}</div>
         <div><strong>Venue:</strong> ${m.venue} (${m.weather.tempF}°F, ${m.weather.windMph} mph wind)</div>
       `;
 
@@ -577,11 +954,16 @@
           <div class="text-[11px] text-[var(--muted-foreground)]">${a.role}</div>
         </div>
       `).join("");
-      document.getElementById("mobilePromptPre").textContent = JSON.stringify({ matchup: m, factors: pred.factors }, null, 2);
+      document.getElementById("mobilePromptPre").textContent = JSON.stringify({ league: m.league, matchup: m, factors: pred.factors }, null, 2);
     }
 
     function selectMatchup(i) { selectedIdx = i; renderAll(); }
-    function toggleInj(i) { MATCHUPS[selectedIdx].injuries[i].active = !MATCHUPS[selectedIdx].injuries[i].active; liveGeminiOverride = null; renderAll(); }
+    function toggleInj(i) {
+      const list = getActiveList();
+      list[selectedIdx].injuries[i].active = !list[selectedIdx].injuries[i].active;
+      liveGeminiOverride = null;
+      renderAll();
+    }
     function onWeightChange() {
       ["Eff", "Inj", "Trench", "Form", "Sit"].forEach(k => {
         document.getElementById("w" + k + "Val").textContent = document.getElementById("w" + k).value + "%";
@@ -598,20 +980,6 @@
       onWeightChange();
     }
 
-    function switchScreen(tab) {
-      ["ai", "injuries", "stats", "apis"].forEach(t => {
-        document.getElementById("screen-" + t).classList.toggle("hidden", t !== tab);
-        const btn = document.getElementById("nav-" + t);
-        if (t === tab) {
-          btn.classList.add("nav-active");
-          btn.classList.remove("text-[var(--muted-foreground)]");
-        } else {
-          btn.classList.remove("nav-active");
-          btn.classList.add("text-[var(--muted-foreground)]");
-        }
-      });
-    }
-
     function toggleKeySheet() {
       const s = document.getElementById("keySheet");
       s.classList.toggle("hidden");
@@ -622,14 +990,21 @@
       const k = document.getElementById("geminiKeyInput").value.trim();
       if (k) localStorage.setItem("gridiron_gemini_key", k);
       toggleKeySheet();
-      if (k) runLiveGemini();
+      if (k) {
+        if (currentScreen === "gateway") enterLeague(currentLeague, "ai");
+        runLiveGemini();
+      }
     }
 
-    async function fetchLiveEspnScoreboard() {
+    // Live ESPN Sync supporting BOTH NFL and College Football endpoints
+    async function fetchLiveEspnForCurrentLeague() {
       const lbl = document.getElementById("syncLabel");
       lbl.textContent = "Syncing...";
+      const url = currentLeague === "NFL"
+        ? "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=5"
+        : "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=5";
       try {
-        const res = await fetch("https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80&limit=5");
+        const res = await fetch(url);
         const data = await res.json();
         const events = data.events || [];
         if (events.length > 0) {
@@ -637,34 +1012,37 @@
           const comp = ev.competitions[0];
           const home = comp.competitors.find(c => c.homeAway === "home") || comp.competitors[0];
           const away = comp.competitors.find(c => c.homeAway === "away") || comp.competitors[1];
-          MATCHUPS.unshift({
+          LEAGUE_DATA[currentLeague].unshift({
             id: "espn-" + ev.id,
-            conference: "ESPN Live NCAAF Feed",
-            venue: comp.venue?.fullName || "NCAA Stadium",
-            weather: { tempF: 64, windMph: 8, condition: "Live", dome: false },
+            league: currentLeague,
+            conference: `ESPN Live ${currentLeague} Feed`,
+            venue: comp.venue?.fullName || `${currentLeague} Stadium`,
+            weather: { tempF: 58, windMph: 8, condition: "Live", dome: false },
             vegasSpreadHome: -3.0,
-            overUnder: 51.5,
+            overUnder: 47.5,
+            ratingLabel: currentLeague === "NFL" ? "DVOA%" : "SP+",
             away: {
-              abbr: away.team.abbreviation || "AWY", name: away.team.shortDisplayName || "Away", rank: "FBS",
+              abbr: away.team.abbreviation || "AWY", name: away.team.shortDisplayName || "Away", rank: currentLeague,
               record: away.records?.[0]?.summary || "0-0", color: "#" + (away.team.color || "1e40af"),
-              epaOff: 0.19, epaDef: -0.15, spPlus: 21.4, successRateOff: 46.2, successRateDef: 35.0,
-              havocRateDef: 18.4, thirdDownPct: 44.1, redZoneTdPct: 66.5, turnoverMargin: +3, sacksPerGame: 2.8
+              epaOff: 0.17, epaDef: -0.11, powerRating: 21.4, successRateOff: 47.2, successRateDef: 38.0,
+              havocRateDef: 28.4, thirdDownPct: 44.1, redZoneTdPct: 62.5, turnoverMargin: +3, sacksPerGame: 2.7
             },
             home: {
-              abbr: home.team.abbreviation || "HOM", name: home.team.shortDisplayName || "Home", rank: "FBS",
+              abbr: home.team.abbreviation || "HOM", name: home.team.shortDisplayName || "Home", rank: currentLeague,
               record: home.records?.[0]?.summary || "0-0", color: "#" + (home.team.color || "991b1b"),
-              epaOff: 0.25, epaDef: -0.20, spPlus: 24.8, successRateOff: 48.9, successRateDef: 33.1,
-              havocRateDef: 20.6, thirdDownPct: 47.2, redZoneTdPct: 70.4, turnoverMargin: +6, sacksPerGame: 3.3
+              epaOff: 0.22, epaDef: -0.15, powerRating: 24.8, successRateOff: 49.5, successRateDef: 36.1,
+              havocRateDef: 31.6, thirdDownPct: 46.8, redZoneTdPct: 66.4, turnoverMargin: +6, sacksPerGame: 3.1
             },
             h2h: `Live ESPN Event: ${ev.name}`,
             injuries: [
-              { player: `${away.team.abbreviation} Starting Edge`, team: "away", impactPts: 2.2, active: false, note: "Pregame injury report" },
-              { player: `${home.team.abbreviation} Starting QB1`, team: "home", impactPts: 6.5, active: true, note: "Active on depth chart" }
+              { player: `${away.team.abbreviation} Starting Edge`, team: "away", impactPts: 2.1, active: false, note: "Synced from ESPN pregame injury feed" },
+              { player: `${home.team.abbreviation} Starting QB1`, team: "home", impactPts: 6.8, active: true, note: "Active on depth chart" }
             ]
           });
           selectedIdx = 0;
-          lbl.textContent = "Live ✓";
-          renderAll();
+          lbl.textContent = `${currentLeague} Live ✓`;
+          if (currentScreen === "gateway") enterLeague(currentLeague, "ai");
+          else renderAll();
         } else {
           lbl.textContent = "Synced ✓";
         }
@@ -675,7 +1053,7 @@
 
     async function runLiveGemini() {
       const key = document.getElementById("geminiKeyInput").value.trim() || localStorage.getItem("gridiron_gemini_key");
-      const m = MATCHUPS[selectedIdx];
+      const m = getActiveList()[selectedIdx];
       const pred = computePrediction(m);
       const btn = document.getElementById("btnGeminiMobile");
       if (!key) {
@@ -688,7 +1066,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: `In 2 short paragraphs citing EPA/play, SP+, and injuries, explain why the model picks the winner in this NCAAF game: ${JSON.stringify({ matchup: m, factors: pred.factors })}` }] }]
+            contents: [{ parts: [{ text: `In 2 short paragraphs citing EPA/play, ${m.ratingLabel}, and injuries, explain why the model picks the winner in this ${m.league} game: ${JSON.stringify({ matchup: m, factors: pred.factors })}` }] }]
           })
         });
         const data = await res.json();
@@ -696,7 +1074,7 @@
         if (txt) {
           liveGeminiOverride = {
             id: m.id,
-            html: `<div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-1.5 text-xs"><div class="font-bold text-[var(--link)]">Gemini 2.5 Flash Live Output</div><p class="whitespace-pre-line leading-relaxed">${txt.replace(/</g, "&lt;")}</p></div>`
+            html: `<div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-1.5 text-xs"><div class="font-bold text-[var(--link)]">Gemini 2.5 Flash Live Output (${m.league})</div><p class="whitespace-pre-line leading-relaxed">${txt.replace(/</g, "&lt;")}</p></div>`
           };
           renderAll();
         }
@@ -707,7 +1085,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       const k = localStorage.getItem("gridiron_gemini_key");
       if (k) document.getElementById("geminiKeyInput").value = k;
-      renderAll();
+      openGateway();
     });
   </script>
 </body>

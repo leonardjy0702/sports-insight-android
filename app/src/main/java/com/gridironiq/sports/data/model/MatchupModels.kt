@@ -3,15 +3,23 @@ package com.gridironiq.sports.data.model
 import kotlinx.serialization.Serializable
 
 /**
- * Unified telemetry snapshot combining all US Public Sports APIs for a College Football (NCAAF) matchup:
- * 1. CollegeFootballData API (CFBD): EPA/play, SP+ rating, Success Rate, Havoc Rate, Returning Production
- * 2. ESPN Public Site API: Live Scoreboard, Injury Report, Depth Chart Status, ESPN FPI Predictor
- * 3. The Odds API: Consensus US Sportsbook Spread, Over/Under, Implied Market Win Probability
- * 4. Open-Meteo Weather API: Kickoff temperature, sustained wind speed, precipitation probability
+ * Supported football leagues in the GridironIQ Gateway.
+ */
+@Serializable
+enum class SportLeague(val displayName: String, val ratingLabel: String) {
+    NFL("NFL Pro Football", "DVOA%"),
+    NCAAF("NCAA College Football", "SP+")
+}
+
+/**
+ * Unified telemetry snapshot combining all US Public Sports APIs for an NFL or NCAAF matchup:
+ * - NFL: ESPN NFL Public API, nflfastR / nflverse (EPA/play, CPOE, Success Rate), DVOA, The Odds API, Open-Meteo
+ * - NCAAF: CollegeFootballData API (CFBD), ESPN College Football API, The Odds API, Open-Meteo
  */
 @Serializable
 data class MatchupTelemetry(
     val id: String,
+    val league: SportLeague = SportLeague.NCAAF,
     val conference: String,
     val venue: String,
     val weather: StadiumWeather,
@@ -32,19 +40,19 @@ data class TeamSabermetrics(
     val rank: String,
     val record: String,
     val colorHex: Long,
-    val epaOff: Double,          // CFBD: Offensive Expected Points Added per play
-    val epaDef: Double,          // CFBD: Defensive Expected Points Added allowed per play (negative is better)
-    val spPlus: Double,          // CFBD: Bill Connelly SP+ overall efficiency rating
-    val successRateOff: Double,  // CFBD: % of plays meeting down/distance efficiency thresholds
-    val successRateDef: Double,  // CFBD: Defensive success rate allowed
-    val explosiveness: Double,   // CFBD: IsoPPP (points added on successful plays)
-    val havocRateDef: Double,    // CFBD: % of plays with TFL, forced fumble, INT, or PBU
-    val thirdDownPct: Double,    // ESPN Boxscore: 3rd down conversion rate
-    val redZoneTdPct: Double,    // ESPN/NCAA: Red zone touchdown conversion percentage
-    val turnoverMargin: Int,     // NCAA Standings: Net season turnover margin
-    val sacksPerGame: Double,    // ESPN Team Stats: Sacks generated per game
-    val yardsPerPlayOff: Double, // ESPN Team Stats: Offensive yards per play
-    val yardsPerPlayDef: Double, // ESPN Team Stats: Defensive yards allowed per play
+    val epaOff: Double,          // Offensive Expected Points Added per play (nflfastR / CFBD)
+    val epaDef: Double,          // Defensive Expected Points Added allowed per play (negative is better)
+    val spPlus: Double,          // Overall Power/Efficiency Rating (SP+ for NCAAF, DVOA% for NFL)
+    val successRateOff: Double,  // % of plays meeting down/distance efficiency thresholds
+    val successRateDef: Double,  // Defensive success rate allowed
+    val explosiveness: Double,   // IsoPPP / Explosive play rate
+    val havocRateDef: Double,    // Defensive Havoc % (NCAAF) or Pass-Rush Pressure/Win Rate % (NFL)
+    val thirdDownPct: Double,    // 3rd down conversion rate
+    val redZoneTdPct: Double,    // Red zone touchdown conversion percentage
+    val turnoverMargin: Int,     // Net season turnover margin
+    val sacksPerGame: Double,    // Sacks generated per game
+    val yardsPerPlayOff: Double, // Offensive yards per play
+    val yardsPerPlayDef: Double, // Defensive yards allowed per play
     val recentForm: List<String>
 )
 
@@ -54,8 +62,8 @@ data class PlayerInjuryStatus(
     val team: String,            // "away" or "home"
     val player: String,
     val position: String,
-    val officialStatus: String,  // "Active", "Probable", "Questionable", "Doubtful", "Out"
-    val impactPoints: Double,    // Point spread value of this player (e.g., QB1 = 6.5 pts, LT1 = 2.6 pts)
+    val officialStatus: String,  // "Active", "Probable", "Questionable", "Doubtful", "Out", "IR"
+    val impactPoints: Double,    // Point spread value of this player (e.g., NFL/CFB QB1 = 6.5 - 7.0 pts)
     val isAvailableToPlay: Boolean,
     val clinicalNote: String
 )
@@ -76,22 +84,15 @@ data class HeadToHeadHistory(
     val currentStreak: String
 )
 
-/**
- * Transparent user-adjustable weights for the LLM & Sabermetric reasoning engine.
- */
 @Serializable
 data class FactorWeights(
-    val efficiencyWeight: Float = 30f,   // EPA/Play, SP+, Success Rate
+    val efficiencyWeight: Float = 30f,   // EPA/Play, DVOA/SP+, Success Rate
     val injuryWeight: Float = 25f,       // Starter & QB availability
-    val trenchWeight: Float = 15f,       // Havoc Rate, Sacks, 3rd Down %
+    val trenchWeight: Float = 15f,       // Pass-Rush Win % / Havoc Rate, Sacks, 3rd Down %
     val turnoverFormWeight: Float = 15f, // Turnover Margin, Red Zone TD%, H2H
     val situationalWeight: Float = 15f   // Home field advantage, Stadium Weather
 )
 
-/**
- * Structured output returned by the Google Gemini LLM (`responseSchema`) and deterministic fallback.
- * Explains *why* the winner is picked and quantifies each metric's exact contribution.
- */
 @Serializable
 data class LlmPredictionResult(
     val predictedWinnerName: String,
@@ -113,7 +114,7 @@ data class FactorAttribution(
     val title: String,
     val apiSource: String,
     val normalizedWeightPct: Int,
-    val winProbShiftHome: Double, // Signed percentage points (+ favors Home, - favors Away)
+    val winProbShiftHome: Double,
     val metricComparisonSummary: String
 )
 
