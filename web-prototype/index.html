@@ -229,14 +229,11 @@
             </button>
           </div>
 
-          <!-- Weekly Prediction Accuracy Scorecard Banner (Green Hits vs Red Misses) + 60s Live Auto-Refresh Timestamp -->
-          <div class="p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1.5 text-xs">
+          <!-- Weekly Prediction Accuracy Scorecard Banner (Baseline ATS vs Gemini Spread Record) + Live Timestamp -->
+          <div class="p-2.5 rounded-xl bg-[var(--card)] border border-[var(--border)] space-y-2 text-xs shadow-sm">
             <div class="flex items-center justify-between gap-2 flex-wrap">
-              <div class="flex items-center gap-2">
-                <span class="font-bold">ATS Spread Record:</span>
-                <span id="weeklyAccuracyBadge" class="font-mono font-bold px-2 py-0.5 rounded bg-[var(--secondary)]">0-0 (0%)</span>
-              </div>
-              <div class="flex items-center gap-1.5">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">Weekly Spread Records</span>
+              <div class="flex items-center gap-1.5 shrink-0">
                 <button onclick="runGeminiForAllLeagueGames()" id="btnBatchGemini" class="px-2 py-1 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 text-[10px] font-bold font-mono transition">
                   ✨ Run Gemini (All)
                 </button>
@@ -245,6 +242,28 @@
                 </button>
               </div>
             </div>
+
+            <!-- Dual Records Grid: Baseline ATS vs Gemini ATS -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="p-2 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]" id="baseModelRecordTag">📊 ATS Model</span>
+                  <span id="weeklyAccuracyBadge" class="font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-[var(--secondary)]">0-0 (0%)</span>
+                </div>
+                <div class="text-[10px] text-[var(--foreground)] font-semibold truncate" id="baseModelRecordTitle">ATS Spread Record</div>
+                <div class="text-[9px] text-[var(--muted-foreground)] truncate" id="baseModelRecordSub">nflfastR + ESPN FPI</div>
+              </div>
+
+              <div class="p-2 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">✨ Gemini 2.5</span>
+                  <span id="weeklyGeminiAccuracyBadge" class="font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-[var(--secondary)]">0-0 (0%)</span>
+                </div>
+                <div class="text-[10px] text-[var(--foreground)] font-semibold truncate">Gemini Spread Record</div>
+                <div class="text-[9px] text-[var(--muted-foreground)] truncate">Multimodal LLM Reasoning</div>
+              </div>
+            </div>
+
             <div class="flex items-center justify-between gap-2 pt-1 border-t border-[var(--border)] text-[10px] font-mono text-[var(--muted-foreground)]">
               <span class="flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -2043,28 +2062,69 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
       const query = (document.getElementById("subGatewaySearch")?.value || "").trim().toLowerCase();
       const container = document.getElementById("subGatewayCardsContainer");
 
-      let hits = 0, misses = 0;
+      let baseHits = 0, baseMisses = 0, basePushes = 0;
+      let gemHits = 0, gemMisses = 0, gemPushes = 0;
       const enriched = list.map((m, idx) => {
         const pred = computePrediction(m);
         const outcome = evaluateMatchOutcome(m, pred, idx);
         if (outcome.hasActiveScore) {
-          if (outcome.isCorrect) hits++;
-          else misses++;
+          if (outcome.isPush) {
+            basePushes++;
+            if (outcome.geminiAtsHit !== null) gemPushes++;
+          } else {
+            if (outcome.baseAtsHit) baseHits++;
+            else baseMisses++;
+
+            if (outcome.geminiAtsHit !== null) {
+              if (outcome.geminiAtsHit) gemHits++;
+              else gemMisses++;
+            }
+          }
         }
         return { m, idx, pred, outcome };
       });
 
-      const totalActive = hits + misses;
-      const accPct = totalActive > 0 ? Math.round((hits / totalActive) * 100) : 0;
+      // 1. Update Baseline ATS Record
+      const baseTotal = baseHits + baseMisses;
+      const basePct = baseTotal > 0 ? Math.round((baseHits / baseTotal) * 100) : 0;
       const accBadge = document.getElementById("weeklyAccuracyBadge");
-      if (totalActive > 0) {
-        accBadge.textContent = `${hits}W - ${misses}L (${accPct}% Hit Rate)`;
-        accBadge.className = accPct >= 50
-          ? "font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-          : "font-mono font-bold px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)]";
-      } else {
-        accBadge.textContent = "No Active/Final Games Yet";
+      if (accBadge) {
+        if (baseTotal > 0 || basePushes > 0) {
+          accBadge.textContent = basePushes > 0
+            ? `${baseHits}W-${baseMisses}L-${basePushes}P (${basePct}%)`
+            : `${baseHits}W - ${baseMisses}L (${basePct}%)`;
+          accBadge.className = basePct >= 50
+            ? "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+            : "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/40";
+        } else {
+          accBadge.textContent = "0-0 (0%)";
+          accBadge.className = "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)]";
+        }
       }
+
+      // 2. Update Gemini Spread Record
+      const gemTotal = gemHits + gemMisses;
+      const gemPct = gemTotal > 0 ? Math.round((gemHits / gemTotal) * 100) : 0;
+      const gemBadge = document.getElementById("weeklyGeminiAccuracyBadge");
+      if (gemBadge) {
+        if (gemTotal > 0 || gemPushes > 0) {
+          gemBadge.textContent = gemPushes > 0
+            ? `${gemHits}W-${gemMisses}L-${gemPushes}P (${gemPct}%)`
+            : `${gemHits}W - ${gemMisses}L (${gemPct}%)`;
+          gemBadge.className = gemPct >= 50
+            ? "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+            : "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/40";
+        } else {
+          gemBadge.textContent = "0-0 (0%)";
+          gemBadge.className = "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)]";
+        }
+      }
+
+      // 3. Dynamic subtext for current league
+      const baseTag = document.getElementById("baseModelRecordTag");
+      if (baseTag) baseTag.textContent = currentLeague === "NFL" ? "📊 nflfastR" : "📊 CFBD";
+      const baseSub = document.getElementById("baseModelRecordSub");
+      if (baseSub) baseSub.textContent = currentLeague === "NFL" ? "nflfastR + ESPN FPI" : "CFBD + ESPN FPI";
 
       // 1. Apply Text Search + Category Filter
       // Note: "focused_only" (Focused Bets filter) keeps ALL matchups in the list and prioritizes Bet-Focused games at the top!
