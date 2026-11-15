@@ -2151,17 +2151,25 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
               </span>
             `;
           } else if (outcome.baseAtsHit) {
+            const hitLabel = outcome.isInProgress ? "LIVE HIT" : "LINE HIT";
+            const statusDetail = outcome.isInProgress
+              ? `Currently Covering at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
+              : `Covered ${outcome.finalAway}-${outcome.finalHome} FINAL`;
             baseChipHtml = `
               <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                <span>✓ [${baselineSrcName}] LINE HIT: Picked ${outcome.basePickAbbr} ${basePickSpread} (Covered ${outcome.finalAway}-${outcome.finalHome} ${phaseTag})</span>
+                <span>✓ [${baselineSrcName}] ${hitLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread} (${statusDetail})</span>
               </span>
             `;
           } else {
+            const missLabel = outcome.isInProgress ? "LIVE MISS" : "LINE MISSED";
+            const statusDetail = outcome.isInProgress
+              ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
+              : `Failed Cover ${outcome.finalAway}-${outcome.finalHome}; ${outcome.atsCoverAbbr} Covered ${dkLineTxt}`;
             baseChipHtml = `
               <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                <span>✗ [${baselineSrcName}] LINE MISSED: Picked ${outcome.basePickAbbr} ${basePickSpread} (Failed Cover; ${outcome.atsCoverAbbr} Covered ${dkLineTxt})</span>
+                <span>✗ [${baselineSrcName}] ${missLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread} (${statusDetail})</span>
               </span>
             `;
           }
@@ -2176,17 +2184,25 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
                 </span>
               `;
             } else if (outcome.geminiAtsHit) {
+              const gemHitLabel = outcome.isInProgress ? "LIVE HIT" : "LINE HIT";
+              const gemStatusDetail = outcome.isInProgress
+                ? `Currently Covering at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
+                : `Covered ${outcome.finalAway}-${outcome.finalHome} FINAL`;
               geminiChipHtml = `
                 <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                   ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                  <span>✓ [✨ Gemini 2.5] LINE HIT: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (Covered ${outcome.finalAway}-${outcome.finalHome} ${phaseTag})</span>
+                  <span>✓ [✨ Gemini 2.5] ${gemHitLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (${gemStatusDetail})</span>
                 </span>
               `;
             } else {
+              const gemMissLabel = outcome.isInProgress ? "LIVE MISS" : "LINE MISSED";
+              const gemStatusDetail = outcome.isInProgress
+                ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
+                : `Failed Cover ${outcome.finalAway}-${outcome.finalHome}; ${outcome.atsCoverAbbr} Covered ${dkLineTxt}`;
               geminiChipHtml = `
                 <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                   ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                  <span>✗ [✨ Gemini 2.5] LINE MISSED: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (Failed Cover; ${outcome.atsCoverAbbr} Covered ${dkLineTxt})</span>
+                  <span>✗ [✨ Gemini 2.5] ${gemMissLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (${gemStatusDetail})</span>
                 </span>
               `;
             }
