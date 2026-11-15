@@ -1345,6 +1345,11 @@
         if (finalHome === finalAway) finalHome += 3;
       }
 
+      const basePred = computeBaselinePrediction(m);
+      const geminiPred = m.geminiAssessment || null;
+      const basePickAbbr = basePred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
+      const geminiPickAbbr = geminiPred ? (geminiPred.homeWp >= 50 ? m.home.abbr : m.away.abbr) : null;
+
       const predictedWinnerAbbr = pred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
       const actualWinnerAbbr = finalHome >= finalAway ? m.home.abbr : m.away.abbr;
 
@@ -1354,7 +1359,14 @@
       const atsCoverAbbr = atsDiff > 0 ? m.home.abbr : (atsDiff < 0 ? m.away.abbr : "PUSH");
       const isPush = atsCoverAbbr === "PUSH";
       const atsText = isPush ? "Push" : `${atsCoverAbbr} Covers`;
-      // Hit if the model's picked team covered the DraftKings spread line (or push)
+
+      // 1. Baseline nflfastR + FPI Spread Hit/Miss against line
+      const baseAtsHit = isPush ? true : (basePickAbbr === atsCoverAbbr);
+
+      // 2. Google Gemini Spread Hit/Miss against line (if processed)
+      const geminiAtsHit = geminiPickAbbr ? (isPush ? true : (geminiPickAbbr === atsCoverAbbr)) : null;
+
+      // Primary model pick hit
       const isAtsHit = isPush ? true : (predictedWinnerAbbr === atsCoverAbbr);
 
       const clockLabel = isFinished ? "FINAL" : (m.liveClockDetail || "LIVE");
@@ -1365,6 +1377,10 @@
         hasActiveScore: true,
         isCorrect: isAtsHit, // Against-the-spread accuracy standard
         isAtsHit,
+        baseAtsHit,
+        geminiAtsHit,
+        basePickAbbr,
+        geminiPickAbbr,
         isPush,
         predictedWinnerAbbr,
         actualWinnerAbbr,
@@ -1912,27 +1928,72 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         let statusOutcomeBadgeHtml = "";
         if (outcome.hasActiveScore) {
           const phaseTag = outcome.isInProgress ? `LIVE ${outcome.clockLabel}` : "FINAL";
+          const baselineSrcName = m.league === "NFL" ? "nflfastR+FPI" : "CFBD+FPI";
+
+          // Chip 1: nflfastR / CFBD baseline prediction hit/miss against line
+          let baseChipHtml = "";
           if (outcome.isPush) {
-            statusOutcomeBadgeHtml = `
+            baseChipHtml = `
               <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
-                <span>ATS PUSH (${outcome.finalAway}-${outcome.finalHome} • ${phaseTag})</span>
+                <span>[${baselineSrcName}] ATS PUSH (${outcome.atsText} vs ${dkLineTxt} • ${outcome.finalAway}-${outcome.finalHome})</span>
               </span>
             `;
-          } else if (outcome.isCorrect) {
-            statusOutcomeBadgeHtml = `
+          } else if (outcome.baseAtsHit) {
+            baseChipHtml = `
               <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                <span>✓ ${outcome.isInProgress ? 'ATS COVER HIT LIVE' : 'ATS COVER HIT'} (${outcome.atsText} • ${outcome.finalAway}-${outcome.finalHome} ${phaseTag})</span>
+                <span>✓ [${baselineSrcName}] LINE HIT: ${outcome.basePickAbbr} Covered (${outcome.finalAway}-${outcome.finalHome} ${phaseTag})</span>
               </span>
             `;
           } else {
-            statusOutcomeBadgeHtml = `
+            baseChipHtml = `
               <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                <span>✗ ${outcome.isInProgress ? 'SPREAD MISSED LIVE' : 'SPREAD MISSED'} (${outcome.atsText} vs ${dkLineTxt} • ${outcome.finalAway}-${outcome.finalHome})</span>
+                <span>✗ [${baselineSrcName}] LINE MISSED: ${outcome.basePickAbbr} Failed Cover (${outcome.atsText} vs ${dkLineTxt})</span>
               </span>
             `;
           }
+
+          // Chip 2: On the NEXT line, Google Gemini prediction hit/miss against line (if processed)
+          let geminiChipHtml = "";
+          if (geminiPred) {
+            if (outcome.isPush) {
+              geminiChipHtml = `
+                <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                  <span>[✨ Gemini 2.5] ATS PUSH (${outcome.atsText} vs ${dkLineTxt})</span>
+                </span>
+              `;
+            } else if (outcome.geminiAtsHit) {
+              geminiChipHtml = `
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                  ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
+                  <span>✓ [✨ Gemini 2.5] LINE HIT: ${outcome.geminiPickAbbr} Covered (${outcome.atsText})</span>
+                </span>
+              `;
+            } else {
+              geminiChipHtml = `
+                <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                  ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
+                  <span>✗ [✨ Gemini 2.5] LINE MISSED: ${outcome.geminiPickAbbr} Failed Cover (${outcome.atsText} vs ${dkLineTxt})</span>
+                </span>
+              `;
+            }
+          }
+
+          statusOutcomeBadgeHtml = `
+            <div class="flex flex-col gap-1 w-full">
+              <!-- Line 1: nflfastR prediction hit/miss against line -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                ${baseChipHtml}
+              </div>
+              <!-- Line 2 (Next Line): Google Gemini hit/miss against line -->
+              ${geminiChipHtml ? `
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  ${geminiChipHtml}
+                </div>
+              ` : ''}
+            </div>
+          `;
         } else {
           statusOutcomeBadgeHtml = `
             <span class="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono text-[10px] shrink-0">
@@ -2220,21 +2281,43 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       if (outcome.hasActiveScore) {
         detailFinalEl.classList.remove("hidden");
         const statusPrefix = outcome.isInProgress ? `● LIVE (${outcome.clockLabel})` : "FINAL";
-        detailFinalEl.className = outcome.isPush
-          ? "p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono flex items-center justify-between"
-          : (outcome.isCorrect
-              ? "p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono flex items-center justify-between"
-              : "p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-mono flex items-center justify-between");
+        const baselineSrcName = m.league === "NFL" ? "nflfastR+FPI" : "CFBD+FPI";
 
-        const atsChipText = outcome.isPush
-          ? `ATS PUSH (${dkLineTxt}): ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome}`
-          : (outcome.isCorrect
-              ? `✓ ${outcome.isInProgress ? 'ATS COVER HIT LIVE' : 'ATS COVER HIT'}: ${outcome.atsText} (Covered ${dkLineTxt} • ${outcome.finalAway}-${outcome.finalHome})`
-              : `✗ ${outcome.isInProgress ? 'SPREAD MISSED LIVE' : 'SPREAD MISSED'}: ${outcome.atsText} (Failed to cover ${dkLineTxt} • ${outcome.finalAway}-${outcome.finalHome})`);
+        const baseAtsText = outcome.isPush
+          ? `ATS PUSH: [${baselineSrcName}] (${outcome.atsText} vs ${dkLineTxt})`
+          : (outcome.baseAtsHit
+              ? `✓ [${baselineSrcName}] LINE HIT: ${outcome.basePickAbbr} Covered (${outcome.atsText} vs ${dkLineTxt})`
+              : `✗ [${baselineSrcName}] LINE MISSED: ${outcome.basePickAbbr} Failed Cover (${outcome.atsText} vs ${dkLineTxt})`);
+
+        let geminiAtsText = "";
+        if (geminiPred) {
+          geminiAtsText = outcome.isPush
+            ? `ATS PUSH: [✨ Gemini 2.5] (${outcome.atsText} vs ${dkLineTxt})`
+            : (outcome.geminiAtsHit
+                ? `✓ [✨ Gemini 2.5] LINE HIT: ${outcome.geminiPickAbbr} Covered (${outcome.atsText})`
+                : `✗ [✨ Gemini 2.5] LINE MISSED: ${outcome.geminiPickAbbr} Failed Cover (${outcome.atsText} vs ${dkLineTxt})`);
+        }
+
+        const isBothHit = outcome.baseAtsHit && (outcome.geminiAtsHit === null || outcome.geminiAtsHit);
+        detailFinalEl.className = isBothHit
+          ? "p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-mono flex flex-col gap-1"
+          : (outcome.baseAtsHit || outcome.geminiAtsHit
+              ? "p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono flex flex-col gap-1"
+              : "p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-mono flex flex-col gap-1");
 
         detailFinalEl.innerHTML = `
-          <span class="font-bold">${atsChipText}</span>
-          <span class="text-[10px] text-[var(--muted-foreground)]">${statusPrefix}</span>
+          <div class="flex items-center justify-between font-bold">
+            <span>${baseAtsText}</span>
+            <span class="text-[10px] text-[var(--muted-foreground)]">${statusPrefix}</span>
+          </div>
+          ${geminiAtsText ? `
+            <div class="font-bold text-[11px] pt-1 border-t border-[var(--border)] opacity-95">
+              ${geminiAtsText}
+            </div>
+          ` : ''}
+          <div class="text-[10px] text-[var(--muted-foreground)] pt-0.5">
+            Actual Score: ${m.away.abbr} ${outcome.finalAway} – ${m.home.abbr} ${outcome.finalHome} (${outcome.atsText})
+          </div>
         `;
 
         if (detailLiveBelowEl) {
