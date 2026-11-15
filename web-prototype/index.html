@@ -657,7 +657,7 @@
   </div>
 
   <script>
-    // Persistent storage wrapper (uses window.name + localStorage + built-in saved profile so sandboxed iframe rebuilds never lose the Gemini key)
+    // Persistent storage wrapper (uses localStorage + sessionStorage + window.name + built-in profile so rebuilds never lose state)
     const DEFAULT_SAVED_GEMINI_KEY = "AQ.Ab8RN6-Saved-GridironIQ-Key";
     const SafeStore = {
       mem: { gridiron_gemini_key: DEFAULT_SAVED_GEMINI_KEY },
@@ -672,15 +672,20 @@
       getItem(k) {
         try {
           const lsVal = window.localStorage.getItem(k);
-          if (lsVal) return lsVal;
+          if (lsVal !== null && lsVal !== undefined && lsVal !== "") return lsVal;
+        } catch (e) {}
+        try {
+          const ssVal = window.sessionStorage.getItem(k);
+          if (ssVal !== null && ssVal !== undefined && ssVal !== "") return ssVal;
         } catch (e) {}
         const wn = this._readWindowName();
-        if (wn[k]) return wn[k];
+        if (wn[k] !== undefined && wn[k] !== "") return wn[k];
         return this.mem[k] || (k === "gridiron_gemini_key" ? DEFAULT_SAVED_GEMINI_KEY : "");
       },
       setItem(k, v) {
         this.mem[k] = v;
         try { window.localStorage.setItem(k, v); } catch (e) {}
+        try { window.sessionStorage.setItem(k, v); } catch (e) {}
         try {
           const wn = this._readWindowName();
           wn[k] = v;
@@ -688,6 +693,53 @@
         } catch (e) {}
       }
     };
+
+    // Persistent Bet-Focused Matchup Selection & Active Filter State Across Builds
+    function getMatchupFocusKey(league, awayAbbr, homeAbbr) {
+      return `${league || 'NFL'}:${awayAbbr}@${homeAbbr}`;
+    }
+
+    function loadSavedBetFocusMap() {
+      try {
+        const raw = SafeStore.getItem("gridiron_bet_focus_map");
+        if (raw) {
+          const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+          if (parsed && typeof parsed === "object") return parsed;
+        }
+      } catch (e) {}
+      return {};
+    }
+
+    function saveBetFocusSelection(m) {
+      if (!m || !m.away || !m.home) return;
+      const map = loadSavedBetFocusMap();
+      map[getMatchupFocusKey(m.league, m.away.abbr, m.home.abbr)] = Boolean(m.isBetInitiated);
+      SafeStore.setItem("gridiron_bet_focus_map", JSON.stringify(map));
+    }
+
+    function applySavedBetFocusToLeagueData() {
+      const map = loadSavedBetFocusMap();
+      ["NFL", "NCAAF"].forEach(lg => {
+        (LEAGUE_DATA[lg] || []).forEach(m => {
+          const key = getMatchupFocusKey(m.league || lg, m.away.abbr, m.home.abbr);
+          if (Object.prototype.hasOwnProperty.call(map, key)) {
+            m.isBetInitiated = Boolean(map[key]);
+          }
+        });
+      });
+    }
+
+    function saveSortAndFilterState() {
+      SafeStore.setItem("gridiron_sort_by", currentSortBy);
+      SafeStore.setItem("gridiron_filter_by", currentFilterBy);
+    }
+
+    function loadSortAndFilterState() {
+      const savedSort = SafeStore.getItem("gridiron_sort_by");
+      const savedFilter = SafeStore.getItem("gridiron_filter_by");
+      if (savedSort) currentSortBy = savedSort;
+      if (savedFilter) currentFilterBy = savedFilter;
+    }
 
     // =========================================================================
     // 1. LIVE 2026 WEEK 10 NFL SABERMETRIC TABLE & VERIFIED DRAFTKINGS LINES
@@ -981,6 +1033,7 @@
         syncLbl.textContent = `Live (${lastLiveSyncTimestamp}) ✓`;
       }
 
+      applySavedBetFocusToLeagueData();
       updateLiveRefreshHeaderUI();
       updateGatewayBadges();
       if (currentScreen === "subgateway") renderSubGatewayGameCards();
@@ -1090,7 +1143,14 @@
         statusDetail: hasStarted ? liveClockDetail : `${dateStr} • ${timeStr}`,
         actualAwayScore: actualAwayScore,
         actualHomeScore: actualHomeScore,
-        isBetInitiated: idx < 3, // Mark top 3 featured games as Bet-Initiated by default
+        isBetInitiated: (() => {
+          const savedMap = loadSavedBetFocusMap();
+          const focusKey = getMatchupFocusKey(league, awayAbbr, homeAbbr);
+          if (Object.prototype.hasOwnProperty.call(savedMap, focusKey)) {
+            return Boolean(savedMap[focusKey]);
+          }
+          return idx < 3;
+        })(),
         away: {
           abbr: awayAbbr,
           name: away.team?.shortDisplayName || away.team?.displayName || awayAbbr,
@@ -1347,12 +1407,13 @@
       renderSubGatewayGameCards();
     }
 
-    // Toggle "Current Focused (Bet-Initiated)" status on any game card without opening details
+    // Toggle "Current Focused (Bet-Initiated)" status on any game card without opening details (saved persistently across builds)
     function toggleGameBetFocus(event, idx) {
       if (event) event.stopPropagation();
       const list = getActiveList();
       if (!list[idx]) return;
       list[idx].isBetInitiated = !list[idx].isBetInitiated;
+      saveBetFocusSelection(list[idx]);
       updateGatewayBadges();
       renderSubGatewayGameCards();
     }
@@ -1361,6 +1422,7 @@
       const m = getActiveList()[selectedIdx];
       if (!m) return;
       m.isBetInitiated = !m.isBetInitiated;
+      saveBetFocusSelection(m);
       updateGatewayBadges();
       renderDetailView();
     }
@@ -1368,6 +1430,7 @@
     function jumpToFocusedBets() {
       currentSortBy = "focused_first";
       currentFilterBy = "focused_only";
+      saveSortAndFilterState();
       openLeagueSubGateway("NFL");
     }
 
@@ -1390,6 +1453,7 @@
 
     function setSortBy(sortKey) {
       currentSortBy = sortKey;
+      saveSortAndFilterState();
       syncFilterSheetUI();
       renderSubGatewayGameCards();
     }
@@ -1399,6 +1463,7 @@
       if (filterKey === "focused_only") {
         currentSortBy = "focused_first";
       }
+      saveSortAndFilterState();
       syncFilterSheetUI();
       renderSubGatewayGameCards();
     }
@@ -1406,6 +1471,7 @@
     function resetSortAndFilter() {
       currentSortBy = "date_asc";
       currentFilterBy = "all";
+      saveSortAndFilterState();
       syncFilterSheetUI();
       renderSubGatewayGameCards();
     }
@@ -1436,6 +1502,7 @@
         currentSortBy = "over_under_desc";
         currentFilterBy = "all";
       }
+      saveSortAndFilterState();
       syncFilterSheetUI();
       renderSubGatewayGameCards();
     }
@@ -2457,6 +2524,10 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       document.getElementById("geminiKeyInput").value = k;
       document.getElementById("gatewayGeminiInput").value = k;
       updateGeminiKeyIndicators(k);
+
+      // Restore saved Bet-Focused game selections and active Sort/Filter state across builds
+      applySavedBetFocusToLeagueData();
+      loadSortAndFilterState();
 
       // Automatically pre-process Gemini across all weekly NFL & NCAAF games using the saved key
       LEAGUE_DATA.NFL.forEach(m => {
