@@ -322,9 +322,13 @@
 
         <!-- Away vs Home Mobile Scoreboard (Team Image -> Next Line Team Name -> Green Bounding Box on Pick + Extra Middle Spacing) -->
         <div class="grid grid-cols-12 items-stretch gap-2.5 text-center">
-          <!-- Away Team Box (Highlighted with Green Bounding Box when Away is Picked) -->
+          <!-- Away Team Box (Neutral, Two Pick Chips: ATS & Gemini) -->
           <div id="awayTeamBox" class="col-span-3 flex flex-col items-center justify-between p-2 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 transition">
-            <span id="awayPickBadge" class="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded leading-none mb-1">42.8%</span>
+            <div id="awayChipsWrap" class="w-full flex flex-col items-center gap-1 mb-1.5 min-h-[38px] justify-start">
+              <span id="awayPickBadge" class="text-[9px] font-mono font-extrabold px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)] leading-none mb-0.5">+6.5</span>
+              <span id="awayBasePickChip" class="hidden w-full text-center px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[7.5px] uppercase tracking-tight leading-none truncate">✓ [nflfastR] PICK</span>
+              <span id="awayGeminiPickChip" class="hidden w-full text-center px-1 py-0.5 rounded bg-[var(--primary)]/25 text-[var(--link)] border border-[var(--primary)]/40 font-mono font-bold text-[7.5px] uppercase tracking-tight leading-none truncate">✓ [✨ Gemini] PICK</span>
+            </div>
             <div id="awayLogoWrap" class="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden bg-[var(--secondary)]/60 p-1 shadow-sm">
               <img id="awayLogoImg" src="" alt="AWY" class="w-full h-full object-contain hidden" />
               <div id="awayCircle" class="w-full h-full rounded-xl flex items-center justify-center font-black text-xs text-white">AWY</div>
@@ -371,9 +375,13 @@
             </div>
           </div>
 
-          <!-- Home Team Box (Highlighted with Green Bounding Box when Home is Picked) -->
+          <!-- Home Team Box (Neutral, Two Pick Chips: ATS & Gemini) -->
           <div id="homeTeamBox" class="col-span-3 flex flex-col items-center justify-between p-2 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 transition">
-            <span id="homePickBadge" class="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded leading-none mb-1">57.2%</span>
+            <div id="homeChipsWrap" class="w-full flex flex-col items-center gap-1 mb-1.5 min-h-[38px] justify-start">
+              <span id="homePickBadge" class="text-[9px] font-mono font-extrabold px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)] leading-none mb-0.5">-6.5</span>
+              <span id="homeBasePickChip" class="hidden w-full text-center px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[7.5px] uppercase tracking-tight leading-none truncate">✓ [nflfastR] PICK</span>
+              <span id="homeGeminiPickChip" class="hidden w-full text-center px-1 py-0.5 rounded bg-[var(--primary)]/25 text-[var(--link)] border border-[var(--primary)]/40 font-mono font-bold text-[7.5px] uppercase tracking-tight leading-none truncate">✓ [✨ Gemini] PICK</span>
+            </div>
             <div id="homeLogoWrap" class="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden bg-[var(--secondary)]/60 p-1 shadow-sm">
               <img id="homeLogoImg" src="" alt="HOM" class="w-full h-full object-contain hidden" />
               <div id="homeCircle" class="w-full h-full rounded-xl flex items-center justify-center font-black text-xs text-white">HOM</div>
@@ -2328,24 +2336,48 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           </div>
         `;
 
-        // Green Bounding Box + Pick Indicator on whichever team is picked Against The Spread (ATS)
-        const atsPickAbbr = pred.atsCoverPick || (pred.homeWp >= 50 ? m.home.abbr : m.away.abbr);
-        const awayIsPick = atsPickAbbr === m.away.abbr;
-        const homeIsPick = atsPickAbbr === m.home.abbr;
-        const awayBoxClass = awayIsPick
-          ? "border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)]"
-          : "border border-[var(--border)] bg-[var(--background)]/40 opacity-90";
-        const homeBoxClass = homeIsPick
-          ? "border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)]"
-          : "border border-[var(--border)] bg-[var(--background)]/40 opacity-90";
+        // Two dedicated pick chips: One for Baseline ATS Pick (nflfastR/CFBD) and One for Gemini ATS Pick
+        const basePickAbbr = basePred.atsCoverPick || basePred.atsPick;
+        const geminiPickAbbr = geminiPred ? (geminiPred.atsCoverPick || geminiPred.atsPick) : null;
+        const baseModelTag = m.league === "NFL" ? "[nflfastR]" : "[CFBD]";
 
-        const awayPickChipHtml = awayIsPick
-          ? `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm">✓ ATS PICK (${awaySpreadStr})</span>`
-          : `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none">${awaySpreadStr}</span>`;
+        const awayIsBasePick = basePickAbbr === m.away.abbr;
+        const homeIsBasePick = basePickAbbr === m.home.abbr;
+        const awayIsGemPick = Boolean(geminiPred && geminiPickAbbr === m.away.abbr);
+        const homeIsGemPick = Boolean(geminiPred && geminiPickAbbr === m.home.abbr);
 
-        const homePickChipHtml = homeIsPick
-          ? `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm">✓ ATS PICK (${homeSpreadStr})</span>`
-          : `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none">${homeSpreadStr}</span>`;
+        const awayBoxClass = "border border-[var(--border)] bg-[var(--background)]/50";
+        const homeBoxClass = "border border-[var(--border)] bg-[var(--background)]/50";
+
+        const awayBaseChipHtml = awayIsBasePick
+          ? `<span class="w-full text-center px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[7.5px] uppercase tracking-tight leading-none truncate" title="${baselineSourceLabel} ATS Pick">✓ ${baseModelTag} PICK</span>`
+          : "";
+        const awayGemChipHtml = awayIsGemPick
+          ? `<span class="w-full text-center px-1 py-0.5 rounded bg-[var(--primary)]/25 text-[var(--link)] border border-[var(--primary)]/40 font-mono font-bold text-[7.5px] uppercase tracking-tight leading-none truncate" title="Gemini 2.5 ATS Pick">✓ [✨ Gemini] PICK</span>`
+          : "";
+
+        const homeBaseChipHtml = homeIsBasePick
+          ? `<span class="w-full text-center px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[7.5px] uppercase tracking-tight leading-none truncate" title="${baselineSourceLabel} ATS Pick">✓ ${baseModelTag} PICK</span>`
+          : "";
+        const homeGemChipHtml = homeIsGemPick
+          ? `<span class="w-full text-center px-1 py-0.5 rounded bg-[var(--primary)]/25 text-[var(--link)] border border-[var(--primary)]/40 font-mono font-bold text-[7.5px] uppercase tracking-tight leading-none truncate" title="Gemini 2.5 ATS Pick">✓ [✨ Gemini] PICK</span>`
+          : "";
+
+        const awayChipsHtml = `
+          <div class="w-full flex flex-col items-center gap-1 mb-1.5 min-h-[38px] justify-start">
+            <span class="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)] font-mono font-extrabold text-[9px] leading-none mb-0.5">${awaySpreadStr}</span>
+            ${awayBaseChipHtml}
+            ${awayGemChipHtml}
+          </div>
+        `;
+
+        const homeChipsHtml = `
+          <div class="w-full flex flex-col items-center gap-1 mb-1.5 min-h-[38px] justify-start">
+            <span class="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)] font-mono font-extrabold text-[9px] leading-none mb-0.5">${homeSpreadStr}</span>
+            ${homeBaseChipHtml}
+            ${homeGemChipHtml}
+          </div>
+        `;
 
         const awayLogoHtml = m.away.logoUrl
           ? `<img src="${m.away.logoUrl}" alt="${m.away.abbr}" class="w-11 h-11 object-contain drop-shadow-md mx-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="w-10 h-10 rounded-xl items-center justify-center font-black text-xs text-white mx-auto hidden" style="background:${m.away.color}">${m.away.abbr}</div>`
@@ -2385,11 +2417,11 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
               ` : ''}
             </div>
 
-            <!-- Away vs Home Matchup Row (Team Image -> Next Line Team Name -> Green Bounding Box on Pick + Spaced Middle Content) -->
+            <!-- Away vs Home Matchup Row (Team Image -> Next Line Team Name -> Dedicated ATS & Gemini Chips) -->
             <div class="grid grid-cols-12 items-stretch gap-2.5">
               <!-- Away Team Box -->
               <div class="col-span-3 flex flex-col items-center justify-between text-center p-2 rounded-2xl transition ${awayBoxClass}">
-                ${awayPickChipHtml}
+                ${awayChipsHtml}
                 <div class="my-0.5">
                   ${awayLogoHtml}
                 </div>
@@ -2407,7 +2439,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
 
               <!-- Home Team Box -->
               <div class="col-span-3 flex flex-col items-center justify-between text-center p-2 rounded-2xl transition ${homeBoxClass}">
-                ${homePickChipHtml}
+                ${homeChipsHtml}
                 <div class="my-0.5">
                   ${homeLogoHtml}
                 </div>
@@ -2585,35 +2617,48 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
         }
       }
 
-      // Update Team Logos, Next-Line Team Names, and Green Bounding Box on the Picked Team in Detail View (ATS Standard)
-      const atsPickAbbr = pred.atsCoverPick || (pred.homeWp >= 50 ? m.home.abbr : m.away.abbr);
-      const awayIsAtsPick = atsPickAbbr === m.away.abbr;
-      const homeIsAtsPick = atsPickAbbr === m.home.abbr;
+      // Neutral Team Boxes in Detail View (No Green Bounding Box)
       const awaySpreadStr = m.vegasSpreadHome > 0 ? `-${m.vegasSpreadHome}` : (m.vegasSpreadHome < 0 ? `+${Math.abs(m.vegasSpreadHome)}` : "PK");
       const homeSpreadStr = m.vegasSpreadHome < 0 ? `${m.vegasSpreadHome}` : (m.vegasSpreadHome > 0 ? `+${m.vegasSpreadHome}` : "PK");
 
       const awayBoxEl = document.getElementById("awayTeamBox");
       const homeBoxEl = document.getElementById("homeTeamBox");
+      if (awayBoxEl) awayBoxEl.className = "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 transition";
+      if (homeBoxEl) homeBoxEl.className = "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 transition";
+
       const awayPickBadgeEl = document.getElementById("awayPickBadge");
       const homePickBadgeEl = document.getElementById("homePickBadge");
+      if (awayPickBadgeEl) awayPickBadgeEl.textContent = awaySpreadStr;
+      if (homePickBadgeEl) homePickBadgeEl.textContent = homeSpreadStr;
 
-      if (awayBoxEl && homeBoxEl) {
-        awayBoxEl.className = awayIsAtsPick
-          ? "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)] transition"
-          : "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 opacity-90 transition";
-        homeBoxEl.className = homeIsAtsPick
-          ? "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)] transition"
-          : "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 opacity-90 transition";
+      // Two Dedicated Pick Chips for relevant team in Detail View
+      const basePickAbbr = basePred.atsCoverPick || basePred.atsPick;
+      const geminiPickAbbr = geminiPred ? (geminiPred.atsCoverPick || geminiPred.atsPick) : null;
+      const baselineShortTag = m.league === "NFL" ? "[nflfastR]" : "[CFBD]";
+
+      const awayBasePickChip = document.getElementById("awayBasePickChip");
+      const homeBasePickChip = document.getElementById("homeBasePickChip");
+      if (awayBasePickChip && homeBasePickChip) {
+        const awayIsBase = basePickAbbr === m.away.abbr;
+        awayBasePickChip.textContent = `✓ ${baselineShortTag} PICK`;
+        awayBasePickChip.classList.toggle("hidden", !awayIsBase);
+        homeBasePickChip.textContent = `✓ ${baselineShortTag} PICK`;
+        homeBasePickChip.classList.toggle("hidden", awayIsBase);
       }
-      if (awayPickBadgeEl && homePickBadgeEl) {
-        awayPickBadgeEl.textContent = awayIsAtsPick ? `✓ ATS PICK (${awaySpreadStr})` : awaySpreadStr;
-        awayPickBadgeEl.className = awayIsAtsPick
-          ? "px-1.5 py-0.5 mb-1 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm"
-          : "px-1.5 py-0.5 mb-1 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none";
-        homePickBadgeEl.textContent = homeIsAtsPick ? `✓ ATS PICK (${homeSpreadStr})` : homeSpreadStr;
-        homePickBadgeEl.className = homeIsAtsPick
-          ? "px-1.5 py-0.5 mb-1 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm"
-          : "px-1.5 py-0.5 mb-1 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none";
+
+      const awayGeminiPickChip = document.getElementById("awayGeminiPickChip");
+      const homeGeminiPickChip = document.getElementById("homeGeminiPickChip");
+      if (awayGeminiPickChip && homeGeminiPickChip) {
+        if (geminiPred && geminiPickAbbr) {
+          const awayIsGem = geminiPickAbbr === m.away.abbr;
+          awayGeminiPickChip.textContent = `✓ [✨ Gemini] PICK`;
+          awayGeminiPickChip.classList.toggle("hidden", !awayIsGem);
+          homeGeminiPickChip.textContent = `✓ [✨ Gemini] PICK`;
+          homeGeminiPickChip.classList.toggle("hidden", awayIsGem);
+        } else {
+          awayGeminiPickChip.classList.add("hidden");
+          homeGeminiPickChip.classList.add("hidden");
+        }
       }
 
       const awayImg = document.getElementById("awayLogoImg");
@@ -2663,9 +2708,13 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
         btnBanner.textContent = "✨ Run Gemini LLM Assessment to Add Gemini Score";
       }
 
-      const atsConfPct = pred.atsConfidence || 65;
-      const atsEdgeVal = pred.atsEdgePts || 1.5;
-      document.getElementById("winnerChip").textContent = `✓ ATS COVER PICK: ${atsPickAbbr} (${atsConfPct}% conf • Edge +${atsEdgeVal} pts)`;
+      if (geminiPred && geminiPickAbbr) {
+        document.getElementById("winnerChip").textContent = `${baselineShortTag} Pick: ${basePickAbbr} • ✨ Gemini: ${geminiPickAbbr}`;
+      } else {
+        const atsConfPct = basePred.atsConfidence || 65;
+        const atsEdgeVal = basePred.atsEdgePts || 1.5;
+        document.getElementById("winnerChip").textContent = `✓ ${baselineShortTag} ATS PICK: ${basePickAbbr} (${atsConfPct}% conf • Edge +${atsEdgeVal} pts)`;
+      }
 
       document.getElementById("awayWpText").textContent = `${m.away.abbr} ${pred.awayWp.toFixed(1)}%`;
       document.getElementById("homeWpText").textContent = `${m.home.abbr} ${pred.homeWp.toFixed(1)}%`;
