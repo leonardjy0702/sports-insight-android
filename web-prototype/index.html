@@ -599,7 +599,7 @@
               📋 All Weekly Games
             </button>
             <button type="button" onclick="setFilterBy('focused_only')" id="filterBtn-focused_only" class="p-2 rounded-xl border border-[var(--border)] bg-[var(--background)] font-semibold text-left">
-              🎯 Bet-Initiated Only
+              🎯 Focused Bets First
             </button>
             <button type="button" onclick="setFilterBy('high_conf')" id="filterBtn-high_conf" class="p-2 rounded-xl border border-[var(--border)] bg-[var(--background)] font-semibold text-left">
               🔒 High Win % (≥60%)
@@ -1396,6 +1396,9 @@
 
     function setFilterBy(filterKey) {
       currentFilterBy = filterKey;
+      if (filterKey === "focused_only") {
+        currentSortBy = "focused_first";
+      }
       syncFilterSheetUI();
       renderSubGatewayGameCards();
     }
@@ -1415,8 +1418,14 @@
         currentSortBy = "win_prob_desc";
         currentFilterBy = "all";
       } else if (preset === "focused_bets") {
-        currentSortBy = "focused_first";
-        currentFilterBy = currentFilterBy === "focused_only" ? "all" : "focused_only";
+        const isAlreadyFocusedMode = currentSortBy === "focused_first" || currentFilterBy === "focused_only";
+        if (isAlreadyFocusedMode) {
+          currentSortBy = "date_asc";
+          currentFilterBy = "all";
+        } else {
+          currentSortBy = "focused_first";
+          currentFilterBy = "focused_only";
+        }
       } else if (preset === "vegas_edge") {
         currentSortBy = "vegas_edge_desc";
         currentFilterBy = "all";
@@ -1732,6 +1741,7 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       }
 
       // 1. Apply Text Search + Category Filter
+      // Note: "focused_only" (Focused Bets filter) keeps ALL matchups in the list and prioritizes Bet-Focused games at the top!
       let filtered = enriched.filter(({ m, pred, outcome }) => {
         if (query) {
           const matchesQuery =
@@ -1743,7 +1753,6 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
             (m.tvNetwork || "").toLowerCase().includes(query);
           if (!matchesQuery) return false;
         }
-        if (currentFilterBy === "focused_only") return Boolean(m.isBetInitiated);
         if (currentFilterBy === "high_conf") return pred.maxWinProb >= 60.0;
         if (currentFilterBy === "upset_picks") return pred.isUnderdogPick || pred.vegasEdgePts >= 2.5;
         if (currentFilterBy === "upcoming_only") return !outcome.hasActiveScore;
@@ -1751,16 +1760,20 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         return true;
       });
 
-      // 2. Apply Selected Sort Criterion
+      const isFocusedPriorityMode = (currentSortBy === "focused_first" || currentFilterBy === "focused_only");
+
+      // 2. Apply Selected Sort Criterion (Prioritize toggled Bet-Focused games first when Focused Bets filter/sort is active)
       filtered.sort((a, b) => {
+        if (isFocusedPriorityMode) {
+          if (Boolean(a.m.isBetInitiated) !== Boolean(b.m.isBetInitiated)) {
+            return a.m.isBetInitiated ? -1 : 1;
+          }
+          return (a.m.sortTimestamp || a.idx) - (b.m.sortTimestamp || b.idx);
+        }
         if (currentSortBy === "date_asc") {
           return (a.m.sortTimestamp || a.idx) - (b.m.sortTimestamp || b.idx);
         }
         if (currentSortBy === "win_prob_desc") {
-          return b.pred.maxWinProb - a.pred.maxWinProb;
-        }
-        if (currentSortBy === "focused_first") {
-          if (a.m.isBetInitiated !== b.m.isBetInitiated) return a.m.isBetInitiated ? -1 : 1;
           return b.pred.maxWinProb - a.pred.maxWinProb;
         }
         if (currentSortBy === "vegas_edge_desc") {
@@ -1789,7 +1802,32 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         return;
       }
 
+      const focusedCountInList = filtered.filter(item => item.m.isBetInitiated).length;
+      const otherCountInList = filtered.length - focusedCountInList;
+      let shownFocusedHeader = false;
+      let shownOtherHeader = false;
+
       container.innerHTML = filtered.map(({ m, idx, pred, outcome }) => {
+        let sectionDividerHtml = "";
+        if (isFocusedPriorityMode) {
+          if (m.isBetInitiated && !shownFocusedHeader) {
+            shownFocusedHeader = true;
+            sectionDividerHtml = `
+              <div class="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-between text-[11px] font-mono">
+                <span class="font-bold text-amber-300">🎯 PRIORITIZED: BET-FOCUSED MATCHUPS (${focusedCountInList})</span>
+                <span class="text-[10px] text-amber-200/80">Pinned to Top</span>
+              </div>
+            `;
+          } else if (!m.isBetInitiated && !shownOtherHeader) {
+            shownOtherHeader = true;
+            sectionDividerHtml = `
+              <div class="px-3 py-1.5 mt-2 rounded-xl bg-[var(--secondary)]/70 border border-[var(--border)] flex items-center justify-between text-[11px] font-mono">
+                <span class="font-bold text-[var(--muted-foreground)]">📋 OTHER MATCHUPS (${otherCountInList})</span>
+                <span class="text-[10px] text-[var(--muted-foreground)]">Tap "+ Track Bet" to prioritize</span>
+              </div>
+            `;
+          }
+        }
         const basePred = computeBaselinePrediction(m);
         const geminiPred = m.geminiAssessment || null;
         const baseWinTeam = basePred.homeWp >= 50 ? m.home : m.away;
@@ -1934,6 +1972,7 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
           : `<div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-white mx-auto" style="background:${m.home.color}">${m.home.abbr}</div>`;
 
         return `
+          ${sectionDividerHtml}
           <div onclick="selectGameFromSubGateway(${idx})" class="cursor-pointer w-full text-left bg-[var(--card)] hover:bg-[var(--secondary)]/60 border ${m.isBetInitiated ? 'border-amber-500/50' : 'border-[var(--border)]'} rounded-2xl p-4 transition shadow-sm space-y-3 group">
             <!-- Schedule Date, Kickoff Time & TV Network Header Row -->
             <div class="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
