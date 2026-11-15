@@ -290,7 +290,7 @@
         </div>
 
         <!-- Complete List of Weekly Matchup Cards -->
-        <div id="subGatewayCardsContainer" class="space-y-2.5">
+        <div id="subGatewayCardsContainer" class="space-y-3.5">
           <!-- Populated dynamically by JS with every game of the week -->
         </div>
       </div>
@@ -298,7 +298,7 @@
       <!-- =================================================================== -->
       <!-- TIER 3: FULL MATCHUP DETAILS VIEW (Shown when a game is selected)   -->
       <!-- =================================================================== -->
-      <section id="activeMatchupBanner" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-3 shadow-sm hidden">
+      <section id="activeMatchupBanner" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 space-y-3.5 shadow-sm hidden">
         <!-- Top Bar inside Matchup Card: Return to Weekly Slate + Bet Focus Toggle -->
         <div class="flex items-center justify-between gap-2 border-b border-[var(--border)] pb-2">
           <button onclick="openLeagueSubGateway(currentLeague)" class="text-[11px] font-bold text-[var(--link)] flex items-center gap-1 hover:underline shrink-0">
@@ -320,55 +320,68 @@
         <!-- Post-Game / Live Hit-or-Miss Outcome Banner inside Detail View -->
         <div id="detailFinalOutcomeBanner" class="hidden"></div>
 
-        <!-- Away vs Home Mobile Scoreboard (1. Predicted Baseline, 2. Gemini Score if processed, 3. Live/Result Score based on Line) -->
-        <div class="grid grid-cols-7 items-center gap-1 text-center">
-          <div class="col-span-2 flex flex-col items-center">
-            <div id="awayCircle" class="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-xs text-white shadow-sm">
-              AWY
+        <!-- Away vs Home Mobile Scoreboard (Team Image -> Next Line Team Name -> Green Bounding Box on Pick + Extra Middle Spacing) -->
+        <div class="grid grid-cols-12 items-stretch gap-2.5 text-center">
+          <!-- Away Team Box (Highlighted with Green Bounding Box when Away is Picked) -->
+          <div id="awayTeamBox" class="col-span-3 flex flex-col items-center justify-between p-2 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 transition">
+            <span id="awayPickBadge" class="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded leading-none mb-1">42.8%</span>
+            <div id="awayLogoWrap" class="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden bg-[var(--secondary)]/60 p-1 shadow-sm">
+              <img id="awayLogoImg" src="" alt="AWY" class="w-full h-full object-contain hidden" />
+              <div id="awayCircle" class="w-full h-full rounded-xl flex items-center justify-center font-black text-xs text-white">AWY</div>
             </div>
-            <span id="awayRankName" class="text-xs font-bold mt-1 leading-tight truncate max-w-[95px]">Away</span>
-            <span id="awayRec" class="text-[10px] text-[var(--muted-foreground)] font-mono">0-0</span>
+            <div class="mt-1.5 w-full">
+              <div id="awayRankName" class="text-xs font-extrabold leading-tight truncate">Away</div>
+              <div id="awayRec" class="text-[10px] text-[var(--muted-foreground)] font-mono mt-0.5">0-0</div>
+            </div>
           </div>
 
-          <div class="col-span-3 flex flex-col items-center justify-center space-y-1">
-            <div id="predictionSourcePill" class="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)]">
-              1. Predicted Score
-            </div>
-            <div class="flex items-center justify-center gap-1.5 font-mono flex-wrap">
-              <div class="flex items-baseline gap-1.5">
-                <span id="awayScore" class="text-xl font-black">23</span>
-                <span class="text-xs text-[var(--muted-foreground)]">–</span>
-                <span id="homeScore" class="text-xl font-black">26</span>
+          <!-- Center Middle Content (Generous Spacing between 1. Predicted, 2. Gemini, 3. Live/Line) -->
+          <div class="col-span-6 flex flex-col items-center justify-center px-2.5 py-2.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2.5">
+            <div class="w-full space-y-1">
+              <div id="predictionSourcePill" class="text-[9px] font-mono uppercase tracking-wider text-[var(--muted-foreground)] font-bold">
+                1. Predicted Score
               </div>
-              <span id="detailBaselineSourceTag" class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--link)] border border-[var(--border)]">
-                [nflfastR + ESPN FPI]
-              </span>
+              <div class="flex items-center justify-center gap-1.5 font-mono flex-wrap">
+                <div class="flex items-baseline gap-1.5">
+                  <span id="awayScore" class="text-xl font-black">23</span>
+                  <span class="text-xs text-[var(--muted-foreground)]">–</span>
+                  <span id="homeScore" class="text-xl font-black">26</span>
+                </div>
+                <span id="detailBaselineSourceTag" class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--link)] border border-[var(--border)]">
+                  [nflfastR + ESPN FPI]
+                </span>
+              </div>
             </div>
 
             <!-- 2. GOOGLE GEMINI PREDICTED SCORE (Shown if Gemini processed) -->
-            <div id="detailGeminiScoreBelowBox" class="w-full px-2 py-1 rounded-xl bg-[var(--primary)]/15 border border-[var(--primary)]/40 font-mono hidden">
+            <div id="detailGeminiScoreBelowBox" class="w-full px-2.5 py-1.5 rounded-xl bg-[var(--primary)]/15 border border-[var(--primary)]/40 font-mono space-y-0.5 hidden">
               <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)]">✨ 2. GEMINI PREDICTED</div>
               <div id="detailGeminiScoreValue" class="text-xs font-black text-[var(--foreground)]">21 – 28 [Gemini 2.5]</div>
             </div>
 
             <!-- 3. LIVE / RESULT SCORE BASED ON THE LINE WITH TIMESTAMP -->
-            <div id="detailLiveScoreBelowBox" class="w-full px-2 py-1 rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono">
+            <div id="detailLiveScoreBelowBox" class="w-full px-2.5 py-1.5 rounded-xl bg-[var(--card)] border border-[var(--border)] font-mono space-y-1">
               <div id="detailLiveScoreValue" class="text-xs font-black text-emerald-400">LIVE: 10 – 35 [ESPN Live]</div>
               <div id="detailLiveScoreLine" class="text-[9px] font-semibold text-[var(--foreground)]">Line: DET -2.5 (24–27) [DraftKings]</div>
               <div id="detailLiveScoreClock" class="text-[8px] text-[var(--muted-foreground)]">4th Qtr • Synced --:--:--</div>
             </div>
 
-            <div id="winnerChip" class="px-2.5 py-0.5 rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] text-[11px] font-bold">
-              HOM Wins (57.2%)
+            <div id="winnerChip" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 text-[10px] font-bold font-mono">
+              ✓ PICK: HOM (57.2%)
             </div>
           </div>
 
-          <div class="col-span-2 flex flex-col items-center">
-            <div id="homeCircle" class="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-xs text-white shadow-sm">
-              HOM
+          <!-- Home Team Box (Highlighted with Green Bounding Box when Home is Picked) -->
+          <div id="homeTeamBox" class="col-span-3 flex flex-col items-center justify-between p-2 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 transition">
+            <span id="homePickBadge" class="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded leading-none mb-1">57.2%</span>
+            <div id="homeLogoWrap" class="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden bg-[var(--secondary)]/60 p-1 shadow-sm">
+              <img id="homeLogoImg" src="" alt="HOM" class="w-full h-full object-contain hidden" />
+              <div id="homeCircle" class="w-full h-full rounded-xl flex items-center justify-center font-black text-xs text-white">HOM</div>
             </div>
-            <span id="homeRankName" class="text-xs font-bold mt-1 leading-tight truncate max-w-[95px]">Home</span>
-            <span id="homeRec" class="text-[10px] text-[var(--muted-foreground)] font-mono">0-0</span>
+            <div class="mt-1.5 w-full">
+              <div id="homeRankName" class="text-xs font-extrabold leading-tight truncate">Home</div>
+              <div id="homeRec" class="text-[10px] text-[var(--muted-foreground)] font-mono mt-0.5">0-0</div>
+            </div>
           </div>
         </div>
 
@@ -785,12 +798,14 @@
         isBetInitiated: Boolean(isBetInitiated),
         away: {
           abbr: awayAbbr, name: awayName, rank: "NFL", record: awayRec, color: awayColor,
+          logoUrl: `https://a.espncdn.com/i/teamlogos/nfl/500/${awayAbbr.toLowerCase()}.png`,
           epaOff: aStat.epaOff, epaDef: aStat.epaDef, powerRating: aStat.power,
           successRateOff: aStat.srOff, successRateDef: aStat.srDef, havocRateDef: aStat.havoc,
           thirdDownPct: aStat.third, redZoneTdPct: aStat.rz, turnoverMargin: aStat.to, sacksPerGame: aStat.sacks
         },
         home: {
           abbr: homeAbbr, name: homeName, rank: "NFL", record: homeRec, color: homeColor,
+          logoUrl: `https://a.espncdn.com/i/teamlogos/nfl/500/${homeAbbr.toLowerCase()}.png`,
           epaOff: hStat.epaOff, epaDef: hStat.epaDef, powerRating: hStat.power,
           successRateOff: hStat.srOff, successRateDef: hStat.srDef, havocRateDef: hStat.havoc,
           thirdDownPct: hStat.third, redZoneTdPct: hStat.rz, turnoverMargin: hStat.to, sacksPerGame: hStat.sacks
@@ -815,8 +830,8 @@
           vegasSpreadHome: -2.5, overUnder: 48.5, draftKingsLine: "OU -2.5", moneylineAway: "+115", moneylineHome: "-135", oddsProvider: "DraftKings", ratingLabel: "SP+",
           isCompleted: false, isInProgress: false, liveClockDetail: "UPCOMING", statusDetail: "Sun, Nov 15 • 1:00 PM", actualAwayScore: null, actualHomeScore: null,
           isBetInitiated: true,
-          away: { abbr: "MISS", name: "Ole Miss", rank: "#14", record: "6-3", color: "#CE1126", epaOff: 0.21, epaDef: -0.14, powerRating: 21.4, successRateOff: 47.8, successRateDef: 35.4, havocRateDef: 18.8, thirdDownPct: 44.2, redZoneTdPct: 66.5, turnoverMargin: 4, sacksPerGame: 2.9 },
-          home: { abbr: "OU", name: "Oklahoma", rank: "#18", record: "5-4", color: "#841617", epaOff: 0.19, epaDef: -0.17, powerRating: 20.9, successRateOff: 46.6, successRateDef: 33.8, havocRateDef: 20.4, thirdDownPct: 45.9, redZoneTdPct: 68.2, turnoverMargin: 5, sacksPerGame: 3.2 },
+          away: { abbr: "MISS", name: "Ole Miss", rank: "#14", record: "6-3", color: "#CE1126", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/145.png", epaOff: 0.21, epaDef: -0.14, powerRating: 21.4, successRateOff: 47.8, successRateDef: 35.4, havocRateDef: 18.8, thirdDownPct: 44.2, redZoneTdPct: 66.5, turnoverMargin: 4, sacksPerGame: 2.9 },
+          home: { abbr: "OU", name: "Oklahoma", rank: "#18", record: "5-4", color: "#841617", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/201.png", epaOff: 0.19, epaDef: -0.17, powerRating: 20.9, successRateOff: 46.6, successRateDef: 33.8, havocRateDef: 20.4, thirdDownPct: 45.9, redZoneTdPct: 68.2, turnoverMargin: 5, sacksPerGame: 3.2 },
           h2h: "Ole Miss (6-3) at Oklahoma (5-4) • DraftKings: OU -2.5 (O/U 48.5)",
           injuries: [
             { player: "MISS Starting WR1", team: "away", impactPts: 2.1, active: false, note: "Questionable — Official SEC Report" },
@@ -832,8 +847,8 @@
           vegasSpreadHome: -13.5, overUnder: 51.5, draftKingsLine: "UGA -13.5", moneylineAway: "+420", moneylineHome: "-580", oddsProvider: "DraftKings (Closing)", ratingLabel: "SP+",
           isCompleted: true, isInProgress: false, liveClockDetail: "FINAL", statusDetail: "FINAL", actualAwayScore: 21, actualHomeScore: 48,
           isBetInitiated: true,
-          away: { abbr: "MIZ", name: "Missouri", rank: "#22", record: "6-4", color: "#F1B82D", epaOff: 0.14, epaDef: -0.11, powerRating: 14.8, successRateOff: 44.1, successRateDef: 38.1, havocRateDef: 17.2, thirdDownPct: 42.4, redZoneTdPct: 63.0, turnoverMargin: 2, sacksPerGame: 2.5 },
-          home: { abbr: "UGA", name: "Georgia", rank: "#3", record: "9-1", color: "#BA0C2F", epaOff: 0.28, epaDef: -0.23, powerRating: 28.9, successRateOff: 50.3, successRateDef: 30.9, havocRateDef: 22.4, thirdDownPct: 48.1, redZoneTdPct: 72.5, turnoverMargin: 7, sacksPerGame: 3.6 },
+          away: { abbr: "MIZ", name: "Missouri", rank: "#22", record: "6-4", color: "#F1B82D", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/142.png", epaOff: 0.14, epaDef: -0.11, powerRating: 14.8, successRateOff: 44.1, successRateDef: 38.1, havocRateDef: 17.2, thirdDownPct: 42.4, redZoneTdPct: 63.0, turnoverMargin: 2, sacksPerGame: 2.5 },
+          home: { abbr: "UGA", name: "Georgia", rank: "#3", record: "9-1", color: "#BA0C2F", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/61.png", epaOff: 0.28, epaDef: -0.23, powerRating: 28.9, successRateOff: 50.3, successRateDef: 30.9, havocRateDef: 22.4, thirdDownPct: 48.1, redZoneTdPct: 72.5, turnoverMargin: 7, sacksPerGame: 3.6 },
           h2h: "Missouri (6-4) at Georgia (9-1) • Final: MIZ 21, UGA 48",
           injuries: [
             { player: "MIZ Starting RB1", team: "away", impactPts: 2.2, active: false, note: "Out — Official SEC Report" },
@@ -1082,6 +1097,7 @@
           rank: away.curatedRank?.current && away.curatedRank.current <= 25 ? `#${away.curatedRank.current}` : league,
           record: awayRec,
           color: away.team?.color ? `#${away.team.color}` : "#1e40af",
+          logoUrl: away.team?.logo || (league === "NFL" ? `https://a.espncdn.com/i/teamlogos/nfl/500/${awayAbbr.toLowerCase()}.png` : ""),
           epaOff: aBase.epaOff, epaDef: aBase.epaDef, powerRating: aBase.power,
           successRateOff: aBase.srOff, successRateDef: aBase.srDef, havocRateDef: aBase.havoc,
           thirdDownPct: aBase.third, redZoneTdPct: aBase.rz, turnoverMargin: aBase.to, sacksPerGame: aBase.sacks
@@ -1092,6 +1108,7 @@
           rank: home.curatedRank?.current && home.curatedRank.current <= 25 ? `#${home.curatedRank.current}` : league,
           record: homeRec,
           color: home.team?.color ? `#${home.team.color}` : "#991b1b",
+          logoUrl: home.team?.logo || (league === "NFL" ? `https://a.espncdn.com/i/teamlogos/nfl/500/${homeAbbr.toLowerCase()}.png` : ""),
           epaOff: hBase.epaOff, epaDef: hBase.epaDef, powerRating: hBase.power,
           successRateOff: hBase.srOff, successRateDef: hBase.srDef, havocRateDef: hBase.havoc,
           thirdDownPct: hBase.third, redZoneTdPct: hBase.rz, turnoverMargin: hBase.to, sacksPerGame: hBase.sacks
@@ -1827,13 +1844,13 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
           const gemWinAbbr = geminiPred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
           const gemWinWp = geminiPred.maxWinProb.toFixed(0);
           geminiScoreTierHtml = `
-            <div class="pt-1 border-t border-[var(--border)] bg-[var(--primary)]/10 -mx-1 px-1 py-0.5 rounded">
+            <div class="pt-2 border-t border-[var(--border)] bg-[var(--primary)]/10 -mx-1.5 px-2 py-1.5 rounded-lg space-y-0.5">
               <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--link)] leading-none">
                 ✨ GEMINI PREDICTED (${gemWinAbbr} ${gemWinWp}%)
               </div>
-              <div class="flex items-center justify-center gap-1 leading-tight mt-0.5">
+              <div class="flex items-center justify-center gap-1.5 leading-tight mt-0.5">
                 <span class="text-xs font-black text-[var(--foreground)]">${geminiPred.awayScore} – ${geminiPred.homeScore}</span>
-                <span class="text-[8px] font-bold px-1 py-0.2 rounded bg-[var(--primary)]/25 text-[var(--link)]">[Gemini 2.5]</span>
+                <span class="text-[8px] font-bold px-1 py-0.5 rounded bg-[var(--primary)]/25 text-[var(--link)]">[Gemini 2.5]</span>
               </div>
             </div>
           `;
@@ -1842,47 +1859,47 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         // Tier 3: Live / Result Score based on the DraftKings Line (with 60s sync timestamp)
         const liveOrLineScoreTierHtml = outcome.hasActiveScore
           ? `
-            <div class="pt-1 border-t border-[var(--border)]">
+            <div class="pt-2 border-t border-[var(--border)] space-y-0.5">
               <div class="text-[8px] font-bold uppercase tracking-wider leading-none ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
                 ${outcome.isInProgress ? '● LIVE (' + outcome.clockLabel + ')' : 'FINAL RESULT'}
               </div>
-              <div class="flex items-center justify-center gap-1 leading-tight mt-0.5">
+              <div class="flex items-center justify-center gap-1.5 leading-tight mt-0.5">
                 <span class="text-xs font-black ${outcome.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${outcome.finalAway} – ${outcome.finalHome}</span>
-                <span class="text-[8px] font-bold px-1 py-0.2 rounded bg-[var(--secondary)] text-[var(--foreground)]">[ESPN Live]</span>
+                <span class="text-[8px] font-bold px-1 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)]">[ESPN Live]</span>
               </div>
-              <div class="text-[8px] font-semibold text-[var(--foreground)] leading-tight mt-0.5">
+              <div class="text-[8px] font-semibold text-[var(--foreground)] leading-tight pt-0.5">
                 Line (${dkLineTxt}): ${outcome.lineAwayScore}–${outcome.lineHomeScore} • ${outcome.atsText} <span class="text-[var(--muted-foreground)]">[DraftKings]</span>
               </div>
-              <div class="text-[8px] text-[var(--muted-foreground)] leading-none mt-0.5">
+              <div class="text-[8px] text-[var(--muted-foreground)] leading-none pt-0.5">
                 🕒 ${lastLiveSyncTimestamp}
               </div>
             </div>
           `
           : `
-            <div class="pt-1 border-t border-[var(--border)]">
+            <div class="pt-2 border-t border-[var(--border)] space-y-0.5">
               <div class="text-[8px] font-bold uppercase tracking-wider text-amber-300 leading-none">
                 LINE SCORE (${dkLineTxt})
               </div>
-              <div class="flex items-center justify-center gap-1 leading-tight mt-0.5">
+              <div class="flex items-center justify-center gap-1.5 leading-tight mt-0.5">
                 <span class="text-xs font-black text-amber-300">${outcome.lineAwayScore} – ${outcome.lineHomeScore}</span>
-                <span class="text-[8px] font-bold px-1 py-0.2 rounded bg-amber-500/20 text-amber-300">[DraftKings]</span>
+                <span class="text-[8px] font-bold px-1 py-0.5 rounded bg-amber-500/20 text-amber-300">[DraftKings]</span>
               </div>
-              <div class="text-[8px] text-[var(--muted-foreground)] leading-none mt-0.5">
+              <div class="text-[8px] text-[var(--muted-foreground)] leading-none pt-0.5">
                 O/U ${m.overUnder} • Live @ ${m.kickoffTime}
               </div>
             </div>
           `;
 
-        // Stacked Center Score Column: 1. PREDICTED (with source label next to score) -> 2. GEMINI (if processed) -> 3. LIVE/RESULT (Line)
+        // Stacked Center Score Column with generous spacing: 1. PREDICTED -> 2. GEMINI (if processed) -> 3. LIVE/RESULT (Line)
         const centerScoreColumnHtml = `
-          <div class="px-1.5 py-1.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
-            <div>
+          <div class="px-2.5 py-2.5 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
+            <div class="space-y-0.5">
               <div class="text-[8px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] leading-none">
                 PREDICTED (${baseWinTeam.abbr} ${baseWinWp}%)
               </div>
-              <div class="flex items-center justify-center gap-1 leading-tight mt-0.5">
+              <div class="flex items-center justify-center gap-1.5 leading-tight mt-0.5">
                 <span class="text-xs font-black text-[var(--foreground)]">${basePred.awayScore} – ${basePred.homeScore}</span>
-                <span class="text-[8px] font-bold px-1 py-0.2 rounded bg-[var(--secondary)] text-[var(--link)]" title="Source: ${baselineSourceLabel}">${baselineShortTag}</span>
+                <span class="text-[8px] font-bold px-1 py-0.5 rounded bg-[var(--secondary)] text-[var(--link)]" title="Source: ${baselineSourceLabel}">${baselineShortTag}</span>
               </div>
             </div>
             ${geminiScoreTierHtml}
@@ -1890,10 +1907,36 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
           </div>
         `;
 
+        // Green Bounding Box + Pick Indicator on whichever team is predicted to win
+        const awayIsPick = !homeWins;
+        const homeIsPick = homeWins;
+        const awayBoxClass = awayIsPick
+          ? "border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)]"
+          : "border border-[var(--border)] bg-[var(--background)]/40 opacity-90";
+        const homeBoxClass = homeIsPick
+          ? "border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)]"
+          : "border border-[var(--border)] bg-[var(--background)]/40 opacity-90";
+
+        const awayPickChipHtml = awayIsPick
+          ? `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm">✓ PICK ${pred.awayWp.toFixed(0)}%</span>`
+          : `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none">${pred.awayWp.toFixed(0)}%</span>`;
+
+        const homePickChipHtml = homeIsPick
+          ? `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm">✓ PICK ${pred.homeWp.toFixed(0)}%</span>`
+          : `<span class="px-1.5 py-0.5 mb-1.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none">${pred.homeWp.toFixed(0)}%</span>`;
+
+        const awayLogoHtml = m.away.logoUrl
+          ? `<img src="${m.away.logoUrl}" alt="${m.away.abbr}" class="w-11 h-11 object-contain drop-shadow-md mx-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="w-10 h-10 rounded-xl items-center justify-center font-black text-xs text-white mx-auto hidden" style="background:${m.away.color}">${m.away.abbr}</div>`
+          : `<div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-white mx-auto" style="background:${m.away.color}">${m.away.abbr}</div>`;
+
+        const homeLogoHtml = m.home.logoUrl
+          ? `<img src="${m.home.logoUrl}" alt="${m.home.abbr}" class="w-11 h-11 object-contain drop-shadow-md mx-auto" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" /><div class="w-10 h-10 rounded-xl items-center justify-center font-black text-xs text-white mx-auto hidden" style="background:${m.home.color}">${m.home.abbr}</div>`
+          : `<div class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs text-white mx-auto" style="background:${m.home.color}">${m.home.abbr}</div>`;
+
         return `
-          <div onclick="selectGameFromSubGateway(${idx})" class="cursor-pointer w-full text-left bg-[var(--card)] hover:bg-[var(--secondary)]/60 border ${m.isBetInitiated ? 'border-amber-500/50' : 'border-[var(--border)]'} rounded-2xl p-3.5 transition shadow-sm space-y-2.5 group">
+          <div onclick="selectGameFromSubGateway(${idx})" class="cursor-pointer w-full text-left bg-[var(--card)] hover:bg-[var(--secondary)]/60 border ${m.isBetInitiated ? 'border-amber-500/50' : 'border-[var(--border)]'} rounded-2xl p-4 transition shadow-sm space-y-3 group">
             <!-- Schedule Date, Kickoff Time & TV Network Header Row -->
-            <div class="flex items-center justify-between gap-2 pb-1.5 border-b border-[var(--border)]">
+            <div class="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
               <div class="flex items-center gap-1.5 text-[11px] font-mono min-w-0">
                 <span class="font-bold text-[var(--foreground)] truncate">📅 ${m.scheduleDate || 'Sun, Nov 15'}</span>
                 <span class="text-[var(--muted-foreground)]">•</span>
@@ -1903,29 +1946,36 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
               ${statusOutcomeBadgeHtml}
             </div>
 
-            <!-- Away vs Home Matchup Row (1. Predicted, 2. Gemini if processed, 3. Live/Result based on Line) -->
-            <div class="grid grid-cols-12 items-center gap-1.5">
-              <div class="col-span-3 flex items-center gap-1.5 min-w-0">
-                <div class="w-7 h-7 rounded-xl flex items-center justify-center font-black text-[10px] text-white shrink-0" style="background:${m.away.color}">
-                  ${m.away.abbr}
+            <!-- Away vs Home Matchup Row (Team Image -> Next Line Team Name -> Green Bounding Box on Pick + Spaced Middle Content) -->
+            <div class="grid grid-cols-12 items-stretch gap-2.5">
+              <!-- Away Team Box -->
+              <div class="col-span-3 flex flex-col items-center justify-between text-center p-2 rounded-2xl transition ${awayBoxClass}">
+                ${awayPickChipHtml}
+                <div class="my-0.5">
+                  ${awayLogoHtml}
                 </div>
-                <div class="min-w-0">
-                  <div class="text-xs font-bold truncate">${m.away.name}</div>
-                  <div class="text-[9px] font-mono text-[var(--muted-foreground)] truncate">${m.away.record} • EPA ${m.away.epaOff >= 0 ? '+'+m.away.epaOff : m.away.epaOff}</div>
+                <div class="mt-1.5 w-full">
+                  <div class="text-xs font-extrabold leading-tight truncate">${m.away.name}</div>
+                  <div class="text-[9px] font-mono text-[var(--muted-foreground)] mt-0.5">${m.away.record}</div>
+                  <div class="text-[8px] font-mono text-[var(--muted-foreground)]">EPA ${m.away.epaOff >= 0 ? '+'+m.away.epaOff : m.away.epaOff}</div>
                 </div>
               </div>
 
-              <div class="col-span-6 text-center font-mono">
+              <!-- Middle Score Stack (More Spacing) -->
+              <div class="col-span-6 flex flex-col justify-center text-center font-mono">
                 ${centerScoreColumnHtml}
               </div>
 
-              <div class="col-span-3 flex items-center justify-end gap-1.5 min-w-0 text-right">
-                <div class="min-w-0">
-                  <div class="text-xs font-bold truncate">${m.home.name}</div>
-                  <div class="text-[9px] font-mono text-[var(--muted-foreground)] truncate">${m.home.record} • EPA ${m.home.epaOff >= 0 ? '+'+m.home.epaOff : m.home.epaOff}</div>
+              <!-- Home Team Box -->
+              <div class="col-span-3 flex flex-col items-center justify-between text-center p-2 rounded-2xl transition ${homeBoxClass}">
+                ${homePickChipHtml}
+                <div class="my-0.5">
+                  ${homeLogoHtml}
                 </div>
-                <div class="w-7 h-7 rounded-xl flex items-center justify-center font-black text-[10px] text-white shrink-0" style="background:${m.home.color}">
-                  ${m.home.abbr}
+                <div class="mt-1.5 w-full">
+                  <div class="text-xs font-extrabold leading-tight truncate">${m.home.name}</div>
+                  <div class="text-[9px] font-mono text-[var(--muted-foreground)] mt-0.5">${m.home.record}</div>
+                  <div class="text-[8px] font-mono text-[var(--muted-foreground)]">EPA ${m.home.epaOff >= 0 ? '+'+m.home.epaOff : m.home.epaOff}</div>
                 </div>
               </div>
             </div>
@@ -1933,8 +1983,8 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
             <!-- Bottom LLM Pick Callout, Official DraftKings Line, Gemini Trigger, Bet Focus Toggle & Details CTA -->
             <div class="pt-2 border-t border-[var(--border)] flex items-center justify-between gap-2 text-xs">
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="px-2 py-0.5 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] font-mono font-bold text-[10px]">
-                  Pick: ${winTeam.abbr} (${winWp}%)
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px]">
+                  ✓ Pick: ${winTeam.abbr} (${winWp}%)
                 </span>
                 <span class="px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[10px] font-mono text-[var(--foreground)] font-semibold">
                   DK: ${dkLineTxt} • O/U ${m.overUnder}
@@ -2071,12 +2121,59 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         }
       }
 
+      // Update Team Logos, Next-Line Team Names, and Green Bounding Box on the Picked Team in Detail View
+      const homeWins = pred.homeWp >= 50;
+      const awayBoxEl = document.getElementById("awayTeamBox");
+      const homeBoxEl = document.getElementById("homeTeamBox");
+      const awayPickBadgeEl = document.getElementById("awayPickBadge");
+      const homePickBadgeEl = document.getElementById("homePickBadge");
+
+      if (awayBoxEl && homeBoxEl) {
+        awayBoxEl.className = !homeWins
+          ? "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)] transition"
+          : "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 opacity-90 transition";
+        homeBoxEl.className = homeWins
+          ? "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 shadow-[0_0_14px_rgba(16,185,129,0.2)] transition"
+          : "col-span-3 flex flex-col items-center justify-between p-2.5 rounded-2xl border border-[var(--border)] bg-[var(--background)]/50 opacity-90 transition";
+      }
+      if (awayPickBadgeEl && homePickBadgeEl) {
+        awayPickBadgeEl.textContent = !homeWins ? `✓ PICK ${pred.awayWp.toFixed(0)}%` : `${pred.awayWp.toFixed(0)}%`;
+        awayPickBadgeEl.className = !homeWins
+          ? "px-1.5 py-0.5 mb-1 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm"
+          : "px-1.5 py-0.5 mb-1 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none";
+        homePickBadgeEl.textContent = homeWins ? `✓ PICK ${pred.homeWp.toFixed(0)}%` : `${pred.homeWp.toFixed(0)}%`;
+        homePickBadgeEl.className = homeWins
+          ? "px-1.5 py-0.5 mb-1 rounded-md bg-emerald-500 text-slate-950 font-mono font-black text-[8px] uppercase tracking-wider leading-none shadow-sm"
+          : "px-1.5 py-0.5 mb-1 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono font-semibold text-[8px] leading-none";
+      }
+
+      const awayImg = document.getElementById("awayLogoImg");
       const awayC = document.getElementById("awayCircle");
       awayC.textContent = m.away.abbr;
       awayC.style.backgroundColor = m.away.color;
+      if (awayImg && m.away.logoUrl) {
+        awayImg.src = m.away.logoUrl;
+        awayImg.classList.remove("hidden");
+        awayC.classList.add("hidden");
+        awayImg.onerror = () => { awayImg.classList.add("hidden"); awayC.classList.remove("hidden"); };
+      } else if (awayImg) {
+        awayImg.classList.add("hidden");
+        awayC.classList.remove("hidden");
+      }
+
+      const homeImg = document.getElementById("homeLogoImg");
       const homeC = document.getElementById("homeCircle");
       homeC.textContent = m.home.abbr;
       homeC.style.backgroundColor = m.home.color;
+      if (homeImg && m.home.logoUrl) {
+        homeImg.src = m.home.logoUrl;
+        homeImg.classList.remove("hidden");
+        homeC.classList.add("hidden");
+        homeImg.onerror = () => { homeImg.classList.add("hidden"); homeC.classList.remove("hidden"); };
+      } else if (homeImg) {
+        homeImg.classList.add("hidden");
+        homeC.classList.remove("hidden");
+      }
 
       document.getElementById("awayRankName").textContent = m.away.name;
       document.getElementById("awayRec").textContent = m.away.record;
@@ -2090,7 +2187,7 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       const sourcePill = document.getElementById("predictionSourcePill");
       const btnBanner = document.getElementById("btnRunGeminiBanner");
       sourcePill.textContent = "1. Predicted Score";
-      sourcePill.className = "text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--secondary)] text-[var(--muted-foreground)] mb-0.5";
+      sourcePill.className = "text-[9px] font-mono uppercase tracking-wider text-[var(--muted-foreground)] font-bold";
       if (pred.isGeminiLive) {
         btnBanner.textContent = "🔄 Re-Run Gemini 2.5 Flash Assessment";
       } else {
@@ -2099,7 +2196,7 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
 
       const winTeam = pred.homeWp >= 50 ? m.home : m.away;
       const winProb = Math.max(pred.homeWp, pred.awayWp).toFixed(1);
-      document.getElementById("winnerChip").textContent = `${winTeam.abbr} Wins (${winProb}%)`;
+      document.getElementById("winnerChip").textContent = `✓ PICK: ${winTeam.abbr} (${winProb}%)`;
 
       document.getElementById("awayWpText").textContent = `${m.away.abbr} ${pred.awayWp.toFixed(1)}%`;
       document.getElementById("homeWpText").textContent = `${m.home.abbr} ${pred.homeWp.toFixed(1)}%`;
