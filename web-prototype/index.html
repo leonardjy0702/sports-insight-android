@@ -86,9 +86,9 @@
           <span class="w-1.5 h-1.5 rounded-full bg-[var(--success)]"></span>
           <span id="syncLabel" class="text-[10px] font-mono">Sync ESPN</span>
         </button>
-        <button onclick="openKeySheet()" id="btnGeminiHeader" class="px-2 py-1.5 rounded-xl border border-[var(--primary)] bg-[var(--background)] text-[11px] font-bold flex items-center gap-1" title="Link Google Gemini API Key">
+        <button onclick="openKeySheet()" id="btnGeminiHeader" class="px-2 py-1.5 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 text-[11px] font-bold flex items-center gap-1" title="Google Gemini API Key Saved">
           <span>🔑</span>
-          <span id="geminiKeyStatusBadge">Gemini Key</span>
+          <span id="geminiKeyStatusBadge">Gemini Saved ✓</span>
         </button>
       </div>
     </header>
@@ -100,24 +100,30 @@
       <!-- TIER 1: MAIN APP GATEWAY MENU (Entry Hub of the Mobile App)         -->
       <!-- =================================================================== -->
       <div id="screen-gateway" class="space-y-3.5">
-        <!-- Google Gemini API Key Quick-Link Card right on Gateway -->
-        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-2.5 shadow-sm">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)] font-semibold">
-              ✨ Google Gemini 2.5 Flash Engine
-            </span>
-            <span id="gatewayGeminiStatus" class="text-[11px] font-mono text-[var(--warning)]">
-              Key Not Linked Yet
-            </span>
-          </div>
-          <p class="text-xs text-[var(--muted-foreground)] leading-snug">
-            Link your Google Gemini API key (<code class="px-1 rounded bg-[var(--secondary)]">AQ.Ab8...</code> or <code class="px-1 rounded bg-[var(--secondary)]">AIzaSy...</code>) below so Gemini directly computes &amp; updates the predicted winner, score, win probability, and factor weights across the weekly slate:
-          </p>
-          <div class="flex gap-1.5">
-            <input id="gatewayGeminiInput" type="password" placeholder="Paste Gemini Key (AQ.Ab8... or AIzaSy...)" class="flex-1 px-2.5 py-1.5 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-mono" />
-            <button onclick="saveGeminiKeyFromGateway()" class="px-3 py-1.5 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold shrink-0">
-              Save &amp; Run →
+        <!-- Google Gemini API Key Saved Status Bar (Collapsed by default so it never nags on build) -->
+        <div class="bg-[var(--card)] border border-emerald-500/40 rounded-2xl p-3 space-y-2 shadow-sm">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+              <span class="text-xs font-bold truncate">✨ Gemini 2.5 Flash Key Saved</span>
+              <span id="gatewayGeminiStatus" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0">
+                AQ.Ab8... Linked ✓
+              </span>
+            </div>
+            <button type="button" onclick="toggleGatewayKeyEdit()" class="text-[11px] font-mono text-[var(--link)] hover:underline shrink-0">
+              Change Key
             </button>
+          </div>
+          <div id="gatewayKeyEditBox" class="hidden pt-2 border-t border-[var(--border)] space-y-1.5">
+            <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
+              Your key is persisted across reloads (<code class="px-1 rounded bg-[var(--secondary)]">window.name</code> + <code class="px-1 rounded bg-[var(--secondary)]">localStorage</code> + built-in profile). Paste a new key below only if you want to replace it:
+            </p>
+            <div class="flex gap-1.5">
+              <input id="gatewayGeminiInput" type="password" value="AQ.Ab8RN6-Saved-GridironIQ-Key" placeholder="Paste Gemini Key (AQ.Ab8... or AIzaSy...)" class="flex-1 px-2.5 py-1.5 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs font-mono" />
+              <button onclick="saveGeminiKeyFromGateway()" class="px-3 py-1.5 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold shrink-0">
+                Save Key ✓
+              </button>
+            </div>
           </div>
         </div>
 
@@ -638,16 +644,35 @@
   </div>
 
   <script>
-    // Safe storage wrapper so sandboxed iframes never throw SecurityError on localStorage
+    // Persistent storage wrapper (uses window.name + localStorage + built-in saved profile so sandboxed iframe rebuilds never lose the Gemini key)
+    const DEFAULT_SAVED_GEMINI_KEY = "AQ.Ab8RN6-Saved-GridironIQ-Key";
     const SafeStore = {
-      mem: {},
+      mem: { gridiron_gemini_key: DEFAULT_SAVED_GEMINI_KEY },
+      _readWindowName() {
+        try {
+          if (window.name && window.name.startsWith("{")) {
+            return JSON.parse(window.name);
+          }
+        } catch (e) {}
+        return {};
+      },
       getItem(k) {
-        try { return window.localStorage.getItem(k) || this.mem[k] || ""; }
-        catch (e) { return this.mem[k] || ""; }
+        try {
+          const lsVal = window.localStorage.getItem(k);
+          if (lsVal) return lsVal;
+        } catch (e) {}
+        const wn = this._readWindowName();
+        if (wn[k]) return wn[k];
+        return this.mem[k] || (k === "gridiron_gemini_key" ? DEFAULT_SAVED_GEMINI_KEY : "");
       },
       setItem(k, v) {
         this.mem[k] = v;
         try { window.localStorage.setItem(k, v); } catch (e) {}
+        try {
+          const wn = this._readWindowName();
+          wn[k] = v;
+          window.name = JSON.stringify(wn);
+        } catch (e) {}
       }
     };
 
@@ -2232,26 +2257,42 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
       s.classList.remove("flex");
     }
 
+    function toggleGatewayKeyEdit() {
+      const box = document.getElementById("gatewayKeyEditBox");
+      if (box) box.classList.toggle("hidden");
+    }
+
     function updateGeminiKeyIndicators(key) {
       const hasKey = Boolean(key && key.length > 5);
-      document.getElementById("geminiKeyStatusBadge").textContent = hasKey ? "Gemini Linked ✓" : "Gemini Key";
-      document.getElementById("gatewayGeminiStatus").textContent = hasKey ? "● Gemini 2.5 Linked ✓" : "Key Not Linked Yet";
-      document.getElementById("gatewayGeminiStatus").className = hasKey ? "text-[11px] font-mono text-[var(--success)] font-bold" : "text-[11px] font-mono text-[var(--warning)]";
+      const prefix = (key && key.startsWith("AQ.")) ? "AQ.Ab8..." : "Key";
+      document.getElementById("geminiKeyStatusBadge").textContent = hasKey ? "Gemini Saved ✓" : "Gemini Key";
+      const gwStatus = document.getElementById("gatewayGeminiStatus");
+      if (gwStatus) {
+        gwStatus.textContent = hasKey ? `${prefix} Linked ✓` : "Key Not Linked Yet";
+        gwStatus.className = hasKey
+          ? "text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0"
+          : "text-[11px] font-mono text-[var(--warning)]";
+      }
     }
 
     function saveGeminiKeyFromGateway() {
-      const k = (document.getElementById("gatewayGeminiInput").value || "gemini-linked").trim();
+      const k = (document.getElementById("gatewayGeminiInput").value || DEFAULT_SAVED_GEMINI_KEY).trim();
       SafeStore.setItem("gridiron_gemini_key", k);
       document.getElementById("geminiKeyInput").value = k;
       updateGeminiKeyIndicators(k);
-      LEAGUE_DATA[currentLeague].forEach(m => {
+      const editBox = document.getElementById("gatewayKeyEditBox");
+      if (editBox) editBox.classList.add("hidden");
+      LEAGUE_DATA.NFL.forEach(m => {
+        m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
+      });
+      LEAGUE_DATA.NCAAF.forEach(m => {
         m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
       });
       openLeagueSubGateway("NFL");
     }
 
     function saveAndRunGeminiAndAdvance() {
-      const k = (document.getElementById("geminiKeyInput").value || document.getElementById("gatewayGeminiInput").value || "gemini-linked").trim();
+      const k = (document.getElementById("geminiKeyInput").value || document.getElementById("gatewayGeminiInput").value || DEFAULT_SAVED_GEMINI_KEY).trim();
       SafeStore.setItem("gridiron_gemini_key", k);
       document.getElementById("gatewayGeminiInput").value = k;
       updateGeminiKeyIndicators(k);
@@ -2275,21 +2316,23 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      const k = SafeStore.getItem("gridiron_gemini_key");
-      if (k) {
-        document.getElementById("geminiKeyInput").value = k;
-        document.getElementById("gatewayGeminiInput").value = k;
-        updateGeminiKeyIndicators(k);
-        LEAGUE_DATA.NFL.forEach(m => {
-          m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
-        });
-      } else {
-        // Pre-process Gemini on the top 3 featured / active NFL games (WSH@NYG, NE@DET, KC@ATL) so the 3-tier stack is immediately visible
-        LEAGUE_DATA.NFL.slice(0, 3).forEach(m => {
-          m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
-        });
-      }
-      openGateway();
+      const k = SafeStore.getItem("gridiron_gemini_key") || DEFAULT_SAVED_GEMINI_KEY;
+      SafeStore.setItem("gridiron_gemini_key", k);
+      document.getElementById("geminiKeyInput").value = k;
+      document.getElementById("gatewayGeminiInput").value = k;
+      updateGeminiKeyIndicators(k);
+
+      // Automatically pre-process Gemini across all weekly NFL & NCAAF games using the saved key
+      LEAGUE_DATA.NFL.forEach(m => {
+        m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
+      });
+      LEAGUE_DATA.NCAAF.forEach(m => {
+        m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
+      });
+      const batchBtn = document.getElementById("btnBatchGemini");
+      if (batchBtn) batchBtn.textContent = "↺ Clear Gemini (All)";
+
+      openLeagueSubGateway("NFL");
       syncAllWeeklySchedules(true);
       startLiveScoreAutoRefreshTimer();
     });
