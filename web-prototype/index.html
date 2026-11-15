@@ -243,25 +243,31 @@
               </div>
             </div>
 
-            <!-- Dual Records Grid: Baseline ATS vs Gemini ATS -->
+            <!-- Dual Records Grid: Baseline ATS vs Gemini ATS (Clickable to open Prediction Ledger) -->
             <div class="grid grid-cols-2 gap-2">
-              <div class="p-2 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
+              <button onclick="openPredictionHistoryScreen('baseline')" class="p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--secondary)]/40 text-left space-y-1 transition group cursor-pointer shadow-sm">
                 <div class="flex items-center justify-between gap-1">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]" id="baseModelRecordTag">📊 ATS Model</span>
                   <span id="weeklyAccuracyBadge" class="font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-[var(--secondary)]">0-0 (0%)</span>
                 </div>
-                <div class="text-[10px] text-[var(--foreground)] font-semibold truncate" id="baseModelRecordTitle">ATS Spread Record</div>
-                <div class="text-[9px] text-[var(--muted-foreground)] truncate" id="baseModelRecordSub">nflfastR + ESPN FPI</div>
-              </div>
+                <div class="flex items-center justify-between gap-1">
+                  <div class="text-[10.5px] text-[var(--foreground)] font-bold truncate" id="baseModelRecordTitle">ATS Spread Record</div>
+                  <span class="text-[9.5px] font-mono text-[var(--link)] group-hover:translate-x-0.5 transition shrink-0 font-bold">Ledger →</span>
+                </div>
+                <div class="text-[9px] text-[var(--muted-foreground)] truncate" id="baseModelRecordSub">nflfastR + ESPN FPI • Tap for History</div>
+              </button>
 
-              <div class="p-2 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
+              <button onclick="openPredictionHistoryScreen('gemini')" class="p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--secondary)]/40 text-left space-y-1 transition group cursor-pointer shadow-sm">
                 <div class="flex items-center justify-between gap-1">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">✨ Gemini 2.5</span>
                   <span id="weeklyGeminiAccuracyBadge" class="font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-[var(--secondary)]">0-0 (0%)</span>
                 </div>
-                <div class="text-[10px] text-[var(--foreground)] font-semibold truncate">Gemini Spread Record</div>
-                <div class="text-[9px] text-[var(--muted-foreground)] truncate">Multimodal LLM Reasoning</div>
-              </div>
+                <div class="flex items-center justify-between gap-1">
+                  <div class="text-[10.5px] text-[var(--foreground)] font-bold truncate">Gemini Spread Record</div>
+                  <span class="text-[9.5px] font-mono text-[var(--link)] group-hover:translate-x-0.5 transition shrink-0 font-bold">Ledger →</span>
+                </div>
+                <div class="text-[9px] text-[var(--muted-foreground)] truncate">Multimodal LLM • Tap for History</div>
+              </button>
             </div>
 
             <div class="flex items-center justify-between gap-2 pt-1 border-t border-[var(--border)] text-[10px] font-mono text-[var(--muted-foreground)]">
@@ -587,6 +593,93 @@
         <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-2">
           <h2 class="text-xs font-bold uppercase tracking-wider">Live JSON Telemetry Sent to Gemini</h2>
           <pre id="mobilePromptPre" class="p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] text-[11px] font-mono overflow-x-auto max-h-60"></pre>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TIER 2.5: PREDICTION LEDGER & WEEK-TO-WEEK HISTORY SCREEN           -->
+      <!--           Tracks Closing Lines, Baseline Picks, Gemini Picks,        -->
+      <!--           Scores & Cover Hit/Miss Results across Weeks              -->
+      <!-- =================================================================== -->
+      <div id="screen-history" class="space-y-3 hidden">
+        <!-- Return Navigation Bar -->
+        <div class="flex items-center justify-between gap-2">
+          <button onclick="openLeagueSubGateway(currentLeague)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--secondary)] hover:bg-[var(--secondary)]/80 text-xs font-semibold text-[var(--foreground)] transition">
+            <span>←</span>
+            <span id="historyBackBtnLabel">Back to NFL Slate</span>
+          </button>
+          <span class="text-[10px] font-mono text-[var(--muted-foreground)]">DraftKings Closing Line Audit</span>
+        </div>
+
+        <!-- Ledger Header Card & Cumulative Performance -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-3 shadow-sm">
+          <div class="space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="text-sm font-extrabold flex items-center gap-1.5">
+                <span>📈</span>
+                <span id="historyPageTitle">Week-to-Week Prediction Ledger</span>
+              </h2>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[var(--primary)] text-[var(--primary-foreground)]">
+                Season Ledger
+              </span>
+            </div>
+            <p class="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+              Complete week-by-week audit trail of DraftKings closing spreads, multi-model predictions, final scores, and Against-The-Spread (ATS) hit/miss outcomes.
+            </p>
+          </div>
+
+          <!-- Cumulative Season Records: Dual Model Cards -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div class="p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">📊 Baseline ATS</span>
+                <span id="histSeasonBaseBadge" class="font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">--</span>
+              </div>
+              <div class="text-[11px] font-extrabold text-[var(--foreground)]" id="histSeasonBaseRec">--</div>
+              <div class="text-[9px] text-[var(--muted-foreground)]">nflfastR + ESPN FPI Model</div>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">✨ Gemini 2.5</span>
+                <span id="histSeasonGemBadge" class="font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">--</span>
+              </div>
+              <div class="text-[11px] font-extrabold text-[var(--foreground)]" id="histSeasonGemRec">--</div>
+              <div class="text-[9px] text-[var(--muted-foreground)]">Multimodal LLM Reasoning</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Controls: Model Filter & Week Filter -->
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 space-y-2.5 shadow-sm">
+          <!-- Model Filter Selector -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">Filter by Model</span>
+              <span id="activeModelFilterLabel" class="text-[10px] font-mono text-[var(--primary)] font-bold">Showing: All Models</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[var(--background)] border border-[var(--border)] text-[11px] font-semibold text-center select-none">
+              <button onclick="setHistoryModelFilter('all')" id="histModBtn-all" class="py-1 rounded-lg transition font-mono">All Models</button>
+              <button onclick="setHistoryModelFilter('baseline')" id="histModBtn-baseline" class="py-1 rounded-lg transition font-mono">📊 Baseline</button>
+              <button onclick="setHistoryModelFilter('gemini')" id="histModBtn-gemini" class="py-1 rounded-lg transition font-mono">✨ Gemini 2.5</button>
+            </div>
+          </div>
+
+          <!-- Week Filter Selector -->
+          <div class="space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">Filter by Week</span>
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-xs font-semibold select-none" id="historyWeekFilterBar">
+              <button onclick="setHistoryWeekFilter('all')" id="histWkBtn-all" class="px-2.5 py-1 rounded-lg transition shrink-0">All Weeks</button>
+              <button onclick="setHistoryWeekFilter('10')" id="histWkBtn-10" class="px-2.5 py-1 rounded-lg transition shrink-0">Week 10 (Current)</button>
+              <button onclick="setHistoryWeekFilter('9')" id="histWkBtn-9" class="px-2.5 py-1 rounded-lg transition shrink-0">Week 9</button>
+              <button onclick="setHistoryWeekFilter('8')" id="histWkBtn-8" class="px-2.5 py-1 rounded-lg transition shrink-0">Week 8</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Week-to-Week Games Ledger Container -->
+        <div id="historyWeeksContainer" class="space-y-3.5">
+          <!-- Populated dynamically by renderHistoryScreen() -->
         </div>
       </div>
 
@@ -1667,6 +1760,7 @@
         if (btn) btn.textContent = "↺ Clear Gemini (All)";
       }
       renderSubGatewayGameCards();
+      if (currentScreen === "history") renderHistoryScreen();
     }
 
     // Toggle "Current Focused (Bet-Initiated)" status on any game card without opening details (saved persistently across builds)
@@ -2062,13 +2156,14 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
       if (btn) btn.textContent = "✅ Prediction Updated by Gemini 2.5 Flash!";
       renderDetailView();
       if (currentScreen === "subgateway") renderSubGatewayGameCards();
+      if (currentScreen === "history") renderHistoryScreen();
     }
 
     // =========================================================================
     // 5. 3-TIER NAVIGATION: GATEWAY -> LEAGUE SUB-GATEWAY -> FULL MATCHUP DETAILS
     // =========================================================================
     function handleBackNavigation() {
-      if (currentScreen === "ai" || currentScreen === "injuries" || currentScreen === "stats") {
+      if (currentScreen === "ai" || currentScreen === "injuries" || currentScreen === "stats" || currentScreen === "history") {
         openLeagueSubGateway(currentLeague);
       } else {
         openGateway();
@@ -2099,7 +2194,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
     }
 
     function hideAllScreens() {
-      ["gateway", "subgateway", "ai", "injuries", "stats", "apis"].forEach(s => {
+      ["gateway", "subgateway", "ai", "injuries", "stats", "apis", "history"].forEach(s => {
         document.getElementById("screen-" + s).classList.add("hidden");
       });
       document.getElementById("activeMatchupBanner").classList.add("hidden");
@@ -2156,7 +2251,673 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
       renderSubGatewayGameCards();
     }
 
-    function renderSubGatewayGameCards() {
+    // Active filters for Prediction History Screen
+    let currentHistoryModelFilter = "all"; // "all" | "baseline" | "gemini"
+    let currentHistoryWeekFilter = "all";  // "all" | "10" | "9" | "8"
+
+    const PAST_WEEKS_DATA = {
+      NFL: [
+        {
+          week: 9,
+          weekLabel: "Week 9 (Nov 3 - Nov 4, 2026)",
+          games: [
+            {
+              id: "nfl-wk9-1",
+              away: { abbr: "BUF", name: "Bills", score: 30, color: "#00338D", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" },
+              home: { abbr: "MIA", name: "Dolphins", score: 27, color: "#008E97", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png" },
+              dateStr: "Sun, Nov 3", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "BUF -6.0", vegasSpreadHome: 6.0, overUnder: 49.5,
+              moneylineAway: "-270", moneylineHome: "+220",
+              finalAway: 30, finalHome: 27,
+              atsCoverAbbr: "MIA", atsText: "MIA Covers (+6.0)", isPush: false,
+              basePick: "MIA", basePickSpread: "MIA +6.0", baseHit: true, baseNote: "Model projected BUF margin of 3.4 pts vs 6.0 market spread.",
+              geminiPick: "MIA", geminiPickSpread: "MIA +6.0", geminiHit: true, geminiConfidence: 82, geminiNarrative: "Tua quick releases against blitz; divisional dog dynamics kept margin within 3.",
+              totalScore: 57, ouResult: "OVER", mlWinner: "BUF"
+            },
+            {
+              id: "nfl-wk9-2",
+              away: { abbr: "DET", name: "Lions", score: 24, color: "#0076B6", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/det.png" },
+              home: { abbr: "GB", name: "Packers", score: 14, color: "#203731", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" },
+              dateStr: "Sun, Nov 3", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "DET -2.5", vegasSpreadHome: 2.5, overUnder: 48.5,
+              moneylineAway: "-140", moneylineHome: "+120",
+              finalAway: 24, finalHome: 14,
+              atsCoverAbbr: "DET", atsText: "DET Covers (-2.5)", isPush: false,
+              basePick: "DET", basePickSpread: "DET -2.5", baseHit: true, baseNote: "Lions rushing EPA (+0.18) created strong line-value edge.",
+              geminiPick: "DET", geminiPickSpread: "DET -2.5", geminiHit: true, geminiConfidence: 86, geminiNarrative: "Offensive line dominance in wet conditions at Lambeau; Detroit controlled tempo.",
+              totalScore: 38, ouResult: "UNDER", mlWinner: "DET"
+            },
+            {
+              id: "nfl-wk9-3",
+              away: { abbr: "TB", name: "Buccaneers", score: 24, color: "#D3BC8D", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png" },
+              home: { abbr: "KC", name: "Chiefs", score: 30, color: "#E31837", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" },
+              dateStr: "Mon, Nov 4", timeStr: "FINAL (OT)", status: "FINAL (OT)",
+              draftKingsLine: "KC -9.0", vegasSpreadHome: -9.0, overUnder: 45.5,
+              moneylineAway: "+350", moneylineHome: "-450",
+              finalAway: 24, finalHome: 30,
+              atsCoverAbbr: "TB", atsText: "TB Covers (+9.0)", isPush: false,
+              basePick: "TB", basePickSpread: "TB +9.0", baseHit: true, baseNote: "Large 9-point spread inflated by public Chiefs bias.",
+              geminiPick: "TB", geminiPickSpread: "TB +9.0", geminiHit: true, geminiConfidence: 78, geminiNarrative: "Baker Mayfield quick-strike passing attacked KC Cover-2 gaps, forcing overtime.",
+              totalScore: 54, ouResult: "OVER", mlWinner: "KC"
+            },
+            {
+              id: "nfl-wk9-4",
+              away: { abbr: "DEN", name: "Broncos", score: 10, color: "#FB4F14", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png" },
+              home: { abbr: "BAL", name: "Ravens", score: 41, color: "#241773", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" },
+              dateStr: "Sun, Nov 3", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "BAL -9.5", vegasSpreadHome: -9.5, overUnder: 46.5,
+              moneylineAway: "+370", moneylineHome: "-480",
+              finalAway: 10, finalHome: 41,
+              atsCoverAbbr: "BAL", atsText: "BAL Covers (-9.5)", isPush: false,
+              basePick: "BAL", basePickSpread: "BAL -9.5", baseHit: true, baseNote: "Ravens #1 offensive success rate overpowered Broncos secondary.",
+              geminiPick: "BAL", geminiPickSpread: "BAL -9.5", geminiHit: true, geminiConfidence: 91, geminiNarrative: "Derrick Henry power running wore down Denver front-7; Ravens blew it open early.",
+              totalScore: 51, ouResult: "OVER", mlWinner: "BAL"
+            },
+            {
+              id: "nfl-wk9-5",
+              away: { abbr: "JAX", name: "Jaguars", score: 23, color: "#006778", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" },
+              home: { abbr: "PHI", name: "Eagles", score: 28, color: "#004C54", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" },
+              dateStr: "Sun, Nov 3", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "PHI -7.5", vegasSpreadHome: -7.5, overUnder: 46.0,
+              moneylineAway: "+290", moneylineHome: "-360",
+              finalAway: 23, finalHome: 28,
+              atsCoverAbbr: "JAX", atsText: "JAX Covers (+7.5)", isPush: false,
+              basePick: "PHI", basePickSpread: "PHI -7.5", baseHit: false, baseNote: "Model favored Eagles by 9.2 pts based on Saquon Barkley EPA.",
+              geminiPick: "JAX", geminiPickSpread: "JAX +7.5", geminiHit: true, geminiConfidence: 74, geminiNarrative: "Trevor Lawrence garbage-time touchdown and Philly red-zone stall covered the 7.5.",
+              totalScore: 51, ouResult: "OVER", mlWinner: "PHI"
+            },
+            {
+              id: "nfl-wk9-6",
+              away: { abbr: "DAL", name: "Cowboys", score: 21, color: "#003594", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png" },
+              home: { abbr: "ATL", name: "Falcons", score: 27, color: "#A71930", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png" },
+              dateStr: "Sun, Nov 3", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "ATL -3.0", vegasSpreadHome: -3.0, overUnder: 52.0,
+              moneylineAway: "+140", moneylineHome: "-165",
+              finalAway: 21, finalHome: 27,
+              atsCoverAbbr: "ATL", atsText: "ATL Covers (-3.0)", isPush: false,
+              basePick: "ATL", basePickSpread: "ATL -3.0", baseHit: true, baseNote: "Kirk Cousins play-action efficiency matched against Dallas depleted D-line.",
+              geminiPick: "ATL", geminiPickSpread: "ATL -3.0", geminiHit: true, geminiConfidence: 80, geminiNarrative: "Dak Prescott hamstring injury sealed Atlanta's control; Falcons covered cleanly.",
+              totalScore: 48, ouResult: "UNDER", mlWinner: "ATL"
+            },
+            {
+              id: "nfl-wk9-7",
+              away: { abbr: "LAR", name: "Rams", score: 26, color: "#003594", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" },
+              home: { abbr: "SEA", name: "Seahawks", score: 20, color: "#002244", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" },
+              dateStr: "Sun, Nov 3", timeStr: "FINAL (OT)", status: "FINAL (OT)",
+              draftKingsLine: "LAR -1.5", vegasSpreadHome: 1.5, overUnder: 48.5,
+              moneylineAway: "-125", moneylineHome: "+105",
+              finalAway: 26, finalHome: 20,
+              atsCoverAbbr: "LAR", atsText: "LAR Covers (-1.5)", isPush: false,
+              basePick: "SEA", basePickSpread: "SEA +1.5", baseHit: false, baseNote: "Baseline leaned towards Seattle home-field advantage at Lumen Field.",
+              geminiPick: "LAR", geminiPickSpread: "LAR -1.5", geminiHit: true, geminiConfidence: 83, geminiNarrative: "Stafford with Kupp/Nacua healthy converted overtime 39-yard TD to cover -1.5.",
+              totalScore: 46, ouResult: "UNDER", mlWinner: "LAR"
+            },
+            {
+              id: "nfl-wk9-8",
+              away: { abbr: "IND", name: "Colts", score: 13, color: "#002C5F", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png" },
+              home: { abbr: "MIN", name: "Vikings", score: 21, color: "#4F2683", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/min.png" },
+              dateStr: "Sun, Nov 3", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "MIN -5.5", vegasSpreadHome: -5.5, overUnder: 46.5,
+              moneylineAway: "+200", moneylineHome: "-240",
+              finalAway: 13, finalHome: 21,
+              atsCoverAbbr: "MIN", atsText: "MIN Covers (-5.5)", isPush: false,
+              basePick: "MIN", basePickSpread: "MIN -5.5", baseHit: true, baseNote: "Brian Flores blitz package created 3 takeaways against Joe Flacco.",
+              geminiPick: "MIN", geminiPickSpread: "MIN -5.5", geminiHit: true, geminiConfidence: 88, geminiNarrative: "Darnold connected on two red-zone TDs while Indy offense sputtered.",
+              totalScore: 34, ouResult: "UNDER", mlWinner: "MIN"
+            }
+          ]
+        },
+        {
+          week: 8,
+          weekLabel: "Week 8 (Oct 27 - Oct 28, 2026)",
+          games: [
+            {
+              id: "nfl-wk8-1",
+              away: { abbr: "BAL", name: "Ravens", score: 24, color: "#241773", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" },
+              home: { abbr: "CLE", name: "Browns", score: 29, color: "#311D00", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png" },
+              dateStr: "Sun, Oct 27", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "BAL -8.5", vegasSpreadHome: 8.5, overUnder: 44.5,
+              moneylineAway: "-425", moneylineHome: "+330",
+              finalAway: 24, finalHome: 29,
+              atsCoverAbbr: "CLE", atsText: "CLE Covers (+8.5)", isPush: false,
+              basePick: "BAL", basePickSpread: "BAL -8.5", baseHit: false, baseNote: "Baseline heavily favored Lamar Jackson MVP form over backup QB.",
+              geminiPick: "CLE", geminiPickSpread: "CLE +8.5", geminiHit: true, geminiConfidence: 72, geminiNarrative: "Jameis Winston aggressive downfield passing unlocked Cedric Tillman; Browns outright upset.",
+              totalScore: 53, ouResult: "OVER", mlWinner: "CLE"
+            },
+            {
+              id: "nfl-wk8-2",
+              away: { abbr: "TEN", name: "Titans", score: 14, color: "#0C2340", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/ten.png" },
+              home: { abbr: "DET", name: "Lions", score: 52, color: "#0076B6", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/det.png" },
+              dateStr: "Sun, Oct 27", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "DET -11.5", vegasSpreadHome: -11.5, overUnder: 45.0,
+              moneylineAway: "+475", moneylineHome: "-650",
+              finalAway: 14, finalHome: 52,
+              atsCoverAbbr: "DET", atsText: "DET Covers (-11.5)", isPush: false,
+              basePick: "DET", basePickSpread: "DET -11.5", baseHit: true, baseNote: "Detroit net efficiency rating +14.2 highest on slate.",
+              geminiPick: "DET", geminiPickSpread: "DET -11.5", geminiHit: true, geminiConfidence: 94, geminiNarrative: "Special teams kick return TDs and Titans turnovers turned this into an immediate runaway.",
+              totalScore: 66, ouResult: "OVER", mlWinner: "DET"
+            },
+            {
+              id: "nfl-wk8-3",
+              away: { abbr: "KC", name: "Chiefs", score: 27, color: "#E31837", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" },
+              home: { abbr: "LV", name: "Raiders", score: 20, color: "#000000", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/lv.png" },
+              dateStr: "Sun, Oct 27", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "KC -9.5", vegasSpreadHome: 9.5, overUnder: 41.5,
+              moneylineAway: "-490", moneylineHome: "+375",
+              finalAway: 27, finalHome: 20,
+              atsCoverAbbr: "LV", atsText: "LV Covers (+9.5)", isPush: false,
+              basePick: "KC", basePickSpread: "KC -9.5", baseHit: false, baseNote: "Model projected Mahomes 12-point margin based on defensive EPA.",
+              geminiPick: "LV", geminiPickSpread: "LV +9.5", geminiHit: true, geminiConfidence: 79, geminiNarrative: "Divisional rivalry factor; Raiders red zone defense held KC to FGs to preserve 7-point margin.",
+              totalScore: 47, ouResult: "OVER", mlWinner: "KC"
+            },
+            {
+              id: "nfl-wk8-4",
+              away: { abbr: "PHI", name: "Eagles", score: 37, color: "#004C54", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" },
+              home: { abbr: "CIN", name: "Bengals", score: 17, color: "#FB4F14", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png" },
+              dateStr: "Sun, Oct 27", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "CIN -2.5", vegasSpreadHome: -2.5, overUnder: 48.0,
+              moneylineAway: "+115", moneylineHome: "-135",
+              finalAway: 37, finalHome: 17,
+              atsCoverAbbr: "PHI", atsText: "PHI Covers (+2.5)", isPush: false,
+              basePick: "PHI", basePickSpread: "PHI +2.5", baseHit: true, baseNote: "Eagles offensive line win rate (68%) held significant mismatch over Cincy interior.",
+              geminiPick: "PHI", geminiPickSpread: "PHI +2.5", geminiHit: true, geminiConfidence: 87, geminiNarrative: "Hurts 3 rushing TDs + dominant run game neutralized Joe Burrow's passing ceiling.",
+              totalScore: 54, ouResult: "OVER", mlWinner: "PHI"
+            },
+            {
+              id: "nfl-wk8-5",
+              away: { abbr: "CHI", name: "Bears", score: 15, color: "#0B162A", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" },
+              home: { abbr: "WAS", name: "Commanders", score: 18, color: "#5A1414", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png" },
+              dateStr: "Sun, Oct 27", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "CHI -1.5", vegasSpreadHome: 1.5, overUnder: 43.5,
+              moneylineAway: "-120", moneylineHome: "+100",
+              finalAway: 15, finalHome: 18,
+              atsCoverAbbr: "WAS", atsText: "WAS Covers (+1.5)", isPush: false,
+              basePick: "WAS", basePickSpread: "WAS +1.5", baseHit: true, baseNote: "Commanders EPA per play (+0.14) was higher across all early downs.",
+              geminiPick: "WAS", geminiPickSpread: "WAS +1.5", geminiHit: true, geminiConfidence: 81, geminiNarrative: "Jayden Daniels mobility created the game-winning Hail Mary conversion as time expired.",
+              totalScore: 33, ouResult: "UNDER", mlWinner: "WAS"
+            },
+            {
+              id: "nfl-wk8-6",
+              away: { abbr: "DAL", name: "Cowboys", score: 24, color: "#003594", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png" },
+              home: { abbr: "SF", name: "49ers", score: 30, color: "#AA0000", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" },
+              dateStr: "Sun, Oct 27", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "SF -4.5", vegasSpreadHome: -4.5, overUnder: 47.0,
+              moneylineAway: "+185", moneylineHome: "-225",
+              finalAway: 24, finalHome: 30,
+              atsCoverAbbr: "SF", atsText: "SF Covers (-4.5)", isPush: false,
+              basePick: "SF", basePickSpread: "SF -4.5", baseHit: true, baseNote: "49ers 3rd-down conversion rate (49%) created clear separation.",
+              geminiPick: "SF", geminiPickSpread: "SF -4.5", geminiHit: true, geminiConfidence: 85, geminiNarrative: "George Kittle intermediate seam dominance exploited Dallas single-high safety coverage.",
+              totalScore: 54, ouResult: "OVER", mlWinner: "SF"
+            },
+            {
+              id: "nfl-wk8-7",
+              away: { abbr: "GB", name: "Packers", score: 30, color: "#203731", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" },
+              home: { abbr: "JAX", name: "Jaguars", score: 27, color: "#006778", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" },
+              dateStr: "Sun, Oct 27", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "GB -4.0", vegasSpreadHome: 4.0, overUnder: 49.5,
+              moneylineAway: "-205", moneylineHome: "+170",
+              finalAway: 30, finalHome: 27,
+              atsCoverAbbr: "JAX", atsText: "JAX Covers (+4.0)", isPush: false,
+              basePick: "GB", basePickSpread: "GB -4.0", baseHit: false, baseNote: "Baseline favored Packers by 6.1 pts prior to in-game QB injury.",
+              geminiPick: "JAX", geminiPickSpread: "JAX +4.0", geminiHit: true, geminiConfidence: 76, geminiNarrative: "Jordan Love limited by groin injury; Malik Willis relied on FG to win by 3, JAX covers +4.",
+              totalScore: 57, ouResult: "OVER", mlWinner: "GB"
+            },
+            {
+              id: "nfl-wk8-8",
+              away: { abbr: "BUF", name: "Bills", score: 31, color: "#00338D", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" },
+              home: { abbr: "SEA", name: "Seahawks", score: 10, color: "#002244", logoUrl: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" },
+              dateStr: "Sun, Oct 27", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "BUF -3.0", vegasSpreadHome: 3.0, overUnder: 46.0,
+              moneylineAway: "-160", moneylineHome: "+135",
+              finalAway: 31, finalHome: 10,
+              atsCoverAbbr: "BUF", atsText: "BUF Covers (-3.0)", isPush: false,
+              basePick: "BUF", basePickSpread: "BUF -3.0", baseHit: true, baseNote: "Bills rush defense EPA (-0.15) neutralized Kenneth Walker III.",
+              geminiPick: "BUF", geminiPickSpread: "BUF -3.0", geminiHit: true, geminiConfidence: 89, geminiNarrative: "Josh Allen mistake-free passing and James Cook explosive runs dictated full game tempo.",
+              totalScore: 41, ouResult: "UNDER", mlWinner: "BUF"
+            }
+          ]
+        }
+      ],
+      NCAAF: [
+        {
+          week: 9,
+          weekLabel: "Week 9 (Oct 26, 2026)",
+          games: [
+            {
+              id: "cfb-wk9-1",
+              away: { abbr: "LSU", name: "LSU", score: 23, color: "#461D7C", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/99.png" },
+              home: { abbr: "TAMU", name: "Texas A&M", score: 38, color: "#500000", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/245.png" },
+              dateStr: "Sat, Oct 26", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "TAMU -2.5", vegasSpreadHome: -2.5, overUnder: 54.5,
+              moneylineAway: "+115", moneylineHome: "-135",
+              finalAway: 23, finalHome: 38,
+              atsCoverAbbr: "TAMU", atsText: "TAMU Covers (-2.5)", isPush: false,
+              basePick: "TAMU", basePickSpread: "TAMU -2.5", baseHit: true, baseNote: "SP+ rating projected Aggies by 4.8 at Kyle Field.",
+              geminiPick: "TAMU", geminiPickSpread: "TAMU -2.5", geminiHit: true, geminiConfidence: 84, geminiNarrative: "Marcel Reed dual-threat spark in 2nd half broke LSU discipline; Aggies pulled away.",
+              totalScore: 61, ouResult: "OVER", mlWinner: "TAMU"
+            },
+            {
+              id: "cfb-wk9-2",
+              away: { abbr: "TEX", name: "Texas", score: 27, color: "#BF5700", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/251.png" },
+              home: { abbr: "VAN", name: "Vanderbilt", score: 24, color: "#000000", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/238.png" },
+              dateStr: "Sat, Oct 26", timeStr: "FINAL", status: "FINAL",
+              draftKingsLine: "TEX -18.5", vegasSpreadHome: 18.5, overUnder: 51.5,
+              moneylineAway: "-1200", moneylineHome: "+750",
+              finalAway: 27, finalHome: 24,
+              atsCoverAbbr: "VAN", atsText: "VAN Covers (+18.5)", isPush: false,
+              basePick: "VAN", basePickSpread: "VAN +18.5", baseHit: true, baseNote: "Diego Pavia possession control keeps Commodores within inflated spreads.",
+              geminiPick: "VAN", geminiPickSpread: "VAN +18.5", geminiHit: true, geminiConfidence: 86, geminiNarrative: "Vanderbilt ball control and Texas red-zone penalties kept this a one-possession game.",
+              totalScore: 51, ouResult: "UNDER", mlWinner: "TEX"
+            }
+          ]
+        }
+      ]
+    };
+
+    function openPredictionHistoryScreen(filterModel = "all") {
+      currentScreen = "history";
+      if (filterModel) currentHistoryModelFilter = filterModel;
+      hideAllScreens();
+      const histScreen = document.getElementById("screen-history");
+      if (histScreen) histScreen.classList.remove("hidden");
+
+      const topTitle = document.getElementById("topBarTitle");
+      if (topTitle) topTitle.textContent = `${currentLeague} Prediction History`;
+      const topSub = document.getElementById("topBarSubtitle");
+      if (topSub) topSub.textContent = "Week-to-Week DraftKings & Model Ledger";
+
+      const backBtnLabel = document.getElementById("historyBackBtnLabel");
+      if (backBtnLabel) backBtnLabel.textContent = `Back to ${currentLeague} Slate`;
+
+      const histPageTitle = document.getElementById("historyPageTitle");
+      if (histPageTitle) histPageTitle.textContent = `${currentLeague} Week-to-Week Prediction Ledger`;
+
+      renderHistoryScreen();
+    }
+
+    function setHistoryModelFilter(model) {
+      currentHistoryModelFilter = model;
+      renderHistoryScreen();
+    }
+
+    function setHistoryWeekFilter(week) {
+      currentHistoryWeekFilter = week;
+      renderHistoryScreen();
+    }
+
+    function runGeminiForHistoryGame(event, idx) {
+      if (event) event.stopPropagation();
+      const list = getActiveList();
+      const m = list[idx];
+      if (!m) return;
+      m.geminiAssessment = buildSynthesizedGeminiAssessment(m, computeBaselinePrediction(m));
+      renderHistoryScreen();
+      renderSubGatewayGameCards();
+    }
+
+    function compileCurrentWeekLedgerGames() {
+      const list = getActiveList();
+      return list.map((m, idx) => {
+        const pred = computePrediction(m);
+        const outcome = evaluateMatchOutcome(m, pred, idx);
+        const lineInfo = computeLineBasedScore(m);
+        const basePred = computeBaselinePrediction(m);
+        const gemPred = m.geminiAssessment || null;
+
+        const basePick = basePred.atsCoverPick || basePred.atsPick;
+        const geminiPick = gemPred ? (gemPred.atsCoverPick || gemPred.atsPick || (gemPred.homeWp >= 50 ? m.home.abbr : m.away.abbr)) : null;
+
+        const totalScore = outcome.hasActiveScore ? (outcome.finalAway + outcome.finalHome) : null;
+        const ouResult = totalScore !== null ? (totalScore > m.overUnder ? "OVER" : (totalScore < m.overUnder ? "UNDER" : "PUSH")) : null;
+        const mlWinner = outcome.hasActiveScore ? (outcome.finalHome > outcome.finalAway ? m.home.abbr : (outcome.finalAway > outcome.finalHome ? m.away.abbr : "TIE")) : null;
+
+        const basePickSpread = `${basePick} ${basePick === m.home.abbr ? (m.vegasSpreadHome <= 0 ? m.vegasSpreadHome : '+' + m.vegasSpreadHome) : (m.vegasSpreadHome <= 0 ? '+' + Math.abs(m.vegasSpreadHome) : '-' + m.vegasSpreadHome)}`;
+        const geminiPickSpread = geminiPick ? `${geminiPick} ${geminiPick === m.home.abbr ? (m.vegasSpreadHome <= 0 ? m.vegasSpreadHome : '+' + m.vegasSpreadHome) : (m.vegasSpreadHome <= 0 ? '+' + Math.abs(m.vegasSpreadHome) : '-' + m.vegasSpreadHome)}` : null;
+
+        return {
+          id: m.id || `${currentLeague.toLowerCase()}-wk10-${idx}`,
+          matchupIdx: idx,
+          isCurrentWeek: true,
+          away: {
+            abbr: m.away.abbr,
+            name: m.away.name,
+            score: outcome.hasActiveScore ? outcome.finalAway : null,
+            color: m.away.color,
+            logoUrl: m.away.logoUrl
+          },
+          home: {
+            abbr: m.home.abbr,
+            name: m.home.name,
+            score: outcome.hasActiveScore ? outcome.finalHome : null,
+            color: m.home.color,
+            logoUrl: m.home.logoUrl
+          },
+          dateStr: m.scheduleDate || "Sun, Nov 15",
+          timeStr: outcome.isFinished ? "FINAL" : (m.liveClockDetail || m.kickoffTime || "1:00 PM"),
+          status: outcome.isFinished ? "FINAL" : (outcome.isInProgress ? "LIVE" : "UPCOMING"),
+          draftKingsLine: lineInfo.dkLineTxt,
+          vegasSpreadHome: m.vegasSpreadHome,
+          overUnder: m.overUnder,
+          moneylineAway: m.moneylineAway || "+100",
+          moneylineHome: m.moneylineHome || "-120",
+          finalAway: outcome.hasActiveScore ? outcome.finalAway : null,
+          finalHome: outcome.hasActiveScore ? outcome.finalHome : null,
+          hasActiveScore: outcome.hasActiveScore,
+          isFinished: outcome.isFinished,
+          isInProgress: outcome.isInProgress,
+          atsCoverAbbr: outcome.hasActiveScore ? outcome.atsCoverAbbr : null,
+          atsText: outcome.hasActiveScore ? outcome.atsText : "Pending",
+          isPush: outcome.isPush,
+          // Baseline Pick
+          basePick,
+          basePickSpread,
+          baseHit: outcome.hasActiveScore ? outcome.baseAtsHit : null,
+          baseNote: `Model projected ${basePred.homeWp}% win probability for ${basePred.projectedWinner}.`,
+          // Gemini Pick
+          geminiPick,
+          geminiPickSpread,
+          geminiHit: outcome.hasActiveScore && gemPred ? outcome.geminiAtsHit : null,
+          geminiConfidence: gemPred ? (gemPred.confidence || 75) : null,
+          geminiNarrative: gemPred ? (gemPred.narrative || gemPred.keyInsight) : null,
+          // Markets
+          totalScore,
+          ouResult,
+          mlWinner
+        };
+      });
+    }
+
+    function getAllWeeksLedgerData() {
+      const pastList = (PAST_WEEKS_DATA[currentLeague] || PAST_WEEKS_DATA.NFL);
+      const wk10Games = compileCurrentWeekLedgerGames();
+      const currentWeekObj = {
+        week: 10,
+        weekLabel: `Week 10 (${currentLeague === 'NFL' ? 'Nov 12 - Nov 16' : 'Nov 15'}, 2026 • Current Slate)`,
+        games: wk10Games
+      };
+      return [currentWeekObj, ...pastList];
+    }
+
+    function renderHistoryScreen() {
+      const allWeeks = getAllWeeksLedgerData();
+
+      // 1. Calculate Season Cumulative Totals across all weeks
+      let seasonBaseHits = 0, seasonBaseMisses = 0, seasonBasePushes = 0;
+      let seasonGemHits = 0, seasonGemMisses = 0, seasonGemPushes = 0;
+
+      allWeeks.forEach(w => {
+        w.games.forEach(g => {
+          if (g.hasActiveScore !== false && g.finalAway !== null && g.finalHome !== null) {
+            if (g.isPush) {
+              seasonBasePushes++;
+              if (g.geminiHit !== null) seasonGemPushes++;
+            } else {
+              if (g.baseHit === true) seasonBaseHits++;
+              else if (g.baseHit === false) seasonBaseMisses++;
+
+              if (g.geminiHit === true) seasonGemHits++;
+              else if (g.geminiHit === false) seasonGemMisses++;
+            }
+          }
+        });
+      });
+
+      const seasonBaseTotal = seasonBaseHits + seasonBaseMisses;
+      const seasonBasePct = seasonBaseTotal > 0 ? Math.round((seasonBaseHits / seasonBaseTotal) * 100) : 0;
+      const baseBadge = document.getElementById("histSeasonBaseBadge");
+      const baseRec = document.getElementById("histSeasonBaseRec");
+      if (baseBadge && baseRec) {
+        baseBadge.textContent = `${seasonBasePct}%`;
+        baseBadge.className = seasonBasePct >= 50
+          ? "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+          : "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/40";
+        baseRec.textContent = seasonBasePushes > 0
+          ? `${seasonBaseHits}W - ${seasonBaseMisses}L - ${seasonBasePushes}P`
+          : `${seasonBaseHits}W - ${seasonBaseMisses}L`;
+      }
+
+      const seasonGemTotal = seasonGemHits + seasonGemMisses;
+      const seasonGemPct = seasonGemTotal > 0 ? Math.round((seasonGemHits / seasonGemTotal) * 100) : 0;
+      const gemBadge = document.getElementById("histSeasonGemBadge");
+      const gemRec = document.getElementById("histSeasonGemRec");
+      if (gemBadge && gemRec) {
+        gemBadge.textContent = seasonGemTotal > 0 ? `${seasonGemPct}%` : "Pending";
+        gemBadge.className = seasonGemPct >= 50
+          ? "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+          : "font-mono font-bold text-[11px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/40";
+        gemRec.textContent = seasonGemTotal > 0
+          ? (seasonGemPushes > 0 ? `${seasonGemHits}W - ${seasonGemMisses}L - ${seasonGemPushes}P` : `${seasonGemHits}W - ${seasonGemMisses}L`)
+          : "Run Gemini to generate";
+      }
+
+      // 2. Update Model Filter Selector UI
+      ["all", "baseline", "gemini"].forEach(m => {
+        const btn = document.getElementById("histModBtn-" + m);
+        if (btn) {
+          const isActive = currentHistoryModelFilter === m;
+          btn.className = isActive
+            ? "py-1 rounded-lg transition font-mono bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm font-bold"
+            : "py-1 rounded-lg transition font-mono hover:bg-[var(--secondary)]/60 text-[var(--muted-foreground)]";
+        }
+      });
+      const modelLabelEl = document.getElementById("activeModelFilterLabel");
+      if (modelLabelEl) {
+        modelLabelEl.textContent = currentHistoryModelFilter === "all"
+          ? "Showing: All Models"
+          : (currentHistoryModelFilter === "baseline" ? "Showing: 📊 Baseline ATS Only" : "Showing: ✨ Gemini 2.5 Only");
+      }
+
+      // 3. Update Week Filter Selector UI
+      ["all", "10", "9", "8"].forEach(w => {
+        const btn = document.getElementById("histWkBtn-" + w);
+        if (btn) {
+          const isActive = currentHistoryWeekFilter === w;
+          btn.className = isActive
+            ? "px-2.5 py-1 rounded-lg transition shrink-0 bg-[var(--primary)] text-[var(--primary-foreground)] font-bold shadow-sm"
+            : "px-2.5 py-1 rounded-lg transition shrink-0 bg-[var(--background)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]";
+        }
+      });
+
+      // 4. Filter weeks
+      const filteredWeeks = allWeeks.filter(w => {
+        if (currentHistoryWeekFilter === "all") return true;
+        return String(w.week) === currentHistoryWeekFilter;
+      });
+
+      // 5. Render Week Cards
+      const container = document.getElementById("historyWeeksContainer");
+      if (!container) return;
+
+      if (filteredWeeks.length === 0) {
+        container.innerHTML = `<div class="p-6 text-center text-xs text-[var(--muted-foreground)] bg-[var(--card)] rounded-2xl border border-[var(--border)]">No historical data recorded for this selection.</div>`;
+        return;
+      }
+
+      let html = "";
+      filteredWeeks.forEach(w => {
+        // Calculate week record
+        let wBaseHits = 0, wBaseMisses = 0, wBasePushes = 0;
+        let wGemHits = 0, wGemMisses = 0, wGemPushes = 0;
+
+        w.games.forEach(g => {
+          if (g.hasActiveScore !== false && g.finalAway !== null && g.finalHome !== null) {
+            if (g.isPush) {
+              wBasePushes++;
+              if (g.geminiHit !== null) wGemPushes++;
+            } else {
+              if (g.baseHit === true) wBaseHits++;
+              else if (g.baseHit === false) wBaseMisses++;
+
+              if (g.geminiHit === true) wGemHits++;
+              else if (g.geminiHit === false) wGemMisses++;
+            }
+          }
+        });
+
+        const wBaseTotal = wBaseHits + wBaseMisses;
+        const wBasePct = wBaseTotal > 0 ? Math.round((wBaseHits / wBaseTotal) * 100) : 0;
+        const wGemTotal = wGemHits + wGemMisses;
+        const wGemPct = wGemTotal > 0 ? Math.round((wGemHits / wGemTotal) * 100) : 0;
+
+        html += `
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm">
+            <!-- Week Header Banner -->
+            <div class="p-3 bg-[var(--secondary)]/40 border-b border-[var(--border)] flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-black text-[var(--foreground)]">${w.weekLabel}</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[var(--background)] border border-[var(--border)] font-semibold">
+                  ${w.games.length} Games
+                </span>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0 text-[10px] font-mono">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
+                  📊 ATS: ${wBaseHits}W-${wBaseMisses}L (${wBasePct}%)
+                </span>
+                ${wGemTotal > 0 ? `
+                  <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-bold">
+                    ✨ Gemini: ${wGemHits}W-${wGemMisses}L (${wGemPct}%)
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Games in this week -->
+            <div class="p-2.5 space-y-2.5">
+        `;
+
+        w.games.forEach(g => {
+          const hasScore = g.hasActiveScore !== false && g.finalAway !== null && g.finalHome !== null;
+          const scoreDisplay = hasScore
+            ? `${g.away.abbr} ${g.finalAway} - ${g.home.abbr} ${g.finalHome}`
+            : `Upcoming: ${g.timeStr}`;
+
+          // Hit/miss badge for baseline
+          let baseChipHtml = "";
+          if (!hasScore) {
+            baseChipHtml = `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-[var(--secondary)] text-[var(--muted-foreground)]">⏳ PENDING</span>`;
+          } else if (g.isPush) {
+            baseChipHtml = `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40">➖ PUSH</span>`;
+          } else if (g.baseHit === true) {
+            baseChipHtml = `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">✅ HIT / COVER</span>`;
+          } else {
+            baseChipHtml = `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40">❌ MISSED</span>`;
+          }
+
+          // Hit/miss badge for gemini
+          let geminiChipHtml = "";
+          if (g.geminiPick === null) {
+            geminiChipHtml = g.isCurrentWeek
+              ? `<button onclick="runGeminiForHistoryGame(event, ${g.matchupIdx})" class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition">✨ Run Gemini</button>`
+              : `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-semibold text-[var(--muted-foreground)]">Not run</span>`;
+          } else if (!hasScore) {
+            geminiChipHtml = `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-[var(--secondary)] text-[var(--muted-foreground)]">⏳ PENDING</span>`;
+          } else if (g.isPush) {
+            geminiChipHtml = `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40">➖ PUSH</span>`;
+          } else if (g.geminiHit === true) {
+            geminiChipHtml = `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">✅ HIT / COVER</span>`;
+          } else {
+            geminiChipHtml = `<span class="px-2 py-0.5 rounded-lg text-[9.5px] font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40">❌ MISSED</span>`;
+          }
+
+          html += `
+            <div class="p-3 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-2">
+              <!-- Game Header & Final Score -->
+              <div class="flex items-center justify-between gap-2 border-b border-[var(--border)] pb-2">
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1.5 font-bold text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: ${g.away.color}"></span>
+                    <span>${g.away.name}</span>
+                    <span class="text-[var(--muted-foreground)] font-normal text-[11px]">at</span>
+                    <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: ${g.home.color}"></span>
+                    <span>${g.home.name}</span>
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="font-mono font-black text-xs text-[var(--foreground)]">${scoreDisplay}</div>
+                  <div class="text-[9.5px] font-mono text-[var(--muted-foreground)]">${g.dateStr} • ${g.timeStr}</div>
+                </div>
+              </div>
+
+              <!-- DraftKings Market Bar & Actual ATS Result -->
+              <div class="flex flex-wrap items-center justify-between gap-1.5 p-2 rounded-lg bg-[var(--card)] border border-[var(--border)] text-[10px] font-mono">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="text-[var(--muted-foreground)] font-bold">DK Spread:</span>
+                  <span class="font-bold text-[var(--foreground)]">${g.draftKingsLine}</span>
+                  <span class="text-[var(--border)]">|</span>
+                  <span class="text-[var(--muted-foreground)] font-bold">O/U:</span>
+                  <span>${g.overUnder}</span>
+                  <span class="text-[var(--border)]">|</span>
+                  <span class="text-[var(--muted-foreground)] font-bold">ML:</span>
+                  <span>${g.away.abbr} ${g.moneylineAway} / ${g.home.abbr} ${g.moneylineHome}</span>
+                </div>
+                <div class="shrink-0 font-bold">
+                  ${hasScore ? `
+                    <span class="px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)]">
+                      Outcome: ${g.atsText}
+                    </span>
+                  ` : '<span class="text-[var(--muted-foreground)]">Awaiting Final Score</span>'}
+                </div>
+              </div>
+
+              <!-- Predictions & Hit/Miss Audit -->
+              <div class="grid ${currentHistoryModelFilter === 'all' ? 'grid-cols-2' : 'grid-cols-1'} gap-2 pt-0.5">
+                <!-- Baseline Column -->
+                ${(currentHistoryModelFilter === 'all' || currentHistoryModelFilter === 'baseline') ? `
+                  <div class="p-2 rounded-lg bg-[var(--secondary)]/30 border border-[var(--border)] space-y-1">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-[9.5px] font-bold text-[var(--muted-foreground)] uppercase">📊 Baseline ATS</span>
+                      ${baseChipHtml}
+                    </div>
+                    <div class="flex items-center justify-between gap-1 text-[11px]">
+                      <span class="font-mono font-bold text-[var(--foreground)]">Pick: ${g.basePickSpread}</span>
+                    </div>
+                    <div class="text-[9.5px] text-[var(--muted-foreground)] leading-snug">
+                      ${g.baseNote || ''}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <!-- Gemini Column -->
+                ${(currentHistoryModelFilter === 'all' || currentHistoryModelFilter === 'gemini') ? `
+                  <div class="p-2 rounded-lg bg-[var(--secondary)]/30 border border-[var(--border)] space-y-1">
+                    <div class="flex items-center justify-between gap-1">
+                      <span class="text-[9.5px] font-bold text-[var(--primary)] uppercase">✨ Gemini 2.5 Flash</span>
+                      ${geminiChipHtml}
+                    </div>
+                    <div class="flex items-center justify-between gap-1 text-[11px]">
+                      <span class="font-mono font-bold text-[var(--foreground)]">
+                        ${g.geminiPickSpread ? `Pick: ${g.geminiPickSpread}` : 'Pending Analysis'}
+                      </span>
+                      ${g.geminiConfidence ? `<span class="text-[9.5px] font-mono text-[var(--muted-foreground)]">${g.geminiConfidence}% conf</span>` : ''}
+                    </div>
+                    <div class="text-[9.5px] text-[var(--muted-foreground)] leading-snug line-clamp-2">
+                      ${g.geminiNarrative || 'Run Gemini 2.5 to generate deep multimodal LLM synthesis.'}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Additional Betting Markets Summary (O/U & Moneyline) -->
+              ${hasScore ? `
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-[var(--border)] text-[9.5px] font-mono text-[var(--muted-foreground)]">
+                  <span>Total: <strong class="text-[var(--foreground)]">${g.totalScore} pts</strong> (${g.ouResult} ${g.overUnder})</span>
+                  <span>Outright: <strong class="text-[var(--foreground)]">${g.mlWinner} won</strong></span>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+        function renderSubGatewayGameCards() {
       const list = getActiveList();
       const query = (document.getElementById("subGatewaySearch")?.value || "").trim().toLowerCase();
       const container = document.getElementById("subGatewayCardsContainer");
@@ -2680,6 +3441,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
     function switchScreen(tab) {
       if (tab === "gateway") { openGateway(); return; }
       if (tab === "subgateway") { openLeagueSubGateway(currentLeague); return; }
+      if (tab === "history") { openPredictionHistoryScreen(); return; }
 
       currentScreen = tab;
       hideAllScreens();
