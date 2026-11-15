@@ -9,6 +9,8 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     ::-webkit-scrollbar { width: 3px; height: 3px; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     input[type="range"] { accent-color: var(--primary); cursor: pointer; }
 
     /* Authentic Android Pixel (412dp) mobile frame */
@@ -2154,7 +2156,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           let baseChipHtml = "";
           if (outcome.isPush) {
             baseChipHtml = `
-              <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+              <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0 whitespace-nowrap">
                 <span>[${baselineSrcName}] ATS PUSH: Picked ${outcome.basePickAbbr} ${basePickSpread} (${outcome.finalAway}-${outcome.finalHome} vs ${dkLineTxt})</span>
               </span>
             `;
@@ -2164,7 +2166,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
               ? `Currently Covering at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
               : `Covered ${outcome.finalAway}-${outcome.finalHome} FINAL`;
             baseChipHtml = `
-              <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+              <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0 whitespace-nowrap">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
                 <span>✓ [${baselineSrcName}] ${hitLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread} (${statusDetail})</span>
               </span>
@@ -2175,7 +2177,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
               ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
               : `Failed Cover ${outcome.finalAway}-${outcome.finalHome}; ${outcome.atsCoverAbbr} Covered ${dkLineTxt}`;
             baseChipHtml = `
-              <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+              <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0 whitespace-nowrap">
                 ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
                 <span>✗ [${baselineSrcName}] ${missLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread} (${statusDetail})</span>
               </span>
@@ -2187,7 +2189,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           if (geminiPred) {
             if (outcome.isPush) {
               geminiChipHtml = `
-                <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                <span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0 whitespace-nowrap">
                   <span>[✨ Gemini 2.5] ATS PUSH: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (${outcome.atsText} vs ${dkLineTxt})</span>
                 </span>
               `;
@@ -2197,7 +2199,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
                 ? `Currently Covering at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
                 : `Covered ${outcome.finalAway}-${outcome.finalHome} FINAL`;
               geminiChipHtml = `
-                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0 whitespace-nowrap">
                   ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
                   <span>✓ [✨ Gemini 2.5] ${gemHitLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (${gemStatusDetail})</span>
                 </span>
@@ -2208,7 +2210,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
                 ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
                 : `Failed Cover ${outcome.finalAway}-${outcome.finalHome}; ${outcome.atsCoverAbbr} Covered ${dkLineTxt}`;
               geminiChipHtml = `
-                <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0 whitespace-nowrap">
                   ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
                   <span>✗ [✨ Gemini 2.5] ${gemMissLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (${gemStatusDetail})</span>
                 </span>
@@ -2217,14 +2219,14 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           }
 
           statusOutcomeBadgeHtml = `
-            <div class="flex flex-col gap-1 w-full">
-              <!-- Line 1: nflfastR prediction hit/miss against line -->
-              <div class="flex items-center gap-1.5 flex-wrap">
+            <div class="flex flex-col gap-1.5 w-full min-w-0">
+              <!-- Line 1: nflfastR prediction hit/miss against line (Horizontal overflow track with padding equal to left padding) -->
+              <div class="overflow-x-auto no-scrollbar -mx-4 px-4 scroll-pl-4 flex items-center gap-1.5 py-0.5">
                 ${baseChipHtml}
               </div>
               <!-- Line 2 (Next Line): Google Gemini hit/miss against line -->
               ${geminiChipHtml ? `
-                <div class="flex items-center gap-1.5 flex-wrap">
+                <div class="overflow-x-auto no-scrollbar -mx-4 px-4 scroll-pl-4 flex items-center gap-1.5 py-0.5">
                   ${geminiChipHtml}
                 </div>
               ` : ''}
@@ -2233,22 +2235,22 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
         } else {
           const baselineSrcName = m.league === "NFL" ? "nflfastR+FPI" : "CFBD+FPI";
           statusOutcomeBadgeHtml = `
-            <div class="flex flex-col gap-1 w-full">
-              <!-- Line 1: Baseline nflfastR ATS Spread Pick -->
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+            <div class="flex flex-col gap-1.5 w-full min-w-0">
+              <!-- Line 1: Baseline nflfastR ATS Spread Pick (Horizontal overflow track with padding equal to left padding) -->
+              <div class="overflow-x-auto no-scrollbar -mx-4 px-4 scroll-pl-4 flex items-center gap-1.5 py-0.5">
+                <span class="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono font-bold text-[10px] flex items-center gap-1 shrink-0 whitespace-nowrap">
                   <span>[${baselineSrcName}] ATS PICK: <strong class="text-emerald-400">${basePred.atsCoverPick}</strong> (${basePred.atsConfidence}% conf • Edge +${basePred.atsEdgePts} pts • ${basePred.keyNumberNote})</span>
                 </span>
               </div>
               <!-- Line 2: Gemini 2.5 ATS Spread Pick -->
               ${geminiPred ? `
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="px-2 py-0.5 rounded-md bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                <div class="overflow-x-auto no-scrollbar -mx-4 px-4 scroll-pl-4 flex items-center gap-1.5 py-0.5">
+                  <span class="px-2 py-0.5 rounded-md bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0 whitespace-nowrap">
                     <span>[✨ Gemini 2.5] ATS PICK: <strong class="text-emerald-400">${geminiPred.atsCoverPick}</strong> (${geminiPred.atsConfidence}% conf • Fair: ${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome})</span>
                   </span>
                 </div>
               ` : `
-                <div class="text-[9px] font-mono text-[var(--muted-foreground)]">
+                <div class="overflow-x-auto no-scrollbar -mx-4 px-4 scroll-pl-4 flex items-center gap-1.5 py-0.5 text-[9px] font-mono text-[var(--muted-foreground)] whitespace-nowrap">
                   📅 ${m.scheduleDate || 'Upcoming'} • ${m.kickoffTime || 'Kickoff'} • DraftKings: ${dkLineTxt}
                 </div>
               `}
@@ -2411,7 +2413,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
                 <span class="shrink-0 font-mono">${m.weather.windMph} mph${m.weather.dome ? ' (Dome)' : ''}</span>
               </div>
               ${statusOutcomeBadgeHtml ? `
-                <div class="pt-0.5 flex items-center justify-start">
+                <div class="pt-0.5 w-full min-w-0 overflow-hidden">
                   ${statusOutcomeBadgeHtml}
                 </div>
               ` : ''}
@@ -2585,12 +2587,12 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
               : "p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-400 text-xs font-mono flex flex-col gap-1");
 
         detailFinalEl.innerHTML = `
-          <div class="flex items-center justify-between font-bold">
-            <span>${baseAtsText}</span>
-            <span class="text-[10px] text-[var(--muted-foreground)]">${statusPrefix}</span>
+          <div class="flex items-center justify-between font-bold gap-2 min-w-0">
+            <span class="truncate">${baseAtsText}</span>
+            <span class="text-[10px] text-[var(--muted-foreground)] shrink-0">${statusPrefix}</span>
           </div>
           ${geminiAtsText ? `
-            <div class="font-bold text-[11px] pt-1 border-t border-[var(--border)] opacity-95">
+            <div class="font-bold text-[11px] pt-1 border-t border-[var(--border)] opacity-95 truncate">
               ${geminiAtsText}
             </div>
           ` : ''}
