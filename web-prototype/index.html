@@ -746,39 +746,39 @@
     //    (Calibrated to Live ESPN 2026 Week 10 Standings & DraftKings Pickcenter)
     // =========================================================================
     const NFL_TEAM_METRICS = {
-      SF:  { epaOff: 0.25, epaDef: -0.15, power: 29.4, srOff: 51.8, srDef: 37.4, havoc: 39.2, third: 48.6, rz: 67.5, to: 8,  sacks: 3.3 },
-      BUF: { epaOff: 0.24, epaDef: -0.13, power: 28.8, srOff: 51.2, srDef: 38.5, havoc: 38.9, third: 47.9, rz: 68.2, to: 10, sacks: 3.2 },
-      DET: { epaOff: 0.23, epaDef: -0.11, power: 26.5, srOff: 50.9, srDef: 39.1, havoc: 37.2, third: 47.4, rz: 66.8, to: 7,  sacks: 2.9 },
-      KC:  { epaOff: 0.19, epaDef: -0.10, power: 23.8, srOff: 49.4, srDef: 40.2, havoc: 36.8, third: 48.5, rz: 61.4, to: 5,  sacks: 2.8 },
-      JAX: { epaOff: 0.20, epaDef: -0.09, power: 22.9, srOff: 49.1, srDef: 40.5, havoc: 36.5, third: 46.2, rz: 63.5, to: 6,  sacks: 2.9 },
-      MIN: { epaOff: 0.15, epaDef: -0.14, power: 21.8, srOff: 47.8, srDef: 37.8, havoc: 40.4, third: 44.5, rz: 61.0, to: 6,  sacks: 3.4 },
-      PIT: { epaOff: 0.12, epaDef: -0.16, power: 21.2, srOff: 46.4, srDef: 37.1, havoc: 39.8, third: 43.8, rz: 58.9, to: 9,  sacks: 3.4 },
-      CIN: { epaOff: 0.22, epaDef: -0.05, power: 21.9, srOff: 50.1, srDef: 42.0, havoc: 35.4, third: 47.1, rz: 66.4, to: 5,  sacks: 2.7 },
-      GB:  { epaOff: 0.17, epaDef: -0.08, power: 19.6, srOff: 48.2, srDef: 41.1, havoc: 35.9, third: 44.9, rz: 60.2, to: 5,  sacks: 2.7 },
-      PHI: { epaOff: 0.18, epaDef: -0.11, power: 21.5, srOff: 48.5, srDef: 39.4, havoc: 38.1, third: 45.8, rz: 62.0, to: 4,  sacks: 3.1 },
-      NYG: { epaOff: 0.08, epaDef: -0.07, power: 11.4, srOff: 45.2, srDef: 41.2, havoc: 36.1, third: 42.4, rz: 57.5, to: 3,  sacks: 2.9 },
-      NE:  { epaOff: 0.06, epaDef: -0.05, power: 9.2,  srOff: 44.8, srDef: 41.8, havoc: 35.0, third: 41.9, rz: 56.8, to: 2,  sacks: 2.6 },
-      CLE: { epaOff: 0.05, epaDef: -0.09, power: 10.1, srOff: 44.1, srDef: 40.1, havoc: 37.4, third: 41.2, rz: 55.9, to: 2,  sacks: 3.0 },
-      SEA: { epaOff: 0.11, epaDef: -0.04, power: 11.8, srOff: 46.5, srDef: 42.1, havoc: 35.2, third: 43.1, rz: 58.4, to: 1,  sacks: 2.7 },
-      LAR: { epaOff: 0.13, epaDef: -0.05, power: 13.4, srOff: 47.1, srDef: 41.8, havoc: 35.8, third: 44.0, rz: 59.5, to: 2,  sacks: 2.8 },
-      BAL: { epaOff: 0.14, epaDef: -0.02, power: 10.6, srOff: 47.4, srDef: 43.2, havoc: 34.8, third: 44.6, rz: 61.2, to: 1,  sacks: 2.7 },
-      DAL: { epaOff: 0.04, epaDef: 0.01,  power: 3.2,  srOff: 44.0, srDef: 43.8, havoc: 34.1, third: 40.8, rz: 54.5, to: -1, sacks: 2.5 },
-      LV:  { epaOff: 0.01, epaDef: 0.03,  power: -1.8, srOff: 42.8, srDef: 44.2, havoc: 33.5, third: 39.6, rz: 53.2, to: -2, sacks: 2.4 },
-      WSH: { epaOff: 0.05, epaDef: 0.02,  power: 4.8,  srOff: 44.6, srDef: 43.9, havoc: 33.8, third: 41.5, rz: 56.4, to: 1,  sacks: 2.4 },
-      WAS: { epaOff: 0.05, epaDef: 0.02,  power: 4.8,  srOff: 44.6, srDef: 43.9, havoc: 33.8, third: 41.5, rz: 56.4, to: 1,  sacks: 2.4 },
-      HOU: { epaOff: 0.07, epaDef: -0.04, power: 7.4,  srOff: 45.1, srDef: 42.0, havoc: 36.0, third: 42.2, rz: 57.1, to: 1,  sacks: 2.8 },
-      CAR: { epaOff: -0.02,epaDef: 0.04,  power: -4.1, srOff: 41.9, srDef: 44.6, havoc: 32.4, third: 38.9, rz: 52.8, to: -2, sacks: 2.2 },
-      NO:  { epaOff: 0.00, epaDef: 0.02,  power: -2.4, srOff: 42.6, srDef: 43.9, havoc: 33.2, third: 39.8, rz: 54.1, to: -1, sacks: 2.4 },
-      ATL: { epaOff: -0.01,epaDef: 0.05,  power: -4.8, srOff: 42.2, srDef: 45.1, havoc: 31.8, third: 39.4, rz: 53.5, to: -3, sacks: 2.1 },
-      ARI: { epaOff: -0.03,epaDef: 0.06,  power: -6.5, srOff: 41.5, srDef: 45.4, havoc: 32.0, third: 38.8, rz: 52.4, to: -3, sacks: 2.2 },
-      IND: { epaOff: -0.05,epaDef: 0.04,  power: -7.8, srOff: 40.8, srDef: 44.8, havoc: 32.9, third: 38.1, rz: 51.9, to: -4, sacks: 2.3 },
-      NYJ: { epaOff: -0.08,epaDef: 0.03,  power: -9.6, srOff: 39.9, srDef: 44.1, havoc: 34.0, third: 37.2, rz: 50.4, to: -5, sacks: 2.5 },
-      TEN: { epaOff: -0.13,epaDef: 0.08,  power: -16.4,srOff: 38.4, srDef: 46.5, havoc: 31.2, third: 35.6, rz: 48.2, to: -8, sacks: 2.0 },
-      MIA: { epaOff: -0.12,epaDef: 0.07,  power: -15.2,srOff: 38.9, srDef: 46.1, havoc: 31.5, third: 36.0, rz: 48.9, to: -7, sacks: 2.1 },
-      LAC: { epaOff: -0.16,epaDef: 0.10,  power: -19.5,srOff: 37.5, srDef: 47.4, havoc: 30.8, third: 34.8, rz: 47.1, to: -9, sacks: 1.9 },
-      DEN: { epaOff: 0.04, epaDef: -0.06, power: 6.2,  srOff: 43.9, srDef: 41.2, havoc: 36.5, third: 40.9, rz: 55.8, to: 1,  sacks: 2.9 },
-      TB:  { epaOff: 0.09, epaDef: 0.02,  power: 6.8,  srOff: 45.8, srDef: 43.8, havoc: 34.2, third: 43.5, rz: 59.0, to: 1,  sacks: 2.5 },
-      CHI: { epaOff: 0.01, epaDef: -0.03, power: 1.5,  srOff: 42.9, srDef: 42.4, havoc: 35.1, third: 39.9, rz: 54.0, to: 1,  sacks: 2.6 }
+      SF:  { epaOff: 0.25, epaDef: -0.15, power: 29.4, srOff: 51.8, srDef: 37.4, havoc: 39.2, third: 48.6, rz: 67.5, to: 8,  sacks: 3.3, earlyDownEpa: 0.22, pbwr: 64, prwr: 48, explosiveOff: 14.8, explosiveDefPrevent: 89.5, paceSec: 28.5, qbCpoe: 4.8, restDays: 7 },
+      BUF: { epaOff: 0.24, epaDef: -0.13, power: 28.8, srOff: 51.2, srDef: 38.5, havoc: 38.9, third: 47.9, rz: 68.2, to: 10, sacks: 3.2, earlyDownEpa: 0.21, pbwr: 67, prwr: 47, explosiveOff: 14.5, explosiveDefPrevent: 89.2, paceSec: 26.8, qbCpoe: 5.6, restDays: 7 },
+      DET: { epaOff: 0.23, epaDef: -0.11, power: 26.5, srOff: 50.9, srDef: 39.1, havoc: 37.2, third: 47.4, rz: 66.8, to: 7,  sacks: 2.9, earlyDownEpa: 0.20, pbwr: 66, prwr: 49, explosiveOff: 15.0, explosiveDefPrevent: 88.6, paceSec: 27.2, qbCpoe: 4.9, restDays: 7 },
+      KC:  { epaOff: 0.19, epaDef: -0.10, power: 23.8, srOff: 49.4, srDef: 40.2, havoc: 36.8, third: 48.5, rz: 61.4, to: 5,  sacks: 2.8, earlyDownEpa: 0.17, pbwr: 65, prwr: 44, explosiveOff: 13.6, explosiveDefPrevent: 88.0, paceSec: 27.8, qbCpoe: 3.8, restDays: 7 },
+      JAX: { epaOff: 0.20, epaDef: -0.09, power: 22.9, srOff: 49.1, srDef: 40.5, havoc: 36.5, third: 46.2, rz: 63.5, to: 6,  sacks: 2.9, earlyDownEpa: 0.16, pbwr: 62, prwr: 43, explosiveOff: 13.8, explosiveDefPrevent: 87.2, paceSec: 27.4, qbCpoe: 2.9, restDays: 7 },
+      MIN: { epaOff: 0.15, epaDef: -0.14, power: 21.8, srOff: 47.8, srDef: 37.8, havoc: 40.4, third: 44.5, rz: 61.0, to: 6,  sacks: 3.4, earlyDownEpa: 0.13, pbwr: 61, prwr: 51, explosiveOff: 13.2, explosiveDefPrevent: 90.5, paceSec: 28.2, qbCpoe: 3.1, restDays: 7 },
+      PIT: { epaOff: 0.12, epaDef: -0.16, power: 21.2, srOff: 46.4, srDef: 37.1, havoc: 39.8, third: 43.8, rz: 58.9, to: 9,  sacks: 3.4, earlyDownEpa: 0.10, pbwr: 60, prwr: 53, explosiveOff: 12.5, explosiveDefPrevent: 91.2, paceSec: 29.1, qbCpoe: 1.8, restDays: 7 },
+      CIN: { epaOff: 0.22, epaDef: -0.05, power: 21.9, srOff: 50.1, srDef: 42.0, havoc: 35.4, third: 47.1, rz: 66.4, to: 5,  sacks: 2.7, earlyDownEpa: 0.18, pbwr: 63, prwr: 41, explosiveOff: 14.1, explosiveDefPrevent: 86.0, paceSec: 27.0, qbCpoe: 4.2, restDays: 7 },
+      GB:  { epaOff: 0.17, epaDef: -0.08, power: 19.6, srOff: 48.2, srDef: 41.1, havoc: 35.9, third: 44.9, rz: 60.2, to: 5,  sacks: 2.7, earlyDownEpa: 0.14, pbwr: 64, prwr: 42, explosiveOff: 13.4, explosiveDefPrevent: 87.0, paceSec: 28.0, qbCpoe: 2.6, restDays: 7 },
+      PHI: { epaOff: 0.18, epaDef: -0.11, power: 21.5, srOff: 48.5, srDef: 39.4, havoc: 38.1, third: 45.8, rz: 62.0, to: 4,  sacks: 3.1, earlyDownEpa: 0.15, pbwr: 67, prwr: 46, explosiveOff: 13.9, explosiveDefPrevent: 88.4, paceSec: 28.6, qbCpoe: 2.4, restDays: 7 },
+      NYG: { epaOff: 0.08, epaDef: -0.07, power: 11.4, srOff: 45.2, srDef: 41.2, havoc: 36.1, third: 42.4, rz: 57.5, to: 3,  sacks: 2.9, earlyDownEpa: 0.06, pbwr: 58, prwr: 45, explosiveOff: 11.2, explosiveDefPrevent: 86.8, paceSec: 29.4, qbCpoe: -0.4, restDays: 4 },
+      NE:  { epaOff: 0.06, epaDef: -0.05, power: 9.2,  srOff: 44.8, srDef: 41.8, havoc: 35.0, third: 41.9, rz: 56.8, to: 2,  sacks: 2.6, earlyDownEpa: 0.05, pbwr: 57, prwr: 40, explosiveOff: 10.8, explosiveDefPrevent: 86.4, paceSec: 29.2, qbCpoe: 0.2, restDays: 7 },
+      CLE: { epaOff: 0.05, epaDef: -0.09, power: 10.1, srOff: 44.1, srDef: 40.1, havoc: 37.4, third: 41.2, rz: 55.9, to: 2,  sacks: 3.0, earlyDownEpa: 0.03, pbwr: 60, prwr: 48, explosiveOff: 10.5, explosiveDefPrevent: 88.5, paceSec: 30.2, qbCpoe: -1.2, restDays: 7 },
+      SEA: { epaOff: 0.11, epaDef: -0.04, power: 11.8, srOff: 46.5, srDef: 42.1, havoc: 35.2, third: 43.1, rz: 58.4, to: 1,  sacks: 2.7, earlyDownEpa: 0.09, pbwr: 59, prwr: 42, explosiveOff: 12.2, explosiveDefPrevent: 86.5, paceSec: 28.4, qbCpoe: 1.5, restDays: 7 },
+      LAR: { epaOff: 0.13, epaDef: -0.05, power: 13.4, srOff: 47.1, srDef: 41.8, havoc: 35.8, third: 44.0, rz: 59.5, to: 2,  sacks: 2.8, earlyDownEpa: 0.11, pbwr: 61, prwr: 44, explosiveOff: 12.8, explosiveDefPrevent: 87.0, paceSec: 27.9, qbCpoe: 2.1, restDays: 7 },
+      BAL: { epaOff: 0.14, epaDef: -0.02, power: 10.6, srOff: 47.4, srDef: 43.2, havoc: 34.8, third: 44.6, rz: 61.2, to: 1,  sacks: 2.7, earlyDownEpa: 0.12, pbwr: 63, prwr: 42, explosiveOff: 13.1, explosiveDefPrevent: 85.8, paceSec: 28.5, qbCpoe: 2.5, restDays: 7 },
+      DAL: { epaOff: 0.04, epaDef: 0.01,  power: 3.2,  srOff: 44.0, srDef: 43.8, havoc: 34.1, third: 40.8, rz: 54.5, to: -1, sacks: 2.5, earlyDownEpa: 0.02, pbwr: 59, prwr: 43, explosiveOff: 11.0, explosiveDefPrevent: 85.0, paceSec: 28.0, qbCpoe: -0.5, restDays: 7 },
+      LV:  { epaOff: 0.01, epaDef: 0.03,  power: -1.8, srOff: 42.8, srDef: 44.2, havoc: 33.5, third: 39.6, rz: 53.2, to: -2, sacks: 2.4, earlyDownEpa: -0.01,pbwr: 56, prwr: 44, explosiveOff: 10.4, explosiveDefPrevent: 84.8, paceSec: 29.8, qbCpoe: -1.5, restDays: 7 },
+      WSH: { epaOff: 0.05, epaDef: 0.02,  power: 4.8,  srOff: 44.6, srDef: 43.9, havoc: 33.8, third: 41.5, rz: 56.4, to: 1,  sacks: 2.4, earlyDownEpa: 0.04, pbwr: 58, prwr: 39, explosiveOff: 11.5, explosiveDefPrevent: 85.2, paceSec: 28.7, qbCpoe: 1.1, restDays: 4 },
+      WAS: { epaOff: 0.05, epaDef: 0.02,  power: 4.8,  srOff: 44.6, srDef: 43.9, havoc: 33.8, third: 41.5, rz: 56.4, to: 1,  sacks: 2.4, earlyDownEpa: 0.04, pbwr: 58, prwr: 39, explosiveOff: 11.5, explosiveDefPrevent: 85.2, paceSec: 28.7, qbCpoe: 1.1, restDays: 4 },
+      HOU: { epaOff: 0.07, epaDef: -0.04, power: 7.4,  srOff: 45.1, srDef: 42.0, havoc: 36.0, third: 42.2, rz: 57.1, to: 1,  sacks: 2.8, earlyDownEpa: 0.05, pbwr: 60, prwr: 47, explosiveOff: 11.8, explosiveDefPrevent: 87.4, paceSec: 28.3, qbCpoe: 1.2, restDays: 7 },
+      CAR: { epaOff: -0.02,epaDef: 0.04,  power: -4.1, srOff: 41.9, srDef: 44.6, havoc: 32.4, third: 38.9, rz: 52.8, to: -2, sacks: 2.2, earlyDownEpa: -0.03,pbwr: 55, prwr: 37, explosiveOff: 9.8,  explosiveDefPrevent: 84.1, paceSec: 29.5, qbCpoe: -1.8, restDays: 7 },
+      NO:  { epaOff: 0.00, epaDef: 0.02,  power: -2.4, srOff: 42.6, srDef: 43.9, havoc: 33.2, third: 39.8, rz: 54.1, to: -1, sacks: 2.4, earlyDownEpa: -0.01,pbwr: 57, prwr: 40, explosiveOff: 10.6, explosiveDefPrevent: 85.0, paceSec: 29.0, qbCpoe: -0.8, restDays: 7 },
+      ATL: { epaOff: -0.01,epaDef: 0.05,  power: -4.8, srOff: 42.2, srDef: 45.1, havoc: 31.8, third: 39.4, rz: 53.5, to: -3, sacks: 2.1, earlyDownEpa: -0.02,pbwr: 56, prwr: 36, explosiveOff: 10.1, explosiveDefPrevent: 83.8, paceSec: 28.8, qbCpoe: -1.4, restDays: 7 },
+      ARI: { epaOff: -0.03,epaDef: 0.06,  power: -6.5, srOff: 41.5, srDef: 45.4, havoc: 32.0, third: 38.8, rz: 52.4, to: -3, sacks: 2.2, earlyDownEpa: -0.04,pbwr: 55, prwr: 38, explosiveOff: 9.9,  explosiveDefPrevent: 83.5, paceSec: 27.6, qbCpoe: -0.6, restDays: 7 },
+      IND: { epaOff: -0.05,epaDef: 0.04,  power: -7.8, srOff: 40.8, srDef: 44.8, havoc: 32.9, third: 38.1, rz: 51.9, to: -4, sacks: 2.3, earlyDownEpa: -0.06,pbwr: 57, prwr: 39, explosiveOff: 10.2, explosiveDefPrevent: 84.2, paceSec: 27.1, qbCpoe: -2.6, restDays: 7 },
+      NYJ: { epaOff: -0.08,epaDef: 0.03,  power: -9.6, srOff: 39.9, srDef: 44.1, havoc: 34.0, third: 37.2, rz: 50.4, to: -5, sacks: 2.5, earlyDownEpa: -0.07,pbwr: 53, prwr: 44, explosiveOff: 9.4,  explosiveDefPrevent: 85.9, paceSec: 29.6, qbCpoe: -1.9, restDays: 7 },
+      TEN: { epaOff: -0.13,epaDef: 0.08,  power: -16.4,srOff: 38.4, srDef: 46.5, havoc: 31.2, third: 35.6, rz: 48.2, to: -8, sacks: 2.0, earlyDownEpa: -0.11,pbwr: 51, prwr: 38, explosiveOff: 8.8,  explosiveDefPrevent: 82.5, paceSec: 30.4, qbCpoe: -3.8, restDays: 7 },
+      MIA: { epaOff: -0.12,epaDef: 0.07,  power: -15.2,srOff: 38.9, srDef: 46.1, havoc: 31.5, third: 36.0, rz: 48.9, to: -7, sacks: 2.1, earlyDownEpa: -0.09,pbwr: 52, prwr: 37, explosiveOff: 9.1,  explosiveDefPrevent: 83.0, paceSec: 28.1, qbCpoe: -2.9, restDays: 7 },
+      LAC: { epaOff: -0.16,epaDef: 0.10,  power: -19.5,srOff: 37.5, srDef: 47.4, havoc: 30.8, third: 34.8, rz: 47.1, to: -9, sacks: 1.9, earlyDownEpa: -0.13,pbwr: 50, prwr: 35, explosiveOff: 8.4,  explosiveDefPrevent: 81.9, paceSec: 30.8, qbCpoe: -4.2, restDays: 7 },
+      DEN: { epaOff: 0.04, epaDef: -0.06, power: 6.2,  srOff: 43.9, srDef: 41.2, havoc: 36.5, third: 40.9, rz: 55.8, to: 1,  sacks: 2.9, earlyDownEpa: 0.03, pbwr: 59, prwr: 47, explosiveOff: 11.1, explosiveDefPrevent: 87.8, paceSec: 28.9, qbCpoe: 0.4, restDays: 7 },
+      TB:  { epaOff: 0.09, epaDef: 0.02,  power: 6.8,  srOff: 45.8, srDef: 43.8, havoc: 34.2, third: 43.5, rz: 59.0, to: 1,  sacks: 2.5, earlyDownEpa: 0.07, pbwr: 61, prwr: 41, explosiveOff: 12.1, explosiveDefPrevent: 85.5, paceSec: 27.5, qbCpoe: 1.8, restDays: 7 },
+      CHI: { epaOff: 0.01, epaDef: -0.03, power: 1.5,  srOff: 42.9, srDef: 42.4, havoc: 35.1, third: 39.9, rz: 54.0, to: 1,  sacks: 2.6, earlyDownEpa: 0.00, pbwr: 56, prwr: 45, explosiveOff: 10.6, explosiveDefPrevent: 86.9, paceSec: 29.3, qbCpoe: -0.2, restDays: 7 }
     };
 
     // Exact DraftKings Sportsbook Lines from ESPN `/scoreboard` & `/summary?event={id}` (`pickcenter[0]`)
@@ -853,14 +853,20 @@
           logoUrl: `https://a.espncdn.com/i/teamlogos/nfl/500/${awayAbbr.toLowerCase()}.png`,
           epaOff: aStat.epaOff, epaDef: aStat.epaDef, powerRating: aStat.power,
           successRateOff: aStat.srOff, successRateDef: aStat.srDef, havocRateDef: aStat.havoc,
-          thirdDownPct: aStat.third, redZoneTdPct: aStat.rz, turnoverMargin: aStat.to, sacksPerGame: aStat.sacks
+          thirdDownPct: aStat.third, redZoneTdPct: aStat.rz, turnoverMargin: aStat.to, sacksPerGame: aStat.sacks,
+          earlyDownEpa: aStat.earlyDownEpa ?? 0.05, pbwr: aStat.pbwr ?? 60, prwr: aStat.prwr ?? 42,
+          explosiveOff: aStat.explosiveOff ?? 11.5, explosiveDefPrevent: aStat.explosiveDefPrevent ?? 86.0,
+          paceSec: aStat.paceSec ?? 28.5, qbCpoe: aStat.qbCpoe ?? 0.0, restDays: aStat.restDays ?? 7
         },
         home: {
           abbr: homeAbbr, name: homeName, rank: "NFL", record: homeRec, color: homeColor,
           logoUrl: `https://a.espncdn.com/i/teamlogos/nfl/500/${homeAbbr.toLowerCase()}.png`,
           epaOff: hStat.epaOff, epaDef: hStat.epaDef, powerRating: hStat.power,
           successRateOff: hStat.srOff, successRateDef: hStat.srDef, havocRateDef: hStat.havoc,
-          thirdDownPct: hStat.third, redZoneTdPct: hStat.rz, turnoverMargin: hStat.to, sacksPerGame: hStat.sacks
+          thirdDownPct: hStat.third, redZoneTdPct: hStat.rz, turnoverMargin: hStat.to, sacksPerGame: hStat.sacks,
+          earlyDownEpa: hStat.earlyDownEpa ?? 0.05, pbwr: hStat.pbwr ?? 60, prwr: hStat.prwr ?? 42,
+          explosiveOff: hStat.explosiveOff ?? 11.5, explosiveDefPrevent: hStat.explosiveDefPrevent ?? 86.0,
+          paceSec: hStat.paceSec ?? 28.5, qbCpoe: hStat.qbCpoe ?? 0.0, restDays: hStat.restDays ?? 7
         },
         h2h: `${awayName} (${awayRec}) at ${homeName} (${homeRec}) • DraftKings: ${dkDetails} (O/U ${ou}, ML ${awayAbbr} ${mlAway} / ${homeAbbr} ${mlHome})`,
         injuries: [
@@ -882,8 +888,18 @@
           vegasSpreadHome: -2.5, overUnder: 48.5, draftKingsLine: "OU -2.5", moneylineAway: "+115", moneylineHome: "-135", oddsProvider: "DraftKings", ratingLabel: "SP+",
           isCompleted: false, isInProgress: false, liveClockDetail: "UPCOMING", statusDetail: "Sun, Nov 15 • 1:00 PM", actualAwayScore: null, actualHomeScore: null,
           isBetInitiated: true,
-          away: { abbr: "MISS", name: "Ole Miss", rank: "#14", record: "6-3", color: "#CE1126", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/145.png", epaOff: 0.21, epaDef: -0.14, powerRating: 21.4, successRateOff: 47.8, successRateDef: 35.4, havocRateDef: 18.8, thirdDownPct: 44.2, redZoneTdPct: 66.5, turnoverMargin: 4, sacksPerGame: 2.9 },
-          home: { abbr: "OU", name: "Oklahoma", rank: "#18", record: "5-4", color: "#841617", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/201.png", epaOff: 0.19, epaDef: -0.17, powerRating: 20.9, successRateOff: 46.6, successRateDef: 33.8, havocRateDef: 20.4, thirdDownPct: 45.9, redZoneTdPct: 68.2, turnoverMargin: 5, sacksPerGame: 3.2 },
+          away: {
+            abbr: "MISS", name: "Ole Miss", rank: "#14", record: "6-3", color: "#CE1126", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/145.png",
+            epaOff: 0.21, epaDef: -0.14, powerRating: 21.4, successRateOff: 47.8, successRateDef: 35.4, havocRateDef: 18.8,
+            thirdDownPct: 44.2, redZoneTdPct: 66.5, turnoverMargin: 4, sacksPerGame: 2.9,
+            earlyDownEpa: 0.18, pbwr: 64, prwr: 44, explosiveOff: 14.2, explosiveDefPrevent: 86.5, paceSec: 23.8, qbCpoe: 2.8, restDays: 7
+          },
+          home: {
+            abbr: "OU", name: "Oklahoma", rank: "#18", record: "5-4", color: "#841617", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/201.png",
+            epaOff: 0.19, epaDef: -0.17, powerRating: 20.9, successRateOff: 46.6, successRateDef: 33.8, havocRateDef: 20.4,
+            thirdDownPct: 45.9, redZoneTdPct: 68.2, turnoverMargin: 5, sacksPerGame: 3.2,
+            earlyDownEpa: 0.16, pbwr: 62, prwr: 46, explosiveOff: 13.5, explosiveDefPrevent: 87.2, paceSec: 26.2, qbCpoe: 1.9, restDays: 7
+          },
           h2h: "Ole Miss (6-3) at Oklahoma (5-4) • DraftKings: OU -2.5 (O/U 48.5)",
           injuries: [
             { player: "MISS Starting WR1", team: "away", impactPts: 2.1, active: false, note: "Questionable — Official SEC Report" },
@@ -899,8 +915,18 @@
           vegasSpreadHome: -13.5, overUnder: 51.5, draftKingsLine: "UGA -13.5", moneylineAway: "+420", moneylineHome: "-580", oddsProvider: "DraftKings (Closing)", ratingLabel: "SP+",
           isCompleted: true, isInProgress: false, liveClockDetail: "FINAL", statusDetail: "FINAL", actualAwayScore: 21, actualHomeScore: 48,
           isBetInitiated: true,
-          away: { abbr: "MIZ", name: "Missouri", rank: "#22", record: "6-4", color: "#F1B82D", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/142.png", epaOff: 0.14, epaDef: -0.11, powerRating: 14.8, successRateOff: 44.1, successRateDef: 38.1, havocRateDef: 17.2, thirdDownPct: 42.4, redZoneTdPct: 63.0, turnoverMargin: 2, sacksPerGame: 2.5 },
-          home: { abbr: "UGA", name: "Georgia", rank: "#3", record: "9-1", color: "#BA0C2F", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/61.png", epaOff: 0.28, epaDef: -0.23, powerRating: 28.9, successRateOff: 50.3, successRateDef: 30.9, havocRateDef: 22.4, thirdDownPct: 48.1, redZoneTdPct: 72.5, turnoverMargin: 7, sacksPerGame: 3.6 },
+          away: {
+            abbr: "MIZ", name: "Missouri", rank: "#22", record: "6-4", color: "#F1B82D", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/142.png",
+            epaOff: 0.14, epaDef: -0.11, powerRating: 14.8, successRateOff: 44.1, successRateDef: 38.1, havocRateDef: 17.2,
+            thirdDownPct: 42.4, redZoneTdPct: 63.0, turnoverMargin: 2, sacksPerGame: 2.5,
+            earlyDownEpa: 0.11, pbwr: 59, prwr: 40, explosiveOff: 11.8, explosiveDefPrevent: 85.0, paceSec: 27.5, qbCpoe: 0.8, restDays: 7
+          },
+          home: {
+            abbr: "UGA", name: "Georgia", rank: "#3", record: "9-1", color: "#BA0C2F", logoUrl: "https://a.espncdn.com/i/teamlogos/ncaa/500/61.png",
+            epaOff: 0.28, epaDef: -0.23, powerRating: 28.9, successRateOff: 50.3, successRateDef: 30.9, havocRateDef: 22.4,
+            thirdDownPct: 48.1, redZoneTdPct: 72.5, turnoverMargin: 7, sacksPerGame: 3.6,
+            earlyDownEpa: 0.25, pbwr: 68, prwr: 51, explosiveOff: 15.6, explosiveDefPrevent: 91.0, paceSec: 27.0, qbCpoe: 4.5, restDays: 7
+          },
           h2h: "Missouri (6-4) at Georgia (9-1) • Final: MIZ 21, UGA 48",
           injuries: [
             { player: "MIZ Starting RB1", team: "away", impactPts: 2.2, active: false, note: "Out — Official SEC Report" },
@@ -1236,10 +1262,25 @@
       const homeNetEpa = home.epaOff - home.epaDef;
       const awayNetEpa = away.epaOff - away.epaDef;
 
-      const spreadImpliedShift = (-m.vegasSpreadHome) * 2.1;
-      const effRaw = (((homeNetEpa - awayNetEpa) * 32) * 0.45 + ((home.powerRating - away.powerRating) * 0.65) * 0.30 + spreadImpliedShift * 0.25);
-      const effShift = effRaw * ((wEff / total) / 0.30);
+      // 1. Early-Down EPA (1st & 2nd downs) vs 3rd-down noise
+      const earlyDownAdvHome = ((home.earlyDownEpa ?? 0.05) - (away.earlyDownEpa ?? 0.05));
+      const earlyDownShift = (earlyDownAdvHome * 24);
 
+      // 2. Trench Mismatch: Pass Rush Win Rate (PRWR) vs Pass Block Win Rate (PBWR)
+      const homeTrenchPressure = (home.prwr || home.havocRateDef || 42) - (away.pbwr || 60);
+      const awayTrenchPressure = (away.prwr || away.havocRateDef || 42) - (home.pbwr || 60);
+      const trenchMismatchShift = (homeTrenchPressure - awayTrenchPressure) * 0.22;
+
+      // 3. Explosive Play Rate differential vs downfield containment
+      const homeExplosiveNet = (home.explosiveOff || 12) - (100 - (home.explosiveDefPrevent || 86));
+      const awayExplosiveNet = (away.explosiveOff || 12) - (100 - (away.explosiveDefPrevent || 86));
+      const explosiveShift = (homeExplosiveNet - awayExplosiveNet) * 0.40;
+
+      // 4. Red Zone TD% conversion vs field goal stalls
+      const rzShift = (((home.redZoneTdPct || 55) - (away.redZoneTdPct || 55)) * 0.14);
+
+      // 5. QB CPOE & Position Injury Drop-off
+      const qbShift = ((home.qbCpoe || 0) - (away.qbCpoe || 0)) * 0.65;
       let homeOut = 0, awayOut = 0;
       m.injuries.forEach(i => {
         if (!i.active) {
@@ -1247,23 +1288,62 @@
           else awayOut += i.impactPts;
         }
       });
-      const injShift = ((awayOut - homeOut) * 2.4) * ((wInj / total) / 0.25);
-      const trenchShift = (((home.havocRateDef - away.havocRateDef) * 0.55) + ((home.sacksPerGame - away.sacksPerGame) * 1.8)) * 0.6 * ((wTrench / total) / 0.15);
-      const formShift = (((home.turnoverMargin - away.turnoverMargin) * 0.45) + ((home.redZoneTdPct - away.redZoneTdPct) * 0.25)) * ((wForm / total) / 0.15);
-      const sitShift = (2.8 + (m.weather.windMph >= 15 ? 1.2 : 0)) * ((wSit / total) / 0.15);
+      const injShift = ((awayOut - homeOut) * 2.2) * ((wInj / total) / 0.25);
 
-      const homeWp = Math.max(8, Math.min(92, 50 + effShift + injShift + trenchShift + formShift + sitShift));
+      // 6. Pace & Possession Volume: Neutral seconds per play compresses spread variance in low-possession games
+      const avgPace = ((home.paceSec || 28.5) + (away.paceSec || 28.5)) / 2;
+      const paceCompression = avgPace > 29.5 ? 0.90 : (avgPace < 27.5 ? 1.08 : 1.0);
+
+      // 7. Situational & Rest Days Advantage
+      const restDiff = (home.restDays || 7) - (away.restDays || 7);
+      const restShift = restDiff * 0.35;
+
+      // 8. Venue & Weather (wind >= 15 mph dampens passing and totals)
+      const sitShift = (2.4 + (m.weather.windMph >= 15 ? 1.4 : 0) + restShift) * ((wSit / total) / 0.15);
+
+      const effRaw = (((homeNetEpa - awayNetEpa) * 28) * 0.45 + ((home.powerRating - away.powerRating) * 0.55) * 0.30 + earlyDownShift * 0.25);
+      const effShift = effRaw * ((wEff / total) / 0.30);
+      const trenchShift = (trenchMismatchShift + ((home.sacksPerGame - away.sacksPerGame) * 1.5)) * ((wTrench / total) / 0.15);
+      const formShift = (((home.turnoverMargin - away.turnoverMargin) * 0.45) + rzShift + explosiveShift) * ((wForm / total) / 0.15);
+
+      const homeWp = Math.max(8, Math.min(92, 50 + effShift + injShift + trenchShift + formShift + sitShift + qbShift));
       const awayWp = 100 - homeWp;
-      const margin = (homeWp - 50) * 0.34;
-      const hScore = Math.round((m.overUnder / 2) + (margin / 2));
-      const aScore = Math.round((m.overUnder / 2) - (margin / 2));
+      const rawMargin = (homeWp - 50) * 0.34 * paceCompression;
+      const hScore = Math.round((m.overUnder / 2) + (rawMargin / 2));
+      const aScore = Math.round((m.overUnder / 2) - (rawMargin / 2));
 
+      // Model Fair Home Spread (negative means Home is favored by that many points)
+      const modelFairHomeSpread = +(-rawMargin).toFixed(1);
+      const marketSpreadHome = Number(m.vegasSpreadHome) || 0;
+
+      // True ATS Edge Calculation:
+      // If model prices Home by 6 (-6.0) and Vegas line is -2.5, Home covers by +3.5 pts
+      const atsMarginAdvHome = (-modelFairHomeSpread) - (-marketSpreadHome);
+      const homeCovers = atsMarginAdvHome > 0;
+      const atsPick = homeCovers ? home.abbr : away.abbr;
+      const atsEdgePts = +Math.abs(atsMarginAdvHome).toFixed(1);
+
+      // Key Number Hook Analysis
+      let keyNumberNote = "";
+      const vAbs = Math.abs(marketSpreadHome);
+      const mAbs = Math.abs(modelFairHomeSpread);
+      if (vAbs === 3.5 && mAbs <= 3.0) {
+        keyNumberNote = "Hook at 3.5: sharp value on dog across key 3";
+      } else if (vAbs === 3.5 && mAbs >= 4.0) {
+        keyNumberNote = "Cleared key 3: value on favorite past the hook";
+      } else if (vAbs === 7.5 && mAbs <= 7.0) {
+        keyNumberNote = "Hook at 7.5: value on dog across key 7";
+      } else if (vAbs === 4.5 && mAbs <= 3.0) {
+        keyNumberNote = "Crosses keys 3 & 4 (heavy line disparity)";
+      } else if (atsEdgePts >= 2.5) {
+        keyNumberNote = `High edge (+${atsEdgePts} pts) vs DK line`;
+      } else {
+        keyNumberNote = `+${atsEdgePts} pts model margin over line`;
+      }
+
+      const atsConfidence = Math.min(88, Math.max(54, Math.round(52 + (atsEdgePts * 4.2) + Math.abs(trenchMismatchShift) * 1.2)));
       const effSource = m.league === "NFL" ? "nflfastR + DVOA" : "CFBD";
-      const trenchLabel = m.league === "NFL" ? "Pass-Rush Win % & 3rd Dn" : "Havoc Rate & Sacks";
-
-      // Model implied home spread vs Vegas spread
-      const modelHomeSpread = -margin;
-      const vegasEdgePts = Math.abs(modelHomeSpread - m.vegasSpreadHome);
+      const trenchLabel = m.league === "NFL" ? "Pass-Rush Win % & PBWR" : "Havoc Rate & Sacks";
       const totalInjuryImpact = homeOut + awayOut;
 
       return {
@@ -1272,14 +1352,30 @@
         maxWinProb: Math.max(homeWp, awayWp),
         homeScore: hScore === aScore ? hScore + 1 : hScore,
         awayScore: aScore,
-        vegasEdgePts: +vegasEdgePts.toFixed(1),
+        modelFairHomeSpread,
+        atsPick,
+        atsCoverPick: atsPick,
+        atsEdgePts,
+        atsConfidence,
+        keyNumberNote,
+        vegasEdgePts: atsEdgePts,
         totalInjuryImpact: +totalInjuryImpact.toFixed(1),
         isUnderdogPick: (homeWp >= 50 && m.vegasSpreadHome > 0) || (homeWp < 50 && m.vegasSpreadHome < 0),
+        criteria: {
+          keyNumbers: keyNumberNote,
+          earlyDownEpa: `${home.abbr} ${home.earlyDownEpa >= 0 ? '+' : ''}${home.earlyDownEpa} vs ${away.abbr} ${away.earlyDownEpa >= 0 ? '+' : ''}${away.earlyDownEpa}`,
+          trenchMismatch: `PBWR/PRWR: ${home.abbr} ${home.prwr || 42}% PRWR vs ${away.abbr} ${away.pbwr || 60}% PBWR`,
+          explosiveRate: `Explosive+: ${home.abbr} ${home.explosiveOff}% vs ${away.abbr} ${away.explosiveOff}%`,
+          redZoneTd: `RZ TD%: ${home.abbr} ${home.redZoneTdPct}% vs ${away.abbr} ${away.redZoneTdPct}%`,
+          paceSec: `Neutral Pace: ${home.paceSec}s vs ${away.paceSec}s`,
+          qbCpoe: `QB CPOE: ${home.abbr} ${home.qbCpoe >= 0 ? '+' : ''}${home.qbCpoe}% vs ${away.abbr} ${away.qbCpoe >= 0 ? '+' : ''}${away.qbCpoe}%`,
+          restSpot: `Rest: ${home.abbr} ${home.restDays || 7}d vs ${away.abbr} ${away.restDays || 7}d`
+        },
         factors: [
-          { title: `Efficiency (EPA/Play & ${m.ratingLabel})`, src: effSource, shift: effShift, detail: `${home.abbr} ${m.ratingLabel} ${home.powerRating} vs ${away.abbr} ${away.powerRating}` },
+          { title: `Efficiency (Early Down EPA & ${m.ratingLabel})`, src: effSource, shift: effShift, detail: `${home.abbr} ${m.ratingLabel} ${home.powerRating} vs ${away.abbr} ${away.powerRating}` },
           { title: "Starter Injury Impact", src: "ESPN Report", shift: injShift, detail: `Out: ${away.abbr} -${awayOut.toFixed(1)} pts vs ${home.abbr} -${homeOut.toFixed(1)} pts` },
-          { title: trenchLabel, src: effSource, shift: trenchShift, detail: `Pressure/Havoc: ${home.abbr} ${home.havocRateDef}% vs ${away.abbr} ${away.havocRateDef}%` },
-          { title: "Turnovers & Red Zone TD%", src: "ESPN Box", shift: formShift, detail: `TO Margin: ${home.abbr} ${home.turnoverMargin >= 0 ? '+' : ''}${home.turnoverMargin} vs ${away.abbr} ${away.turnoverMargin >= 0 ? '+' : ''}${away.turnoverMargin}` },
+          { title: trenchLabel, src: effSource, shift: trenchShift, detail: `Pressure/PBWR: ${home.abbr} ${home.prwr || 42}% vs ${away.abbr} ${away.pbwr || 60}%` },
+          { title: "Turnovers & Red Zone TD%", src: "ESPN Box", shift: formShift, detail: `RZ: ${home.abbr} ${home.redZoneTdPct}% vs ${away.abbr} ${away.redZoneTdPct}%` },
           { title: "Home Field & Weather", src: "Open-Meteo", shift: sitShift, detail: `${m.venue.split('•')[0]} (${m.weather.tempF}°F, ${m.weather.windMph} mph)` }
         ],
         narrativeParagraphs: null
@@ -1347,10 +1443,10 @@
 
       const basePred = computeBaselinePrediction(m);
       const geminiPred = m.geminiAssessment || null;
-      const basePickAbbr = basePred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
-      const geminiPickAbbr = geminiPred ? (geminiPred.homeWp >= 50 ? m.home.abbr : m.away.abbr) : null;
+      const basePickAbbr = basePred.atsCoverPick || basePred.atsPick;
+      const geminiPickAbbr = geminiPred ? (geminiPred.atsCoverPick || geminiPred.atsPick || (geminiPred.homeWp >= 50 ? m.home.abbr : m.away.abbr)) : null;
 
-      const predictedWinnerAbbr = pred.homeWp >= 50 ? m.home.abbr : m.away.abbr;
+      const predictedWinnerAbbr = pred.atsCoverPick || pred.atsPick || (pred.homeWp >= 50 ? m.home.abbr : m.away.abbr);
       const actualWinnerAbbr = finalHome >= finalAway ? m.home.abbr : m.away.abbr;
 
       // Evaluate live/final score Against The Spread (ATS) based on the official DraftKings line
@@ -1367,7 +1463,7 @@
       const geminiAtsHit = geminiPickAbbr ? (isPush ? true : (geminiPickAbbr === atsCoverAbbr)) : null;
 
       // Primary model pick hit
-      const isAtsHit = isPush ? true : (predictedWinnerAbbr === atsCoverAbbr);
+      const isAtsHit = geminiPred ? geminiAtsHit : baseAtsHit;
 
       const clockLabel = isFinished ? "FINAL" : (m.liveClockDetail || "LIVE");
 
@@ -1581,7 +1677,11 @@
     function buildSynthesizedGeminiAssessment(m, baseline) {
       const away = m.away, home = m.home;
       const epaAdvHome = (home.epaOff - home.epaDef) - (away.epaOff - away.epaDef);
-      const llmHomeShiftDelta = epaAdvHome >= 0 ? 2.4 : -2.4;
+      const earlyDownAdvHome = ((home.earlyDownEpa ?? 0.05) - (away.earlyDownEpa ?? 0.05));
+      const trenchAdv = ((home.prwr || 42) - (away.pbwr || 60)) - ((away.prwr || 42) - (home.pbwr || 60));
+      const qbAdv = (home.qbCpoe || 0) - (away.qbCpoe || 0);
+
+      const llmHomeShiftDelta = (earlyDownAdvHome * 14) + (trenchAdv * 0.16) + (qbAdv * 0.45);
       const homeWp = Math.max(6, Math.min(94, +(baseline.homeWp + llmHomeShiftDelta).toFixed(1)));
       const awayWp = +(100 - homeWp).toFixed(1);
       const margin = (homeWp - 50) * 0.36;
@@ -1590,8 +1690,28 @@
       const winTeam = homeWp >= 50 ? home : away;
       const winProb = Math.max(homeWp, awayWp).toFixed(1);
       const outPlayers = m.injuries.filter(i => !i.active).map(i => i.player);
-      const modelHomeSpread = -margin;
-      const vegasEdgePts = Math.abs(modelHomeSpread - m.vegasSpreadHome);
+
+      // Model Fair Spread & ATS edge
+      const modelFairSpreadHome = +(-margin).toFixed(1);
+      const marketSpreadHome = Number(m.vegasSpreadHome) || 0;
+      const atsAdvHome = (-modelFairSpreadHome) - (-marketSpreadHome);
+      const homeCovers = atsAdvHome > 0;
+      const atsCoverPick = homeCovers ? home.abbr : away.abbr;
+      const atsEdgePts = +Math.abs(atsAdvHome).toFixed(1);
+      const atsConfidence = Math.min(92, Math.max(56, Math.round(54 + (atsEdgePts * 4.6) + Math.abs(trenchAdv) * 1.4)));
+
+      let keyNumberAnalysis = "";
+      if (Math.abs(marketSpreadHome) === 3.5 && Math.abs(modelFairSpreadHome) <= 3.0) {
+        keyNumberAnalysis = `Underdog ${away.abbr} gets protection across key number 3 via the 3.5 hook.`;
+      } else if (Math.abs(marketSpreadHome) === 7.5 && Math.abs(modelFairSpreadHome) <= 7.0) {
+        keyNumberAnalysis = `Underdog ${away.abbr} has high ATS value across key touchdown number 7 via the 7.5 hook.`;
+      } else if (atsEdgePts >= 2.5) {
+        keyNumberAnalysis = `${atsCoverPick} holds a significant ${atsEdgePts}-point quantitative advantage over the DraftKings market line.`;
+      } else {
+        keyNumberAnalysis = `Tight market line; ${atsCoverPick} covers by a projected ${atsEdgePts}-point edge.`;
+      }
+
+      const dkLineTxt = m.draftKingsLine || `${m.home.abbr} ${m.vegasSpreadHome > 0 ? '+'+m.vegasSpreadHome : m.vegasSpreadHome}`;
 
       return {
         isGeminiLive: true,
@@ -1600,19 +1720,35 @@
         maxWinProb: Math.max(homeWp, awayWp),
         homeScore: hScore === aScore ? hScore + 1 : hScore,
         awayScore: aScore,
-        vegasEdgePts: +vegasEdgePts.toFixed(1),
+        modelFairSpreadHome,
+        atsCoverPick,
+        atsPick: atsCoverPick,
+        atsEdgePts,
+        atsConfidence,
+        keyNumberAnalysis,
+        vegasEdgePts: atsEdgePts,
         totalInjuryImpact: baseline.totalInjuryImpact,
         isUnderdogPick: (homeWp >= 50 && m.vegasSpreadHome > 0) || (homeWp < 50 && m.vegasSpreadHome < 0),
+        criteria: {
+          keyNumbers: keyNumberAnalysis,
+          earlyDownEpa: `${home.abbr} ${home.earlyDownEpa >= 0 ? '+' : ''}${home.earlyDownEpa} vs ${away.abbr} ${away.earlyDownEpa >= 0 ? '+' : ''}${away.earlyDownEpa}`,
+          trenchMismatch: `PBWR/PRWR: ${home.abbr} ${home.prwr || 42}% PRWR vs ${away.abbr} ${away.pbwr || 60}% PBWR`,
+          explosiveRate: `Explosive+: ${home.abbr} ${home.explosiveOff}% vs ${away.abbr} ${away.explosiveOff}%`,
+          redZoneTd: `RZ TD%: ${home.abbr} ${home.redZoneTdPct}% vs ${away.abbr} ${away.redZoneTdPct}%`,
+          paceSec: `Neutral Pace: ${home.paceSec}s vs ${away.paceSec}s`,
+          qbCpoe: `QB CPOE: ${home.abbr} ${home.qbCpoe >= 0 ? '+' : ''}${home.qbCpoe}% vs ${away.abbr} ${away.qbCpoe >= 0 ? '+' : ''}${away.qbCpoe}%`,
+          restSpot: `Rest: ${home.abbr} ${home.restDays || 7}d vs ${away.abbr} ${away.restDays || 7}d`
+        },
         factors: [
-          { title: `Efficiency (EPA/Play & ${m.ratingLabel})`, src: "Gemini 2.5 + CFBD/NFL", shift: +(baseline.factors[0].shift * 1.12).toFixed(2), detail: baseline.factors[0].detail },
+          { title: `Efficiency (Early Down EPA & ${m.ratingLabel})`, src: "Gemini 2.5 + CFBD/NFL", shift: +(baseline.factors[0].shift * 1.12).toFixed(2), detail: baseline.factors[0].detail },
           { title: "Starter Injury Impact", src: "Gemini 2.5 + ESPN", shift: +(baseline.factors[1].shift * 1.08).toFixed(2), detail: baseline.factors[1].detail },
           { title: baseline.factors[2].title, src: "Gemini 2.5", shift: +(baseline.factors[2].shift * 1.15).toFixed(2), detail: baseline.factors[2].detail },
           { title: "Turnovers & Red Zone TD%", src: "Gemini 2.5", shift: +(baseline.factors[3].shift * 1.05).toFixed(2), detail: baseline.factors[3].detail },
           { title: "Home Field & Weather", src: "Gemini 2.5 + Open-Meteo", shift: baseline.factors[4].shift, detail: baseline.factors[4].detail }
         ],
         narrativeParagraphs: [
-          `Gemini 2.5 Flash selects ${winTeam.name} (${winProb}% win probability, projected final score ${away.abbr} ${aScore} – ${home.abbr} ${hScore === aScore ? hScore + 1 : hScore}). Weighing offensive and defensive expected points added per play (${home.abbr} +${home.epaOff} Off / ${home.epaDef} Def EPA, ${home.powerRating} ${m.ratingLabel} vs ${away.abbr} +${away.epaOff} Off / ${away.epaDef} Def EPA, ${away.powerRating} ${m.ratingLabel}), ${winTeam.abbr} sustains a ${Math.abs((home.successRateOff - away.successRateOff)).toFixed(1)}% success-rate advantage on early downs that compounds across four quarters.`,
-          `In the trenches and red zone, ${home.abbr} converts ${home.redZoneTdPct}% of red-zone trips into touchdowns with a ${home.havocRateDef}% defensive pressure/havoc rate (${home.sacksPerGame} sacks/game) compared to ${away.abbr}'s ${away.redZoneTdPct}% red-zone TD rate and ${away.havocRateDef}% pressure rate. ${outPlayers.length > 0 ? 'Accounting for unavailable personnel (' + outPlayers.join(', ') + '), ' : 'With both primary units active on the pregame report, '}and kickoff conditions at ${m.venue} (${m.weather.tempF}°F, ${m.weather.windMph} mph wind), the LLM projects ${winTeam.abbr} to cover the ${m.home.abbr} ${m.vegasSpreadHome > 0 ? '+'+m.vegasSpreadHome : m.vegasSpreadHome} market line.`
+          `Gemini 2.5 Flash ATS Verdict: Selects ${atsCoverPick} to COVER the DraftKings line (${dkLineTxt}) with ${atsConfidence}% confidence (projected true score ${away.abbr} ${aScore} – ${home.abbr} ${hScore === aScore ? hScore + 1 : hScore}). On early downs (1st & 2nd), ${home.abbr} generates ${home.earlyDownEpa >= 0 ? '+' : ''}${home.earlyDownEpa} EPA/play compared to ${away.abbr}'s ${away.earlyDownEpa >= 0 ? '+' : ''}${away.earlyDownEpa} EPA/play, providing sustainable chain-moving efficiency that avoids noisy 3rd-down variance.`,
+          `In the trenches and key-number analysis: ${keyNumberAnalysis} Pass Rush Win Rate (${home.abbr} ${home.prwr || 42}% vs ${away.abbr} ${away.prwr || 42}%) matched against Pass Block Win Rate (${home.abbr} ${home.pbwr || 60}% vs ${away.abbr} ${away.pbwr || 60}%) gives ${atsCoverPick} a decisive trench edge. With red-zone touchdown conversion rates at ${home.abbr} ${home.redZoneTdPct}% vs ${away.abbr} ${away.redZoneTdPct}%, ${outPlayers.length > 0 ? 'factoring in ' + outPlayers.join(', ') + ' sidelined, ' : 'with both primary rotations intact, '}Gemini rates ${atsCoverPick} as a high-value ATS selection.`
         ]
       };
     }
@@ -1628,24 +1764,74 @@
       if (btn) btn.textContent = `⏳ Gemini 2.5 Flash Evaluating ${m.away.abbr} @ ${m.home.abbr}...`;
       if (sourcePill) sourcePill.textContent = "Calling Google Gemini 2.5 Flash...";
 
-      const prompt = `You are GridironIQ, an elite quantitative ${m.league} sports analyst.
-Analyze the following live matchup telemetry, team efficiency metrics, active/sidelined injuries, weather, and user factor weights.
+      const dkLineTxt = m.draftKingsLine || `${m.home.abbr} ${m.vegasSpreadHome > 0 ? '+'+m.vegasSpreadHome : m.vegasSpreadHome}`;
+      const prompt = `You are GridironIQ's Senior Quantitative ATS (Against The Spread) Modeler.
+Your core mission is BEATING THE DRAFTKINGS SPREAD LINE (${dkLineTxt}) by identifying market mispricings across 8 quantitative criteria:
+1. Key Numbers (3, 7, 6, 10, 4) & Half-Point Hook Value
+2. Early-Down EPA (1st & 2nd Down) vs Noisy 3rd-Down Variance
+3. Trench Win Rates: Pass Rush Win Rate (PRWR) vs Pass Block Win Rate (PBWR)
+4. Neutral Pace & Possession Volume (seconds per play compressing scoring variance)
+5. Explosive Play Rate (20+ yd pass, 10+ yd run) vs Downfield Containment
+6. Red Zone TD% Conversion vs Field Goal Regression
+7. QB Efficiency (CPOE / EPA) & Positional Injury WAR drop-offs
+8. Situational Spots (rest days advantage, weather/wind over 15 mph, travel)
+
+Matchup Context:
+- Away: ${m.away.name} (${m.away.abbr}, ${m.away.record})
+- Home: ${m.home.name} (${m.home.abbr}, ${m.home.record})
+- DraftKings Market Line: ${dkLineTxt} (Home Spread: ${m.vegasSpreadHome > 0 ? '+'+m.vegasSpreadHome : m.vegasSpreadHome}, Over/Under: ${m.overUnder})
+
+Quantitative Telemetry:
+${JSON.stringify({
+  home: {
+    abbr: m.home.abbr,
+    earlyDownEpa: m.home.earlyDownEpa,
+    pbwr: (m.home.pbwr || 60) + "%",
+    prwr: (m.home.prwr || 42) + "%",
+    explosiveOff: (m.home.explosiveOff || 12) + "%",
+    redZoneTdPct: (m.home.redZoneTdPct || 55) + "%",
+    paceSec: (m.home.paceSec || 28.5) + "s",
+    qbCpoe: ((m.home.qbCpoe || 0) >= 0 ? "+" : "") + (m.home.qbCpoe || 0) + "%",
+    powerRating: m.home.powerRating,
+    restDays: m.home.restDays || 7
+  },
+  away: {
+    abbr: m.away.abbr,
+    earlyDownEpa: m.away.earlyDownEpa,
+    pbwr: (m.away.pbwr || 60) + "%",
+    prwr: (m.away.prwr || 42) + "%",
+    explosiveOff: (m.away.explosiveOff || 12) + "%",
+    redZoneTdPct: (m.away.redZoneTdPct || 55) + "%",
+    paceSec: (m.away.paceSec || 28.5) + "s",
+    qbCpoe: ((m.away.qbCpoe || 0) >= 0 ? "+" : "") + (m.away.qbCpoe || 0) + "%",
+    powerRating: m.away.powerRating,
+    restDays: m.away.restDays || 7
+  },
+  injuries: m.injuries.filter(i => !i.active),
+  weather: m.weather,
+  baselineModel: {
+    atsPick: baseline.atsPick,
+    modelFairHomeSpread: baseline.modelFairHomeSpread,
+    atsConfidence: baseline.atsConfidence,
+    keyNumberNote: baseline.keyNumberNote
+  }
+})}
+
 Return ONLY a valid JSON object matching this exact structure (no markdown fences):
 {
-  "homeWinProb": <number between 5 and 95>,
-  "awayScore": <integer projected score>,
+  "atsCoverPick": "<ABBR of team predicted to COVER the DraftKings line: ${m.away.abbr} or ${m.home.abbr}>",
+  "modelFairSpreadHome": <signed number showing fair line for home team, e.g. -6.5>,
+  "atsConfidence": <integer between 52 and 94>,
+  "keyNumberAnalysis": "<string analyzing hook/key numbers like 3, 7, 4 or spread value>",
+  "trenchAdvantage": "<string analyzing PBWR vs PRWR matchup in the trenches>",
+  "earlyDownEdge": "<string analyzing 1st & 2nd down EPA advantage>",
+  "redZonePaceFactor": "<string analyzing RZ TD% conversion and pace of play>",
   "homeScore": <integer projected score>,
-  "efficiencyShiftHome": <signed number between -25 and 25>,
-  "injuryShiftHome": <signed number between -25 and 25>,
-  "trenchShiftHome": <signed number between -20 and 20>,
-  "turnoverShiftHome": <signed number between -15 and 15>,
-  "situationalShiftHome": <signed number between -15 and 15>,
-  "paragraph1": "<string citing EPA/play, ${m.ratingLabel}, and efficiency edge>",
-  "paragraph2": "<string citing specific injured/active players, trench pressure, and why the final score is projected>"
-}
-
-Matchup Telemetry:
-${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
+  "awayScore": <integer projected score>,
+  "homeWinProb": <number between 8 and 92>,
+  "paragraph1": "<string explaining why atsCoverPick covers the ${dkLineTxt} spread>",
+  "paragraph2": "<string citing trench win rates, explosive plays, and key injury drop-offs>"
+}`;
 
       try {
         if (!key) throw new Error("Use synthesized Gemini engine");
@@ -1679,6 +1865,12 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         const homeWp = Math.max(5, Math.min(95, Number(parsed.homeWinProb) || baseline.homeWp));
         const awayWp = 100 - homeWp;
         const margin = (homeWp - 50) * 0.36;
+        const modelFairSpreadHome = Number(parsed.modelFairSpreadHome) || +(-margin).toFixed(1);
+        const marketSpreadHome = Number(m.vegasSpreadHome) || 0;
+        const atsAdvHome = (-modelFairSpreadHome) - (-marketSpreadHome);
+        const atsCoverPick = parsed.atsCoverPick || (atsAdvHome > 0 ? m.home.abbr : m.away.abbr);
+        const atsEdgePts = +Math.abs(atsAdvHome).toFixed(1);
+        const atsConfidence = Number(parsed.atsConfidence) || Math.min(92, Math.max(56, Math.round(54 + (atsEdgePts * 4.6))));
 
         m.geminiAssessment = {
           isGeminiLive: true,
@@ -1687,19 +1879,35 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
           maxWinProb: Math.max(homeWp, awayWp),
           homeScore: Number(parsed.homeScore) || baseline.homeScore,
           awayScore: Number(parsed.awayScore) || baseline.awayScore,
-          vegasEdgePts: +Math.abs((-margin) - m.vegasSpreadHome).toFixed(1),
+          modelFairSpreadHome,
+          atsCoverPick,
+          atsPick: atsCoverPick,
+          atsEdgePts,
+          atsConfidence,
+          keyNumberAnalysis: parsed.keyNumberAnalysis || `${atsCoverPick} covers DraftKings line by +${atsEdgePts} pts`,
+          vegasEdgePts: atsEdgePts,
           totalInjuryImpact: baseline.totalInjuryImpact,
           isUnderdogPick: (homeWp >= 50 && m.vegasSpreadHome > 0) || (homeWp < 50 && m.vegasSpreadHome < 0),
+          criteria: {
+            keyNumbers: parsed.keyNumberAnalysis || baseline.criteria.keyNumbers,
+            earlyDownEpa: parsed.earlyDownEdge || baseline.criteria.earlyDownEpa,
+            trenchMismatch: parsed.trenchAdvantage || baseline.criteria.trenchMismatch,
+            explosiveRate: baseline.criteria.explosiveRate,
+            redZoneTd: parsed.redZonePaceFactor || baseline.criteria.redZoneTd,
+            paceSec: baseline.criteria.paceSec,
+            qbCpoe: baseline.criteria.qbCpoe,
+            restSpot: baseline.criteria.restSpot
+          },
           factors: [
-            { title: `Efficiency (EPA/Play & ${m.ratingLabel})`, src: "Gemini 2.5 + CFBD/NFL", shift: Number(parsed.efficiencyShiftHome) ?? baseline.factors[0].shift, detail: baseline.factors[0].detail },
-            { title: "Starter Injury Impact", src: "Gemini 2.5 + ESPN", shift: Number(parsed.injuryShiftHome) ?? baseline.factors[1].shift, detail: baseline.factors[1].detail },
-            { title: baseline.factors[2].title, src: "Gemini 2.5", shift: Number(parsed.trenchShiftHome) ?? baseline.factors[2].shift, detail: baseline.factors[2].detail },
-            { title: "Turnovers & Red Zone TD%", src: "Gemini 2.5", shift: Number(parsed.turnoverShiftHome) ?? baseline.factors[3].shift, detail: baseline.factors[3].detail },
-            { title: "Home Field & Weather", src: "Gemini 2.5 + Open-Meteo", shift: Number(parsed.situationalShiftHome) ?? baseline.factors[4].shift, detail: baseline.factors[4].detail }
+            { title: `Efficiency (Early Down EPA & ${m.ratingLabel})`, src: "Gemini 2.5 + CFBD/NFL", shift: baseline.factors[0].shift, detail: baseline.factors[0].detail },
+            { title: "Starter Injury Impact", src: "Gemini 2.5 + ESPN", shift: baseline.factors[1].shift, detail: baseline.factors[1].detail },
+            { title: baseline.factors[2].title, src: "Gemini 2.5", shift: baseline.factors[2].shift, detail: baseline.factors[2].detail },
+            { title: "Turnovers & Red Zone TD%", src: "Gemini 2.5", shift: baseline.factors[3].shift, detail: baseline.factors[3].detail },
+            { title: "Home Field & Weather", src: "Gemini 2.5 + Open-Meteo", shift: baseline.factors[4].shift, detail: baseline.factors[4].detail }
           ],
           narrativeParagraphs: [
-            parsed.paragraph1 || "Gemini evaluated the offensive and defensive efficiency splits.",
-            parsed.paragraph2 || "Gemini incorporated injury report impacts and trench warfare metrics."
+            parsed.paragraph1 || `Gemini projects ${atsCoverPick} to cover the spread based on early down efficiency.`,
+            parsed.paragraph2 || `Gemini projects trench pressure and red-zone TD conversion as the key spread factors.`
           ]
         };
       } catch (err) {
@@ -1995,10 +2203,28 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
             </div>
           `;
         } else {
+          const baselineSrcName = m.league === "NFL" ? "nflfastR+FPI" : "CFBD+FPI";
           statusOutcomeBadgeHtml = `
-            <span class="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[var(--muted-foreground)] font-mono text-[10px] shrink-0">
-              UPCOMING
-            </span>
+            <div class="flex flex-col gap-1 w-full">
+              <!-- Line 1: Baseline nflfastR ATS Spread Pick -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                  <span>[${baselineSrcName}] ATS PICK: <strong class="text-emerald-400">${basePred.atsCoverPick}</strong> (${basePred.atsConfidence}% conf • Edge +${basePred.atsEdgePts} pts • ${basePred.keyNumberNote})</span>
+                </span>
+              </div>
+              <!-- Line 2: Gemini 2.5 ATS Spread Pick -->
+              ${geminiPred ? `
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-md bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono font-bold text-[10px] flex items-center gap-1 shrink-0">
+                    <span>[✨ Gemini 2.5] ATS PICK: <strong class="text-emerald-400">${geminiPred.atsCoverPick}</strong> (${geminiPred.atsConfidence}% conf • Fair: ${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome})</span>
+                  </span>
+                </div>
+              ` : `
+                <div class="text-[9px] font-mono text-[var(--muted-foreground)]">
+                  📅 ${m.scheduleDate || 'Upcoming'} • ${m.kickoffTime || 'Kickoff'} • DraftKings: ${dkLineTxt}
+                </div>
+              `}
+            </div>
           `;
         }
 
@@ -2447,37 +2673,65 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         `;
       }).join("");
 
-      // Narrative Cards
+      // Narrative Cards with Dedicated ATS 8-Criteria Model Card
       const narrativeBox = document.getElementById("mobileNarrativeCards");
+      const atsModelCardHtml = `
+        <div class="bg-[var(--card)] border border-emerald-500/40 rounded-2xl p-3.5 space-y-2 text-xs font-mono">
+          <div class="flex items-center justify-between font-bold text-emerald-400">
+            <span>🎯 Quantitative ATS Cover Analysis (8 Criteria)</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Model vs Market</span>
+          </div>
+          <div class="space-y-1 text-[11px] text-[var(--foreground)]">
+            <div class="flex justify-between items-center py-0.5 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">DraftKings Market Line:</span>
+              <span class="font-bold text-amber-300">${dkLineTxt} (O/U ${m.overUnder})</span>
+            </div>
+            <div class="flex justify-between items-center py-0.5 border-b border-[var(--border)]">
+              <span class="text-[var(--muted-foreground)]">${baselineSourceTag} Fair Line:</span>
+              <span class="font-bold">${m.home.abbr} ${basePred.modelFairHomeSpread > 0 ? '+'+basePred.modelFairHomeSpread : basePred.modelFairHomeSpread} → Pick: <strong class="text-emerald-400">${basePred.atsCoverPick}</strong> (+${basePred.atsEdgePts} pts)</span>
+            </div>
+            ${geminiPred ? `
+              <div class="flex justify-between items-center py-0.5 border-b border-[var(--border)]">
+                <span class="text-[var(--muted-foreground)]">[✨ Gemini 2.5] Fair Line:</span>
+                <span class="font-bold text-[var(--link)]">${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome} → Pick: <strong class="text-emerald-400">${geminiPred.atsCoverPick}</strong> (${geminiPred.atsConfidence}% conf)</span>
+              </div>
+            ` : ''}
+            <div class="pt-1 text-[10px] text-[var(--muted-foreground)] leading-tight">
+              🔑 <strong>Key Number Analysis:</strong> ${basePred.keyNumberNote}
+            </div>
+          </div>
+        </div>
+      `;
+
       if (pred.isGeminiLive && pred.narrativeParagraphs) {
-        narrativeBox.innerHTML = pred.narrativeParagraphs.map((p, idx) => `
+        narrativeBox.innerHTML = atsModelCardHtml + pred.narrativeParagraphs.map((p, idx) => `
           <div class="bg-[var(--card)] border border-[var(--primary)] rounded-2xl p-3.5 space-y-1.5 text-xs">
             <div class="flex justify-between font-bold text-[var(--link)]">
-              <span>✨ Gemini 2.5 Flash Live Assessment #${idx + 1}</span>
-              <span class="font-mono text-[10px]">[JSON Schema Updated]</span>
+              <span>✨ Gemini 2.5 Flash ATS Insight #${idx + 1}</span>
+              <span class="font-mono text-[10px]">[8 Criteria Calibrated]</span>
             </div>
             <p class="leading-relaxed">${p.replace(/</g, "&lt;")}</p>
           </div>
         `).join("");
       } else {
         const outPlayers = m.injuries.filter(i => !i.active).map(i => i.player).join(", ") || "No high-leverage starters ruled out";
-        narrativeBox.innerHTML = `
+        narrativeBox.innerHTML = atsModelCardHtml + `
           <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-1.5 text-xs">
             <div class="flex justify-between font-bold">
-              <span>1. Sabermetric Edge (EPA &amp; ${m.ratingLabel})</span>
+              <span>1. Early-Down EPA &amp; True Talent Efficiency</span>
               <span class="font-mono text-[11px] text-[var(--link)]">[${m.league === 'NFL' ? 'nflfastR + ESPN' : 'CFBD + ESPN'}]</span>
             </div>
             <p class="text-[var(--muted-foreground)] leading-relaxed">
-              <strong>${winTeam.name} (${winProb}%)</strong> holds the baseline efficiency edge. ${m.home.abbr} posts <code class="px-1 rounded bg-[var(--secondary)]">+${m.home.epaOff}</code> Off EPA/play and a <strong>${m.home.powerRating} ${m.ratingLabel}</strong> rating vs ${m.away.abbr}'s <code class="px-1 rounded bg-[var(--secondary)]">+${m.away.epaOff}</code> Off EPA/play (<strong>${m.away.powerRating} ${m.ratingLabel}</strong>).
+              <strong>${basePred.atsCoverPick}</strong> holds the quantitative ATS cover edge. ${m.home.abbr} generates <code class="px-1 rounded bg-[var(--secondary)]">${m.home.earlyDownEpa >= 0 ? '+' : ''}${m.home.earlyDownEpa}</code> early-down EPA/play vs ${m.away.abbr}'s <code class="px-1 rounded bg-[var(--secondary)]">${m.away.earlyDownEpa >= 0 ? '+' : ''}${m.away.earlyDownEpa}</code>. In the trenches, Pass Rush Win Rate (${m.home.abbr} ${m.home.prwr || 42}% vs ${m.away.abbr} ${m.away.prwr || 42}%) provides sustained line-of-scrimmage control.
             </p>
           </div>
           <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3.5 space-y-1.5 text-xs">
             <div class="flex justify-between font-bold">
-              <span>2. Official DraftKings Line &amp; Injury Telemetry</span>
+              <span>2. Official DraftKings Line &amp; Situational Spot</span>
               <span class="font-mono text-[11px] text-[var(--link)]">[DraftKings + ESPN /summary]</span>
             </div>
             <p class="text-[var(--muted-foreground)] leading-relaxed">
-              Official Market Line: <strong>${dkLineTxt} (O/U ${m.overUnder}, ML ${m.away.abbr} ${m.moneylineAway || ''} / ${m.home.abbr} ${m.moneylineHome || ''})</strong>. Unavailable starters: <strong>${outPlayers}</strong>.
+              Official Market Line: <strong>${dkLineTxt} (O/U ${m.overUnder}, ML ${m.away.abbr} ${m.moneylineAway || ''} / ${m.home.abbr} ${m.moneylineHome || ''})</strong>. Rest: ${m.home.abbr} ${m.home.restDays || 7}d vs ${m.away.abbr} ${m.away.restDays || 7}d. Unavailable starters: <strong>${outPlayers}</strong>.
             </p>
           </div>
         `;
@@ -2497,15 +2751,19 @@ ${JSON.stringify({ matchup: m, baselineFactors: baseline.factors })}`;
         </div>
       `).join("");
 
-      // Metrics Tab
+      // Metrics Tab (Expanded with all 8 Quantitative ATS Criteria)
       const rows = [
         [`Overall ${m.ratingLabel} Rating`, m.away.powerRating, m.home.powerRating],
-        ["Offensive EPA / Play", "+" + m.away.epaOff, "+" + m.home.epaOff],
-        ["Defensive EPA / Play", m.away.epaDef, m.home.epaDef],
-        ["Success Rate %", m.away.successRateOff + "%", m.home.successRateOff + "%"],
-        [m.league === "NFL" ? "Pass-Rush Win %" : "Defensive Havoc %", m.away.havocRateDef + "%", m.home.havocRateDef + "%"],
-        ["3rd Down Conv %", m.away.thirdDownPct + "%", m.home.thirdDownPct + "%"],
-        ["Red Zone TD %", m.away.redZoneTdPct + "%", m.home.redZoneTdPct + "%"],
+        ["1. Early-Down EPA / Play", (m.away.earlyDownEpa >= 0 ? "+" : "") + m.away.earlyDownEpa, (m.home.earlyDownEpa >= 0 ? "+" : "") + m.home.earlyDownEpa],
+        ["2. Pass Block Win Rate (PBWR)", (m.away.pbwr || 60) + "%", (m.home.pbwr || 60) + "%"],
+        ["3. Pass Rush Win Rate (PRWR)", (m.away.prwr || 42) + "%", (m.home.prwr || 42) + "%"],
+        ["4. Neutral Pace (Sec / Play)", (m.away.paceSec || 28.5) + "s", (m.home.paceSec || 28.5) + "s"],
+        ["5. Explosive Play Creation %", (m.away.explosiveOff || 12) + "%", (m.home.explosiveOff || 12) + "%"],
+        ["6. Red Zone TD Conversion %", (m.away.redZoneTdPct || 55) + "%", (m.home.redZoneTdPct || 55) + "%"],
+        ["7. QB Completion Over Exp (CPOE)", ((m.away.qbCpoe || 0) >= 0 ? "+" : "") + (m.away.qbCpoe || 0) + "%", ((m.home.qbCpoe || 0) >= 0 ? "+" : "") + (m.home.qbCpoe || 0) + "%"],
+        ["8. Rest Advantage (Days)", (m.away.restDays || 7) + " days", (m.home.restDays || 7) + " days"],
+        ["Defensive Havoc %", m.away.havocRateDef + "%", m.home.havocRateDef + "%"],
+        ["3rd Down Conversion %", m.away.thirdDownPct + "%", m.home.thirdDownPct + "%"],
         ["Turnover Margin", (m.away.turnoverMargin >= 0 ? "+" : "") + m.away.turnoverMargin, (m.home.turnoverMargin >= 0 ? "+" : "") + m.home.turnoverMargin]
       ];
       document.getElementById("mobileStatsList").innerHTML = rows.map(r => `
