@@ -3513,92 +3513,116 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           const phaseTag = outcome.isInProgress ? `LIVE ${outcome.clockLabel}` : "FINAL";
           const baselineSrcName = m.league === "NFL" ? "nflfastR+FPI" : "CFBD+FPI";
 
-          // Chip 1: nflfastR / CFBD baseline prediction hit/miss against line
+          // Chip 1: nflfastR / CFBD baseline prediction hit/miss against line (Uniform 2-Line Fixed Height Pill)
           let baseChipHtml = "";
           if (outcome.isPush) {
             baseChipHtml = `
-              <div class="w-full rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
-                <div class="flex items-center justify-between gap-1 flex-wrap">
-                  <span>[${baselineSrcName}] ATS PUSH: Picked ${outcome.basePickAbbr} ${basePickSpread}</span>
-                  <span class="text-[9px] opacity-90 font-semibold">${outcome.finalAway}-${outcome.finalHome} vs ${dkLineTxt}</span>
+              <div class="w-full max-w-full rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                <div class="flex items-center justify-between gap-1.5 w-full font-bold">
+                  <span class="truncate">[${baselineSrcName}] ATS PUSH</span>
+                  <span class="shrink-0 font-extrabold text-amber-200">${outcome.basePickAbbr} ${basePickSpread}</span>
+                </div>
+                <div class="flex items-center justify-between gap-1.5 w-full text-[9px] font-semibold text-amber-200/90 pt-0.5 border-t border-amber-500/20">
+                  <span class="truncate">Final: ${outcome.finalAway}-${outcome.finalHome} vs ${dkLineTxt}</span>
+                  <span class="shrink-0 text-[8.5px] font-bold uppercase opacity-80">PUSH</span>
                 </div>
               </div>
             `;
           } else if (outcome.baseAtsHit) {
             const hitLabel = outcome.isInProgress ? "LIVE HIT" : "LINE HIT";
             const statusDetail = outcome.isInProgress
-              ? `Covering at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
-              : `Covered ${outcome.finalAway}-${outcome.finalHome} FINAL`;
+              ? `Covering at ${outcome.finalAway}-${outcome.finalHome}`
+              : `Covered ${outcome.finalAway}-${outcome.finalHome}`;
             baseChipHtml = `
-              <div class="w-full rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
-                <div class="flex items-center justify-between gap-1.5 flex-wrap">
-                  <div class="flex items-center gap-1 shrink-0 font-bold">
-                    ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                    <span>✓ [${baselineSrcName}] ${hitLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread}</span>
+              <div class="w-full max-w-full rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                <div class="flex items-center justify-between gap-1.5 w-full font-bold">
+                  <div class="flex items-center gap-1.5 truncate min-w-0">
+                    ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>' : ''}
+                    <span class="truncate">✓ [${baselineSrcName}] ${hitLabel}</span>
                   </div>
-                  <span class="text-[9.5px] font-bold text-emerald-300 shrink-0">${statusDetail}</span>
+                  <span class="shrink-0 text-emerald-300 font-extrabold">${outcome.basePickAbbr} ${basePickSpread}</span>
+                </div>
+                <div class="flex items-center justify-between gap-1.5 w-full text-[9px] font-semibold text-emerald-300/90 pt-0.5 border-t border-emerald-500/20">
+                  <span class="truncate">${statusDetail}</span>
+                  <span class="shrink-0 text-[8.5px] font-bold uppercase opacity-80">${outcome.isInProgress ? outcome.clockLabel : 'FINAL'}</span>
                 </div>
               </div>
             `;
           } else {
             const missLabel = outcome.isInProgress ? "LIVE MISS" : "LINE MISSED";
             const statusDetail = outcome.isInProgress
-              ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
+              ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome}`
               : `Failed Cover ${outcome.finalAway}-${outcome.finalHome} (${outcome.atsCoverAbbr} Covered ${dkLineTxt})`;
             baseChipHtml = `
-              <div class="w-full rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
-                <div class="flex items-center justify-between gap-1.5 flex-wrap">
-                  <div class="flex items-center gap-1 shrink-0 font-bold">
-                    ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                    <span>✗ [${baselineSrcName}] ${missLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread}</span>
+              <div class="w-full max-w-full rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/40 font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                <div class="flex items-center justify-between gap-1.5 w-full font-bold">
+                  <div class="flex items-center gap-1.5 truncate min-w-0">
+                    ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse shrink-0"></span>' : ''}
+                    <span class="truncate">✗ [${baselineSrcName}] ${missLabel}</span>
                   </div>
-                  <span class="text-[9.5px] font-bold text-rose-300 shrink-0">${statusDetail}</span>
+                  <span class="shrink-0 text-rose-300 font-extrabold">${outcome.basePickAbbr} ${basePickSpread}</span>
+                </div>
+                <div class="flex items-center justify-between gap-1.5 w-full text-[9px] font-semibold text-rose-300/90 pt-0.5 border-t border-rose-500/20">
+                  <span class="truncate">${statusDetail}</span>
+                  <span class="shrink-0 text-[8.5px] font-bold uppercase opacity-80">${outcome.isInProgress ? outcome.clockLabel : 'FINAL'}</span>
                 </div>
               </div>
             `;
           }
 
-          // Chip 2: On the NEXT line, Google Gemini prediction hit/miss against line (if processed)
+          // Chip 2: On the NEXT line, Google Gemini prediction hit/miss against line (Uniform 2-Line Structured Pill)
           let geminiChipHtml = "";
           if (geminiPred) {
             if (outcome.isPush) {
               geminiChipHtml = `
-                <div class="w-full rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
-                  <div class="flex items-center justify-between gap-1 flex-wrap">
-                    <span>[✨ Gemini 2.5] ATS PUSH: Picked ${outcome.geminiPickAbbr} ${gemPickSpread}</span>
-                    <span class="text-[9px] opacity-90 font-semibold">${outcome.atsText} vs ${dkLineTxt}</span>
+                <div class="w-full max-w-full rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                  <div class="flex items-center justify-between gap-1.5 w-full font-bold">
+                    <span class="truncate">[✨ Gemini 2.5] ATS PUSH</span>
+                    <span class="shrink-0 font-extrabold text-amber-200">${outcome.geminiPickAbbr} ${gemPickSpread}</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-1.5 w-full text-[9px] font-semibold text-amber-200/90 pt-0.5 border-t border-amber-500/20">
+                    <span class="truncate">${outcome.atsText} vs ${dkLineTxt}</span>
+                    <span class="shrink-0 text-[8.5px] font-bold uppercase opacity-80">PUSH</span>
                   </div>
                 </div>
               `;
             } else if (outcome.geminiAtsHit) {
               const gemHitLabel = outcome.isInProgress ? "LIVE HIT" : "LINE HIT";
               const gemStatusDetail = outcome.isInProgress
-                ? `Covering at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
-                : `Covered ${outcome.finalAway}-${outcome.finalHome} FINAL`;
+                ? `Covering at ${outcome.finalAway}-${outcome.finalHome}`
+                : `Covered ${outcome.finalAway}-${outcome.finalHome}`;
               geminiChipHtml = `
-                <div class="w-full rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
-                  <div class="flex items-center justify-between gap-1.5 flex-wrap">
-                    <div class="flex items-center gap-1 shrink-0 font-bold">
-                      ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                      <span>✓ [✨ Gemini 2.5] ${gemHitLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread}</span>
+                <div class="w-full max-w-full rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                  <div class="flex items-center justify-between gap-1.5 w-full font-bold">
+                    <div class="flex items-center gap-1.5 truncate min-w-0">
+                      ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>' : ''}
+                      <span class="truncate">✓ [✨ Gemini 2.5] ${gemHitLabel}</span>
                     </div>
-                    <span class="text-[9.5px] font-bold text-emerald-300 shrink-0">${gemStatusDetail}</span>
+                    <span class="shrink-0 text-emerald-300 font-extrabold">${outcome.geminiPickAbbr} ${gemPickSpread}</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-1.5 w-full text-[9px] font-semibold text-emerald-300/90 pt-0.5 border-t border-emerald-500/20">
+                    <span class="truncate">${gemStatusDetail}</span>
+                    <span class="shrink-0 text-[8.5px] font-bold uppercase opacity-80">${outcome.isInProgress ? outcome.clockLabel : 'FINAL'}</span>
                   </div>
                 </div>
               `;
             } else {
               const gemMissLabel = outcome.isInProgress ? "LIVE MISS" : "LINE MISSED";
               const gemStatusDetail = outcome.isInProgress
-                ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
+                ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome}`
                 : `Failed Cover ${outcome.finalAway}-${outcome.finalHome} (${outcome.atsCoverAbbr} Covered ${dkLineTxt})`;
               geminiChipHtml = `
-                <div class="w-full rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
-                  <div class="flex items-center justify-between gap-1.5 flex-wrap">
-                    <div class="flex items-center gap-1 shrink-0 font-bold">
-                      ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                      <span>✗ [✨ Gemini 2.5] ${gemMissLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread}</span>
+                <div class="w-full max-w-full rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/40 font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                  <div class="flex items-center justify-between gap-1.5 w-full font-bold">
+                    <div class="flex items-center gap-1.5 truncate min-w-0">
+                      ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse shrink-0"></span>' : ''}
+                      <span class="truncate">✗ [✨ Gemini 2.5] ${gemMissLabel}</span>
                     </div>
-                    <span class="text-[9.5px] font-bold text-rose-300 shrink-0">${gemStatusDetail}</span>
+                    <span class="shrink-0 text-rose-300 font-extrabold">${outcome.geminiPickAbbr} ${gemPickSpread}</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-1.5 w-full text-[9px] font-semibold text-rose-300/90 pt-0.5 border-t border-rose-500/20">
+                    <span class="truncate">${gemStatusDetail}</span>
+                    <span class="shrink-0 text-[8.5px] font-bold uppercase opacity-80">${outcome.isInProgress ? outcome.clockLabel : 'FINAL'}</span>
                   </div>
                 </div>
               `;
@@ -3607,36 +3631,49 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
 
           statusOutcomeBadgeHtml = `
             <div class="flex flex-col gap-1.5 w-full min-w-0 max-w-full overflow-hidden">
-              <!-- Line 1: Baseline prediction hit/miss against line (Contained pill with full left and right rounded borders) -->
+              <!-- Line 1: Baseline prediction hit/miss against line (Uniform 2-Line Structured Pill) -->
               ${baseChipHtml}
-              <!-- Line 2: Google Gemini hit/miss against line -->
+              <!-- Line 2: Google Gemini hit/miss against line (Uniform 2-Line Structured Pill) -->
               ${geminiChipHtml || ''}
             </div>
           `;
         } else {
           const baselineSrcName = m.league === "NFL" ? "nflfastR+FPI" : "CFBD+FPI";
           statusOutcomeBadgeHtml = `
-            <div class="flex flex-col gap-1.5 w-full min-w-0 max-w-full">
-              <!-- Line 1: Baseline nflfastR ATS Spread Pick (Contained pill with full left and right rounded borders) -->
-              <div class="w-full max-w-full rounded-xl bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm box-border">
-                <div class="flex items-center justify-between gap-1 flex-wrap">
-                  <span>[${baselineSrcName}] ATS PICK: <strong class="text-emerald-400">${basePred.atsCoverPick}</strong></span>
-                  <span class="text-[9px] text-[var(--muted-foreground)] font-semibold shrink-0">${basePred.atsConfidence}% conf • Edge +${basePred.atsEdgePts} pts</span>
+            <div class="flex flex-col gap-1.5 w-full min-w-0 max-w-full overflow-hidden">
+              <!-- Line 1: Baseline nflfastR ATS Spread Pick (Uniform 2-Line Structured Pill) -->
+              <div class="w-full max-w-full rounded-xl bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                <div class="flex items-center justify-between gap-1.5 w-full font-bold">
+                  <span class="truncate">[${baselineSrcName}] ATS PICK</span>
+                  <span class="shrink-0 text-emerald-400 font-extrabold">${basePred.atsCoverPick}</span>
                 </div>
-                ${basePred.keyNumberNote ? `<div class="text-[8.5px] text-amber-300/90 font-medium truncate pt-0.5">${basePred.keyNumberNote}</div>` : ''}
+                <div class="flex items-center justify-between gap-1.5 w-full text-[9px] text-[var(--muted-foreground)] font-semibold pt-0.5 border-t border-[var(--border)]/50">
+                  <span class="truncate">${basePred.keyNumberNote || `Spread Model Edge +${basePred.atsEdgePts} pts`}</span>
+                  <span class="shrink-0 font-mono">${basePred.atsConfidence}% conf</span>
+                </div>
               </div>
-              <!-- Line 2: Gemini 2.5 ATS Spread Pick -->
+              <!-- Line 2: Gemini 2.5 ATS Spread Pick (Uniform 2-Line Structured Pill) -->
               ${geminiPred ? `
-                <div class="w-full max-w-full rounded-xl bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm box-border">
-                  <div class="flex items-center justify-between gap-1 flex-wrap">
-                    <span>[✨ Gemini 2.5] ATS PICK: <strong class="text-emerald-400">${geminiPred.atsCoverPick}</strong></span>
-                    <span class="text-[9px] text-[var(--link)]/90 font-semibold shrink-0">${geminiPred.atsConfidence}% conf • Fair: ${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome}</span>
+                <div class="w-full max-w-full rounded-xl bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                  <div class="flex items-center justify-between gap-1.5 w-full font-bold">
+                    <span class="truncate">[✨ Gemini 2.5] ATS PICK</span>
+                    <span class="shrink-0 text-emerald-400 font-extrabold">${geminiPred.atsCoverPick}</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-1.5 w-full text-[9px] text-[var(--link)]/90 font-semibold pt-0.5 border-t border-[var(--primary)]/20">
+                    <span class="truncate">Fair Spread: ${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome}</span>
+                    <span class="shrink-0 font-mono">${geminiPred.atsConfidence}% conf</span>
                   </div>
                 </div>
               ` : `
-                <div class="w-full max-w-full rounded-xl bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)] px-2.5 py-1 text-[9.5px] font-mono flex items-center justify-between gap-1 shadow-sm box-border">
-                  <span>📅 ${m.scheduleDate || 'Upcoming'} • ${m.kickoffTime || 'Kickoff'}</span>
-                  <span class="font-semibold text-[var(--foreground)]">DK: ${dkLineTxt}</span>
+                <div class="w-full max-w-full rounded-xl bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)] font-mono text-[10px] px-3 py-1.5 shadow-sm box-border flex flex-col justify-center gap-0.5 min-h-[44px]">
+                  <div class="flex items-center justify-between gap-1.5 w-full font-bold text-[var(--foreground)]">
+                    <span>📅 ${m.scheduleDate || 'Upcoming'}</span>
+                    <span class="shrink-0 text-[var(--link)]">⏰ ${m.kickoffTime || 'Kickoff'}</span>
+                  </div>
+                  <div class="flex items-center justify-between gap-1.5 w-full text-[9px] pt-0.5 border-t border-[var(--border)]/50">
+                    <span class="truncate">${m.tvNetwork || 'TV Broadcast'} • ${m.venue || ''}</span>
+                    <span class="shrink-0 font-bold text-[var(--foreground)]">DK: ${dkLineTxt}</span>
+                  </div>
                 </div>
               `}
             </div>
