@@ -2,8 +2,8 @@ package com.gridironiq.sports
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -20,12 +20,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Immersive status bar styling
-        @Suppress("DEPRECATION")
-        window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        )
+        // Clean native status bar: match top bar background and avoid drawing content behind system icons
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.statusBarColor = android.graphics.Color.parseColor("#131A29")
 
         webView = WebView(this).apply {
             layoutParams = ViewGroup.LayoutParams(

@@ -85,6 +85,9 @@
         border-radius: 0 !important;
         box-shadow: none !important;
       }
+      #mockAndroidStatusBar {
+        display: none !important;
+      }
     }
     .bar-transition {
       transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1), left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
@@ -105,7 +108,7 @@
   <div class="android-shell">
 
     <!-- 1. ANDROID SYSTEM STATUS BAR -->
-    <div class="px-5 pt-2.5 pb-1.5 flex items-center justify-between text-xs font-mono select-none bg-[var(--card)] shrink-0">
+    <div id="mockAndroidStatusBar" class="px-5 pt-2.5 pb-1.5 flex items-center justify-between text-xs font-mono select-none bg-[var(--card)] shrink-0">
       <span class="font-semibold">1:15</span>
       <div class="w-3 h-3 rounded-full bg-[var(--background)] border border-[var(--border)]" title="Front Camera Cutout"></div>
       <div class="flex items-center gap-1.5 text-[11px]">
