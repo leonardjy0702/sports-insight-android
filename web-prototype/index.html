@@ -3517,9 +3517,12 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           let baseChipHtml = "";
           if (outcome.isPush) {
             baseChipHtml = `
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] shrink-0 shadow-sm whitespace-nowrap">
-                <span>[${baselineSrcName}] ATS PUSH: Picked ${outcome.basePickAbbr} ${basePickSpread} (${outcome.finalAway}-${outcome.finalHome} vs ${dkLineTxt})</span>
-              </span>
+              <div class="w-full rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
+                <div class="flex items-center justify-between gap-1 flex-wrap">
+                  <span>[${baselineSrcName}] ATS PUSH: Picked ${outcome.basePickAbbr} ${basePickSpread}</span>
+                  <span class="text-[9px] opacity-90 font-semibold">${outcome.finalAway}-${outcome.finalHome} vs ${dkLineTxt}</span>
+                </div>
+              </div>
             `;
           } else if (outcome.baseAtsHit) {
             const hitLabel = outcome.isInProgress ? "LIVE HIT" : "LINE HIT";
@@ -3527,21 +3530,31 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
               ? `Covering at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
               : `Covered ${outcome.finalAway}-${outcome.finalHome} FINAL`;
             baseChipHtml = `
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] shrink-0 shadow-sm whitespace-nowrap">
-                ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                <span>✓ [${baselineSrcName}] ${hitLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread} • ${statusDetail}</span>
-              </span>
+              <div class="w-full rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
+                <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                  <div class="flex items-center gap-1 shrink-0 font-bold">
+                    ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
+                    <span>✓ [${baselineSrcName}] ${hitLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread}</span>
+                  </div>
+                  <span class="text-[9.5px] font-bold text-emerald-300 shrink-0">${statusDetail}</span>
+                </div>
+              </div>
             `;
           } else {
             const missLabel = outcome.isInProgress ? "LIVE MISS" : "LINE MISSED";
             const statusDetail = outcome.isInProgress
               ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
-              : `Failed Cover ${outcome.finalAway}-${outcome.finalHome}; ${outcome.atsCoverAbbr} Covered ${dkLineTxt}`;
+              : `Failed Cover ${outcome.finalAway}-${outcome.finalHome} (${outcome.atsCoverAbbr} Covered ${dkLineTxt})`;
             baseChipHtml = `
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] shrink-0 shadow-sm whitespace-nowrap">
-                ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                <span>✗ [${baselineSrcName}] ${missLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread} • ${statusDetail}</span>
-              </span>
+              <div class="w-full rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
+                <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                  <div class="flex items-center gap-1 shrink-0 font-bold">
+                    ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
+                    <span>✗ [${baselineSrcName}] ${missLabel}: Picked ${outcome.basePickAbbr} ${basePickSpread}</span>
+                  </div>
+                  <span class="text-[9.5px] font-bold text-rose-300 shrink-0">${statusDetail}</span>
+                </div>
+              </div>
             `;
           }
 
@@ -3550,9 +3563,12 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           if (geminiPred) {
             if (outcome.isPush) {
               geminiChipHtml = `
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] shrink-0 shadow-sm whitespace-nowrap">
-                  <span>[✨ Gemini 2.5] ATS PUSH: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} (${outcome.atsText} vs ${dkLineTxt})</span>
-                </span>
+                <div class="w-full rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
+                  <div class="flex items-center justify-between gap-1 flex-wrap">
+                    <span>[✨ Gemini 2.5] ATS PUSH: Picked ${outcome.geminiPickAbbr} ${gemPickSpread}</span>
+                    <span class="text-[9px] opacity-90 font-semibold">${outcome.atsText} vs ${dkLineTxt}</span>
+                  </div>
+                </div>
               `;
             } else if (outcome.geminiAtsHit) {
               const gemHitLabel = outcome.isInProgress ? "LIVE HIT" : "LINE HIT";
@@ -3560,37 +3576,45 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
                 ? `Covering at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
                 : `Covered ${outcome.finalAway}-${outcome.finalHome} FINAL`;
               geminiChipHtml = `
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] shrink-0 shadow-sm whitespace-nowrap">
-                  ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-                  <span>✓ [✨ Gemini 2.5] ${gemHitLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} • ${gemStatusDetail}</span>
-                </span>
+                <div class="w-full rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
+                  <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                    <div class="flex items-center gap-1 shrink-0 font-bold">
+                      ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
+                      <span>✓ [✨ Gemini 2.5] ${gemHitLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread}</span>
+                    </div>
+                    <span class="text-[9.5px] font-bold text-emerald-300 shrink-0">${gemStatusDetail}</span>
+                  </div>
+                </div>
               `;
             } else {
               const gemMissLabel = outcome.isInProgress ? "LIVE MISS" : "LINE MISSED";
               const gemStatusDetail = outcome.isInProgress
                 ? `Trailing Spread at ${outcome.finalAway}-${outcome.finalHome} • ${outcome.clockLabel}`
-                : `Failed Cover ${outcome.finalAway}-${outcome.finalHome}; ${outcome.atsCoverAbbr} Covered ${dkLineTxt}`;
+                : `Failed Cover ${outcome.finalAway}-${outcome.finalHome} (${outcome.atsCoverAbbr} Covered ${dkLineTxt})`;
               geminiChipHtml = `
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] shrink-0 shadow-sm whitespace-nowrap">
-                  ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
-                  <span>✗ [✨ Gemini 2.5] ${gemMissLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread} • ${gemStatusDetail}</span>
-                </span>
+                <div class="w-full rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/40 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
+                  <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                    <div class="flex items-center gap-1 shrink-0 font-bold">
+                      ${outcome.isInProgress ? '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>' : ''}
+                      <span>✗ [✨ Gemini 2.5] ${gemMissLabel}: Picked ${outcome.geminiPickAbbr} ${gemPickSpread}</span>
+                    </div>
+                    <span class="text-[9.5px] font-bold text-rose-300 shrink-0">${gemStatusDetail}</span>
+                  </div>
+                </div>
               `;
             }
           }
 
           statusOutcomeBadgeHtml = `
             <div class="flex flex-col gap-1.5 w-full min-w-0">
-              <!-- Line 1: nflfastR prediction hit/miss against line (Horizontal overflow track with full pill borders and trailing spacer) -->
-              <div class="overflow-x-auto no-scrollbar flex items-center -mx-4 px-4 py-0.5 touch-pan-x overscroll-x-contain">
+              <!-- Line 1: nflfastR prediction hit/miss against line (Contained pill with full left and right rounded borders) -->
+              <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
                 ${baseChipHtml}
-                <span class="w-4 shrink-0 -ml-1"></span>
               </div>
               <!-- Line 2 (Next Line): Google Gemini hit/miss against line -->
               ${geminiChipHtml ? `
-                <div class="overflow-x-auto no-scrollbar flex items-center -mx-4 px-4 py-0.5 touch-pan-x overscroll-x-contain">
+                <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
                   ${geminiChipHtml}
-                  <span class="w-4 shrink-0 -ml-1"></span>
                 </div>
               ` : ''}
             </div>
@@ -3599,25 +3623,32 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           const baselineSrcName = m.league === "NFL" ? "nflfastR+FPI" : "CFBD+FPI";
           statusOutcomeBadgeHtml = `
             <div class="flex flex-col gap-1.5 w-full min-w-0">
-              <!-- Line 1: Baseline nflfastR ATS Spread Pick (Horizontal overflow track with padding equal to left padding) -->
-              <div class="overflow-x-auto no-scrollbar flex items-center -mx-4 px-4 py-0.5 touch-pan-x overscroll-x-contain">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono font-bold text-[10px] shrink-0 shadow-sm whitespace-nowrap">
-                  <span>[${baselineSrcName}] ATS PICK: <strong class="text-emerald-400">${basePred.atsCoverPick}</strong> (${basePred.atsConfidence}% conf • Edge +${basePred.atsEdgePts} pts • ${basePred.keyNumberNote})</span>
-                </span>
-                <span class="w-4 shrink-0 -ml-1"></span>
+              <!-- Line 1: Baseline nflfastR ATS Spread Pick (Contained pill with full left and right rounded borders) -->
+              <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
+                <div class="w-full rounded-xl bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
+                  <div class="flex items-center justify-between gap-1 flex-wrap">
+                    <span>[${baselineSrcName}] ATS PICK: <strong class="text-emerald-400">${basePred.atsCoverPick}</strong></span>
+                    <span class="text-[9px] text-[var(--muted-foreground)] font-semibold shrink-0">${basePred.atsConfidence}% conf • Edge +${basePred.atsEdgePts} pts</span>
+                  </div>
+                  ${basePred.keyNumberNote ? `<div class="text-[8.5px] text-amber-300/90 font-medium truncate pt-0.5">${basePred.keyNumberNote}</div>` : ''}
+                </div>
               </div>
               <!-- Line 2: Gemini 2.5 ATS Spread Pick -->
               ${geminiPred ? `
-                <div class="overflow-x-auto no-scrollbar flex items-center -mx-4 px-4 py-0.5 touch-pan-x overscroll-x-contain">
-                  <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono font-bold text-[10px] shrink-0 shadow-sm whitespace-nowrap">
-                    <span>[✨ Gemini 2.5] ATS PICK: <strong class="text-emerald-400">${geminiPred.atsCoverPick}</strong> (${geminiPred.atsConfidence}% conf • Fair: ${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome})</span>
-                  </span>
-                  <span class="w-4 shrink-0 -ml-1"></span>
+                <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
+                  <div class="w-full rounded-xl bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
+                    <div class="flex items-center justify-between gap-1 flex-wrap">
+                      <span>[✨ Gemini 2.5] ATS PICK: <strong class="text-emerald-400">${geminiPred.atsCoverPick}</strong></span>
+                      <span class="text-[9px] text-[var(--link)]/90 font-semibold shrink-0">${geminiPred.atsConfidence}% conf • Fair: ${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome}</span>
+                    </div>
+                  </div>
                 </div>
               ` : `
-                <div class="overflow-x-auto no-scrollbar flex items-center -mx-4 px-4 py-0.5 touch-pan-x overscroll-x-contain text-[9px] font-mono text-[var(--muted-foreground)] whitespace-nowrap">
-                  <span>📅 ${m.scheduleDate || 'Upcoming'} • ${m.kickoffTime || 'Kickoff'} • DraftKings: ${dkLineTxt}</span>
-                  <span class="w-4 shrink-0 -ml-1"></span>
+                <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
+                  <div class="w-full rounded-xl bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)] px-2.5 py-1 text-[9.5px] font-mono flex items-center justify-between gap-1 shadow-sm">
+                    <span>📅 ${m.scheduleDate || 'Upcoming'} • ${m.kickoffTime || 'Kickoff'}</span>
+                    <span class="font-semibold text-[var(--foreground)]">DK: ${dkLineTxt}</span>
+                  </div>
                 </div>
               `}
             </div>
@@ -3757,7 +3788,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
 
         return `
           ${sectionDividerHtml}
-          <div onclick="selectGameFromSubGateway(${idx})" class="cursor-pointer w-full text-left bg-[var(--card)] hover:bg-[var(--secondary)]/60 border ${m.isBetInitiated ? 'border-amber-500/50' : 'border-[var(--border)]'} rounded-2xl p-4 transition shadow-sm space-y-3 group">
+          <div onclick="selectGameFromSubGateway(${idx})" class="cursor-pointer w-full text-left bg-[var(--card)] hover:bg-[var(--secondary)]/60 border ${m.isBetInitiated ? 'border-amber-500/50' : 'border-[var(--border)]'} rounded-2xl p-4 transition shadow-sm space-y-3 group overflow-hidden">
             <!-- Schedule, Venue & Stadium Location Header with Dedicated Hit/Miss Chip Row -->
             <div class="pb-2 border-b border-[var(--border)] space-y-1.5">
               <div class="flex items-center justify-between gap-2">
