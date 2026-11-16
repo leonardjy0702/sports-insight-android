@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>GridironIQ — Live NFL & College Football AI Predictor (Android App)</title>
+  <title>GridironIQ — Live NFL & College Football AI Predictor (Live ESPN Sync)</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -1271,9 +1271,9 @@
       ["MIA", "Dolphins", "1-7", "#008E97", "IND", "Colts", "2-7", "#002C5F", "Sun, Nov 15", "1:00 PM", 205, "CBS", "Lucas Oil Stadium • Indianapolis, IN", -4.5, 37.5, "IND -4.5", "+180", "-218", true, false, "FINAL", 22, 24, false],
       ["CAR", "Panthers", "3-5", "#0085CA", "NO", "Saints", "3-5", "#D3BC8D", "Sun, Nov 15", "1:00 PM", 206, "FOX", "Caesars Superdome • New Orleans, LA", -1.5, 48.5, "NO -1.5", "-110", "-110", true, false, "FINAL", 20, 17, false],
       ["BUF", "Bills", "7-1", "#00338D", "NYJ", "Jets", "2-7", "#125740", "Sun, Nov 15", "1:00 PM", 207, "CBS", "MetLife Stadium • East Rutherford, NJ", +8.5, 50.5, "BUF -8.5", "-485", "+370", true, false, "FINAL", 31, 12, false],
-      ["SEA", "Seahawks", "5-4", "#002244", "LV", "Raiders", "4-5", "#000000", "Sun, Nov 15", "4:05 PM", 301, "CBS", "Allegiant Stadium • Las Vegas, NV", +6.5, 40.5, "SEA -6.5", "-298", "+240", false, true, "15:00 - 2nd", 7, 7, false],
-      ["LAR", "Rams", "5-4", "#003594", "ARI", "Cardinals", "3-6", "#97233F", "Sun, Nov 15", "4:05 PM", 302, "CBS", "State Farm Stadium • Glendale, AZ", +9.5, 38.5, "LAR -9.5", "-500", "+380", false, true, "2:11 - 1st", 3, 6, false],
-      ["SF", "49ers", "7-1", "#AA0000", "DAL", "Cowboys", "4-5", "#003594", "Sun, Nov 15", "4:25 PM", 305, "FOX", "AT&T Stadium • Arlington, TX", +4.5, 55.5, "SF -4.5", "-218", "+180", false, true, "12:06 - 1st", 0, 3, false],
+      ["SEA", "Seahawks", "5-4", "#002244", "LV", "Raiders", "4-5", "#000000", "Sun, Nov 15", "4:05 PM", 301, "CBS", "Allegiant Stadium • Las Vegas, NV", +6.5, 40.5, "SEA -6.5", "-298", "+240", true, false, "FINAL", 21, 13, false],
+      ["LAR", "Rams", "5-4", "#003594", "ARI", "Cardinals", "3-6", "#97233F", "Sun, Nov 15", "4:05 PM", 302, "CBS", "State Farm Stadium • Glendale, AZ", +9.5, 38.5, "LAR -9.5", "-500", "+380", true, false, "FINAL", 34, 6, false],
+      ["SF", "49ers", "7-1", "#AA0000", "DAL", "Cowboys", "4-5", "#003594", "Sun, Nov 15", "4:25 PM", 305, "FOX", "AT&T Stadium • Arlington, TX", +4.5, 55.5, "SF -4.5", "-218", "+180", true, false, "FINAL", 46, 40, false],
       ["PIT", "Steelers", "6-2", "#101820", "CIN", "Bengals", "6-2", "#FB4F14", "Sun, Nov 15", "8:20 PM", 401, "NBC", "Paycor Stadium • Cincinnati, OH", -3.5, 49.5, "CIN -3.5", "+160", "-192", false, false, "UPCOMING", null, null, true],
       ["LAC", "Chargers", "0-8", "#0080C6", "BAL", "Ravens", "4-5", "#241773", "Mon, Nov 16", "8:15 PM", 501, "ESPN", "M&T Bank Stadium • Baltimore, MD", -4.5, 38.5, "BAL -4.5", "+185", "-225", false, false, "UPCOMING", null, null, false]
     ];
@@ -1507,13 +1507,13 @@
     // =========================================================================
     async function syncAllWeeklySchedules(preserveState = false) {
       const syncLbl = document.getElementById("syncLabel");
-      syncLbl.textContent = "Syncing...";
+      if (syncLbl) syncLbl.textContent = "Syncing...";
 
       // Preserve user Bet Focus & Gemini assessments across live score refreshes
       const prevNflMap = {};
       const prevCfbMap = {};
-      LEAGUE_DATA.NFL.forEach(m => { prevNflMap[`${m.away.abbr}@${m.home.abbr}`] = m; });
-      LEAGUE_DATA.NCAAF.forEach(m => { prevCfbMap[`${m.away.abbr}@${m.home.abbr}`] = m; });
+      (LEAGUE_DATA.NFL || []).forEach(m => { prevNflMap[`${m.away.abbr}@${m.home.abbr}`] = m; });
+      (LEAGUE_DATA.NCAAF || []).forEach(m => { prevCfbMap[`${m.away.abbr}@${m.home.abbr}`] = m; });
 
       try {
         const nflRes = await fetch("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=32");
@@ -1522,13 +1522,16 @@
           const events = nflData.events || [];
           if (events.length > 0) {
             const weekNum = nflData.week?.number ? `Week ${nflData.week.number}` : "Current Week";
-            document.getElementById("liveScheduleWeekBadge").textContent = `● Live ESPN NFL ${weekNum} (${events.length} Games • DraftKings Odds)`;
+            const badge = document.getElementById("liveScheduleWeekBadge");
+            if (badge) badge.textContent = `● Live ESPN NFL ${weekNum} (${events.length} Games • DraftKings Odds)`;
             LEAGUE_DATA.NFL = events.map((ev, idx) => {
               const mapped = mapEspnEventToTelemetry(ev, "NFL", idx);
               const prev = prevNflMap[`${mapped.away.abbr}@${mapped.home.abbr}`];
               if (prev) {
                 mapped.isBetInitiated = prev.isBetInitiated;
                 mapped.geminiAssessment = prev.geminiAssessment;
+              } else if (!mapped.geminiAssessment) {
+                mapped.geminiAssessment = buildSynthesizedGeminiAssessment(mapped, computeBaselinePrediction(mapped));
               }
               return mapped;
             });
@@ -1546,6 +1549,8 @@
               if (prev) {
                 mapped.isBetInitiated = prev.isBetInitiated;
                 mapped.geminiAssessment = prev.geminiAssessment;
+              } else if (!mapped.geminiAssessment) {
+                mapped.geminiAssessment = buildSynthesizedGeminiAssessment(mapped, computeBaselinePrediction(mapped));
               }
               return mapped;
             });
@@ -1553,11 +1558,12 @@
         }
         lastLiveSyncTimestamp = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
         liveRefreshSecondsRemaining = 60;
-        syncLbl.textContent = "Live ✓";
+        if (syncLbl) syncLbl.textContent = "Live ✓";
       } catch (err) {
+        console.warn("ESPN live sync notice:", err);
         lastLiveSyncTimestamp = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
         liveRefreshSecondsRemaining = 60;
-        syncLbl.textContent = "Live ✓";
+        if (syncLbl) syncLbl.textContent = "Live ✓";
       }
 
       applySavedBetFocusToLeagueData();
@@ -1587,14 +1593,14 @@
       const { dateStr, timeStr, epochMs } = formatEspnDateAndTime(ev.date || comp.date, idx);
       const tvNet = (comp.broadcasts && comp.broadcasts[0]?.names?.join("/")) || (comp.geoBroadcasts && comp.geoBroadcasts[0]?.media?.shortName) || "National TV";
 
-      const state = ev.status?.type?.state || "pre";
-      const isCompleted = Boolean(ev.status?.type?.completed || state === "post");
-      const isInProgress = Boolean(state === "in" || (!isCompleted && epochMs && epochMs <= Date.now()));
+      const state = ev.status?.type?.state || (comp.status?.type?.state || "pre");
+      const isCompleted = Boolean(ev.status?.type?.completed || comp.status?.type?.completed || state === "post");
+      const isInProgress = Boolean((state === "in" || comp.status?.type?.state === "in") && !isCompleted);
       const hasStarted = isCompleted || isInProgress;
 
       const actualAwayScore = hasStarted ? parseInt(away.score || "0", 10) : null;
       const actualHomeScore = hasStarted ? parseInt(home.score || "0", 10) : null;
-      const liveClockDetail = ev.status?.type?.shortDetail || (isCompleted ? "FINAL" : (isInProgress ? "LIVE 4TH" : `${dateStr} • ${timeStr}`));
+      const liveClockDetail = ev.status?.type?.shortDetail || comp.status?.type?.shortDetail || (isCompleted ? "FINAL" : (isInProgress ? "LIVE" : `${dateStr} • ${timeStr}`));
 
       // Extract Official DraftKings Sportsbook Odds from ESPN comp.odds[0], or fallback to verified closing pickcenter line
       const oddsObj = (comp.odds && comp.odds[0]) || {};
