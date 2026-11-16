@@ -3606,49 +3606,37 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
           }
 
           statusOutcomeBadgeHtml = `
-            <div class="flex flex-col gap-1.5 w-full min-w-0">
-              <!-- Line 1: nflfastR prediction hit/miss against line (Contained pill with full left and right rounded borders) -->
-              <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
-                ${baseChipHtml}
-              </div>
-              <!-- Line 2 (Next Line): Google Gemini hit/miss against line -->
-              ${geminiChipHtml ? `
-                <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
-                  ${geminiChipHtml}
-                </div>
-              ` : ''}
+            <div class="flex flex-col gap-1.5 w-full min-w-0 max-w-full overflow-hidden">
+              <!-- Line 1: Baseline prediction hit/miss against line (Contained pill with full left and right rounded borders) -->
+              ${baseChipHtml}
+              <!-- Line 2: Google Gemini hit/miss against line -->
+              ${geminiChipHtml || ''}
             </div>
           `;
         } else {
           const baselineSrcName = m.league === "NFL" ? "nflfastR+FPI" : "CFBD+FPI";
           statusOutcomeBadgeHtml = `
-            <div class="flex flex-col gap-1.5 w-full min-w-0">
+            <div class="flex flex-col gap-1.5 w-full min-w-0 max-w-full">
               <!-- Line 1: Baseline nflfastR ATS Spread Pick (Contained pill with full left and right rounded borders) -->
-              <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
-                <div class="w-full rounded-xl bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
-                  <div class="flex items-center justify-between gap-1 flex-wrap">
-                    <span>[${baselineSrcName}] ATS PICK: <strong class="text-emerald-400">${basePred.atsCoverPick}</strong></span>
-                    <span class="text-[9px] text-[var(--muted-foreground)] font-semibold shrink-0">${basePred.atsConfidence}% conf • Edge +${basePred.atsEdgePts} pts</span>
-                  </div>
-                  ${basePred.keyNumberNote ? `<div class="text-[8.5px] text-amber-300/90 font-medium truncate pt-0.5">${basePred.keyNumberNote}</div>` : ''}
+              <div class="w-full max-w-full rounded-xl bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm box-border">
+                <div class="flex items-center justify-between gap-1 flex-wrap">
+                  <span>[${baselineSrcName}] ATS PICK: <strong class="text-emerald-400">${basePred.atsCoverPick}</strong></span>
+                  <span class="text-[9px] text-[var(--muted-foreground)] font-semibold shrink-0">${basePred.atsConfidence}% conf • Edge +${basePred.atsEdgePts} pts</span>
                 </div>
+                ${basePred.keyNumberNote ? `<div class="text-[8.5px] text-amber-300/90 font-medium truncate pt-0.5">${basePred.keyNumberNote}</div>` : ''}
               </div>
               <!-- Line 2: Gemini 2.5 ATS Spread Pick -->
               ${geminiPred ? `
-                <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
-                  <div class="w-full rounded-xl bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm">
-                    <div class="flex items-center justify-between gap-1 flex-wrap">
-                      <span>[✨ Gemini 2.5] ATS PICK: <strong class="text-emerald-400">${geminiPred.atsCoverPick}</strong></span>
-                      <span class="text-[9px] text-[var(--link)]/90 font-semibold shrink-0">${geminiPred.atsConfidence}% conf • Fair: ${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome}</span>
-                    </div>
+                <div class="w-full max-w-full rounded-xl bg-[var(--primary)]/15 text-[var(--link)] border border-[var(--primary)]/30 font-mono font-bold text-[10px] px-2.5 py-1 shadow-sm box-border">
+                  <div class="flex items-center justify-between gap-1 flex-wrap">
+                    <span>[✨ Gemini 2.5] ATS PICK: <strong class="text-emerald-400">${geminiPred.atsCoverPick}</strong></span>
+                    <span class="text-[9px] text-[var(--link)]/90 font-semibold shrink-0">${geminiPred.atsConfidence}% conf • Fair: ${m.home.abbr} ${geminiPred.modelFairSpreadHome > 0 ? '+'+geminiPred.modelFairSpreadHome : geminiPred.modelFairSpreadHome}</span>
                   </div>
                 </div>
               ` : `
-                <div class="w-full min-w-0 overflow-x-auto no-scrollbar py-0.5">
-                  <div class="w-full rounded-xl bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)] px-2.5 py-1 text-[9.5px] font-mono flex items-center justify-between gap-1 shadow-sm">
-                    <span>📅 ${m.scheduleDate || 'Upcoming'} • ${m.kickoffTime || 'Kickoff'}</span>
-                    <span class="font-semibold text-[var(--foreground)]">DK: ${dkLineTxt}</span>
-                  </div>
+                <div class="w-full max-w-full rounded-xl bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)] px-2.5 py-1 text-[9.5px] font-mono flex items-center justify-between gap-1 shadow-sm box-border">
+                  <span>📅 ${m.scheduleDate || 'Upcoming'} • ${m.kickoffTime || 'Kickoff'}</span>
+                  <span class="font-semibold text-[var(--foreground)]">DK: ${dkLineTxt}</span>
                 </div>
               `}
             </div>
