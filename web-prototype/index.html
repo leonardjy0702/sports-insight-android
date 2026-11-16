@@ -88,6 +88,15 @@
       </div>
     </header>
 
+    <!-- TOAST / STATUS BANNER NOTIFICATION -->
+    <div id="toastNotification" class="hidden mx-3 mt-2 p-2.5 rounded-xl bg-[var(--card)] border border-amber-500/40 shadow-xl text-xs flex items-center justify-between gap-2 shrink-0 z-30 transition-all duration-300">
+      <div class="flex items-center gap-2 min-w-0">
+        <span id="toastIcon" class="text-sm shrink-0">🎯</span>
+        <span id="toastMessage" class="text-[11px] leading-tight text-[var(--foreground)] font-medium"></span>
+      </div>
+      <button type="button" onclick="dismissToast()" class="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 shrink-0">✕</button>
+    </div>
+
     <!-- 3. SCROLLABLE MOBILE SCREEN CONTENT AREA -->
     <main class="flex-1 overflow-y-auto p-3.5 space-y-3.5" id="mobileViewportContent">
 
@@ -792,6 +801,32 @@
           </div>
         </div>
 
+        <!-- 3. BET FOCUS WEEKLY RESET & CLEAR -->
+        <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs">🎯</span>
+              <span class="text-xs font-bold">Bet Focus Weekly Cycle</span>
+            </div>
+            <span class="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30">
+              Resets Tue 12:00 AM
+            </span>
+          </div>
+          <p class="text-[10px] text-[var(--muted-foreground)] leading-snug">
+            Matchups marked as Bet-Focused automatically reset every <strong class="text-[var(--foreground)]">Tuesday at 12:00 AM</strong> for the following week if not manually cleared.
+          </p>
+          <div class="flex items-center justify-between text-[10px] font-mono pt-0.5 text-[var(--muted-foreground)]">
+            <span>Next Auto-Reset:</span>
+            <span id="filterNextResetLabel" class="text-[var(--foreground)] font-semibold font-mono">Tue 12:00 AM</span>
+          </div>
+          <div class="pt-1">
+            <button type="button" onclick="clearAllBetFocus(true)" class="w-full py-1.5 rounded-xl border border-rose-500/30 hover:bg-rose-500/10 text-rose-400 text-xs font-semibold transition flex items-center justify-center gap-1">
+              <span>✕</span>
+              <span>Clear All Bet Focus Now</span>
+            </button>
+          </div>
+        </div>
+
         <div class="flex gap-2 pt-2 border-t border-[var(--border)]">
           <button type="button" onclick="resetSortAndFilter()" class="flex-1 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--secondary)] transition">
             Reset Default
@@ -872,7 +907,30 @@
           </button>
         </div>
 
-        <!-- 3. FOOTER ACTIONS -->
+        <!-- 3. WEEKLY BET FOCUS AUTO-RESET PREFERENCE -->
+        <div class="p-3 rounded-2xl bg-[var(--background)] border border-[var(--border)] space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+              <span class="text-xs font-bold">Bet Focus Weekly Cycle</span>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold shrink-0">
+              Active ✓
+            </span>
+          </div>
+          <p class="text-[11px] text-[var(--muted-foreground)] leading-snug">
+            Automatically clears all bet-focused game selections every <strong class="text-[var(--foreground)]">Tuesday at 12:00 AM</strong> if not manually cleared, resetting your board for the following week.
+          </p>
+          <div class="flex items-center justify-between text-[11px] font-mono text-[var(--muted-foreground)]">
+            <span>Next Scheduled Reset:</span>
+            <span id="settingsNextResetLabel" class="text-[var(--foreground)] font-semibold font-mono">Tue 12:00 AM</span>
+          </div>
+          <button type="button" onclick="clearAllBetFocus(true); closeSettingsSheet();" class="w-full py-1.5 rounded-xl border border-rose-500/30 hover:bg-rose-500/10 text-rose-400 text-xs font-semibold transition flex items-center justify-center gap-1">
+            <span>✕ Clear All Bet Focus Now</span>
+          </button>
+        </div>
+
+        <!-- 4. FOOTER ACTIONS -->
         <div class="pt-1">
           <button type="button" onclick="closeSettingsSheet()" class="w-full py-2.5 rounded-xl border border-[var(--border)] text-xs font-semibold hover:bg-[var(--secondary)] transition">
             Close Settings
@@ -926,6 +984,67 @@
       return `${league || 'NFL'}:${awayAbbr}@${homeAbbr}`;
     }
 
+    // =========================================================================
+    // WEEKLY BET FOCUS LIFECYCLE & TUESDAY 12:00 AM AUTOMATIC RESET ENGINE
+    // =========================================================================
+    // Calculates the timestamp of the start of the current betting week (Tuesday 00:00:00.000)
+    function getBetWeekCycleTimestamp(refDate = new Date()) {
+      const d = new Date(refDate);
+      d.setHours(0, 0, 0, 0);
+      const day = d.getDay(); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
+      const diffDays = (day - 2 + 7) % 7;
+      d.setDate(d.getDate() - diffDays);
+      return d.getTime();
+    }
+
+    // Calculates the timestamp of the upcoming Tuesday 12:00 AM (00:00:00.000)
+    function getNextTuesdayMidnightTimestamp(refDate = new Date()) {
+      const currentCycle = getBetWeekCycleTimestamp(refDate);
+      const next = new Date(currentCycle);
+      next.setDate(next.getDate() + 7);
+      next.setHours(0, 0, 0, 0);
+      return next.getTime();
+    }
+
+    function formatNextTuesdayResetTime() {
+      const nextTs = getNextTuesdayMidnightTimestamp();
+      const d = new Date(nextTs);
+      return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) + " at 12:00 AM";
+    }
+
+    function updateBetFocusResetUI() {
+      const nextStr = formatNextTuesdayResetTime();
+      const el1 = document.getElementById("filterNextResetLabel");
+      if (el1) el1.textContent = nextStr;
+      const el2 = document.getElementById("settingsNextResetLabel");
+      if (el2) el2.textContent = nextStr;
+    }
+
+    // Lightweight In-App Toast / Banner Notification System
+    let toastTimeoutId = null;
+    function showToast(message, icon = "🎯", durationMs = 4500) {
+      const toastEl = document.getElementById("toastNotification");
+      const msgEl = document.getElementById("toastMessage");
+      const iconEl = document.getElementById("toastIcon");
+      if (!toastEl || !msgEl) return;
+      if (toastTimeoutId) clearTimeout(toastTimeoutId);
+      if (iconEl) iconEl.textContent = icon;
+      msgEl.textContent = message;
+      toastEl.classList.remove("hidden");
+      toastTimeoutId = setTimeout(() => {
+        dismissToast();
+      }, durationMs);
+    }
+
+    function dismissToast() {
+      const toastEl = document.getElementById("toastNotification");
+      if (toastEl) toastEl.classList.add("hidden");
+      if (toastTimeoutId) {
+        clearTimeout(toastTimeoutId);
+        toastTimeoutId = null;
+      }
+    }
+
     function loadSavedBetFocusMap() {
       try {
         const raw = SafeStore.getItem("gridiron_bet_focus_map");
@@ -939,21 +1058,135 @@
 
     function saveBetFocusSelection(m) {
       if (!m || !m.away || !m.home) return;
+      const currentCycle = getBetWeekCycleTimestamp();
       const map = loadSavedBetFocusMap();
       map[getMatchupFocusKey(m.league, m.away.abbr, m.home.abbr)] = Boolean(m.isBetInitiated);
       SafeStore.setItem("gridiron_bet_focus_map", JSON.stringify(map));
+      SafeStore.setItem("gridiron_bet_focus_cycle", String(currentCycle));
+      
+      const hasActive = Object.values(map).some(v => Boolean(v));
+      SafeStore.setItem("gridiron_bet_focus_manually_cleared", hasActive ? "false" : "true");
+      updateBetFocusResetUI();
     }
 
-    function applySavedBetFocusToLeagueData() {
-      const map = loadSavedBetFocusMap();
+    // Automatic Tuesday 12:00 AM Reset Detection & Execution
+    function checkAndApplyTuesdayBetFocusReset(currentTime = new Date()) {
+      const currentCycle = getBetWeekCycleTimestamp(currentTime);
+      const rawCycle = SafeStore.getItem("gridiron_bet_focus_cycle");
+      const storedCycle = rawCycle ? Number(rawCycle) : null;
+
+      // On initial app launch before any cycle is recorded
+      if (!storedCycle) {
+        SafeStore.setItem("gridiron_bet_focus_cycle", String(currentCycle));
+        return false;
+      }
+
+      // If current betting cycle has passed Tuesday 12:00 AM compared to stored cycle
+      if (currentCycle > storedCycle) {
+        const map = loadSavedBetFocusMap();
+        const hadActiveBets = Object.values(map).some(v => Boolean(v)) ||
+          (Boolean(LEAGUE_DATA.NFL) && LEAGUE_DATA.NFL.some(m => m.isBetInitiated)) ||
+          (Boolean(LEAGUE_DATA.NCAAF) && LEAGUE_DATA.NCAAF.some(m => m.isBetInitiated));
+        const wasManuallyCleared = SafeStore.getItem("gridiron_bet_focus_manually_cleared") === "true";
+
+        // Reset all in-memory bet focus states across all leagues
+        ["NFL", "NCAAF"].forEach(lg => {
+          (LEAGUE_DATA[lg] || []).forEach(m => {
+            m.isBetInitiated = false;
+          });
+        });
+
+        // Clear persisted map and advance cycle to current week
+        SafeStore.setItem("gridiron_bet_focus_map", JSON.stringify({}));
+        SafeStore.setItem("gridiron_bet_focus_cycle", String(currentCycle));
+        SafeStore.setItem("gridiron_bet_focus_last_reset_time", String(Date.now()));
+        SafeStore.setItem("gridiron_bet_focus_manually_cleared", "false");
+
+        // Refresh UI
+        updateGatewayBadges();
+        renderSubGatewayGameCards();
+        if (currentScreen === "ai" || currentScreen === "injuries" || currentScreen === "stats") {
+          renderDetailView();
+        }
+        if (currentScreen === "history") {
+          renderHistoryScreen();
+        }
+        updateBetFocusResetUI();
+
+        // Notify user of the automated weekly reset if not already manually cleared
+        if (hadActiveBets && !wasManuallyCleared) {
+          showToast("🔄 Tuesday 12:00 AM: Bet-focused matchups reset for the following week.", "🎯");
+        }
+        return true;
+      }
+      return false;
+    }
+
+    // Manual or Programmatic Clear All Bet Focus Action
+    function clearAllBetFocus(isManual = false) {
       ["NFL", "NCAAF"].forEach(lg => {
         (LEAGUE_DATA[lg] || []).forEach(m => {
+          m.isBetInitiated = false;
+        });
+      });
+      SafeStore.setItem("gridiron_bet_focus_map", JSON.stringify({}));
+      if (isManual) {
+        SafeStore.setItem("gridiron_bet_focus_manually_cleared", "true");
+        SafeStore.setItem("gridiron_bet_focus_cycle", String(getBetWeekCycleTimestamp()));
+        showToast("🎯 Cleared all Bet-Focused game selections.", "✓");
+      }
+      updateGatewayBadges();
+      renderSubGatewayGameCards();
+      if (currentScreen === "ai" || currentScreen === "injuries" || currentScreen === "stats") {
+        renderDetailView();
+      }
+      if (currentScreen === "history") {
+        renderHistoryScreen();
+      }
+      updateBetFocusResetUI();
+    }
+
+    // Scheduled Timer for Live Midnight Transition
+    let tuesdayResetTimeoutId = null;
+    function scheduleTuesdayMidnightTimer() {
+      if (tuesdayResetTimeoutId) clearTimeout(tuesdayResetTimeoutId);
+      const now = Date.now();
+      const nextTuesday = getNextTuesdayMidnightTimestamp();
+      const msUntilTuesday = nextTuesday - now;
+      if (msUntilTuesday > 0 && msUntilTuesday <= 2147483647) {
+        tuesdayResetTimeoutId = setTimeout(() => {
+          checkAndApplyTuesdayBetFocusReset();
+          scheduleTuesdayMidnightTimer();
+        }, msUntilTuesday + 100);
+      }
+    }
+
+    // Testing / Simulation helper exposed on window
+    window.simulateTuesdayMidnightReset = function(customDate) {
+      const targetDate = customDate ? new Date(customDate) : new Date(getNextTuesdayMidnightTimestamp() + 1000);
+      const didReset = checkAndApplyTuesdayBetFocusReset(targetDate);
+      return {
+        didReset,
+        simulatedTime: targetDate.toISOString(),
+        remainingFocusedCount: ((LEAGUE_DATA.NFL || []).filter(m => m.isBetInitiated).length + (LEAGUE_DATA.NCAAF || []).filter(m => m.isBetInitiated).length)
+      };
+    };
+
+    function applySavedBetFocusToLeagueData() {
+      checkAndApplyTuesdayBetFocusReset();
+      const map = loadSavedBetFocusMap();
+      const hasCycle = Boolean(SafeStore.getItem("gridiron_bet_focus_cycle"));
+      ["NFL", "NCAAF"].forEach(lg => {
+        (LEAGUE_DATA[lg] || []).forEach((m, idx) => {
           const key = getMatchupFocusKey(m.league || lg, m.away.abbr, m.home.abbr);
           if (Object.prototype.hasOwnProperty.call(map, key)) {
             m.isBetInitiated = Boolean(map[key]);
+          } else if (hasCycle) {
+            m.isBetInitiated = false;
           }
         });
       });
+      updateBetFocusResetUI();
     }
 
     function saveSortAndFilterState() {
@@ -1074,7 +1307,16 @@
         statusDetail: isCompleted ? "FINAL" : (isInProgress ? liveClock : `${scheduleDate} • ${kickoffTime}`),
         actualAwayScore: actualAway,
         actualHomeScore: actualHome,
-        isBetInitiated: Boolean(isBetInitiated),
+        isBetInitiated: (() => {
+          const savedMap = loadSavedBetFocusMap();
+          const focusKey = getMatchupFocusKey("NFL", awayAbbr, homeAbbr);
+          if (Object.prototype.hasOwnProperty.call(savedMap, focusKey)) {
+            return Boolean(savedMap[focusKey]);
+          }
+          const hasCycle = Boolean(SafeStore.getItem("gridiron_bet_focus_cycle"));
+          if (hasCycle) return false;
+          return Boolean(isBetInitiated);
+        })(),
         // Sharp Market & Betting Syndicate Telemetry
         sharpPublicSplit: {
           publicTicketPctHome: (spread <= 0 ? 64 + (idx % 8) : 36 - (idx % 6)),
@@ -1248,6 +1490,7 @@
     function startLiveScoreAutoRefreshTimer() {
       if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);
       liveRefreshIntervalId = setInterval(() => {
+        checkAndApplyTuesdayBetFocusReset();
         liveRefreshSecondsRemaining -= 1;
         if (liveRefreshSecondsRemaining <= 0) {
           liveRefreshSecondsRemaining = 60;
@@ -1433,6 +1676,8 @@
           if (Object.prototype.hasOwnProperty.call(savedMap, focusKey)) {
             return Boolean(savedMap[focusKey]);
           }
+          const hasCycle = Boolean(SafeStore.getItem("gridiron_bet_focus_cycle"));
+          if (hasCycle) return false;
           return idx < 3;
         })(),
         away: {
@@ -4374,6 +4619,8 @@ Return ONLY a valid JSON object matching this exact structure (no markdown fence
       const batchBtn = document.getElementById("btnBatchGemini");
       if (batchBtn) batchBtn.textContent = "↺ Clear Gemini (All)";
 
+      scheduleTuesdayMidnightTimer();
+      updateBetFocusResetUI();
       openLeagueSubGateway("NFL");
       syncAllWeeklySchedules(true);
       startLiveScoreAutoRefreshTimer();
