@@ -13,13 +13,25 @@ android {
         applicationId = "com.gridironiq.sports"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         // Configure API keys via local.properties or environment variables
         buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: ""}\"")
         buildConfigField("String", "CFBD_API_KEY", "\"${project.findProperty("CFBD_API_KEY") ?: ""}\"")
         buildConfigField("String", "ODDS_API_KEY", "\"${project.findProperty("ODDS_API_KEY") ?: ""}\"")
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            v1SigningEnabled = true
+            v2SigningEnabled = true
+        }
+    }
+    buildTypes {
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
 
     buildFeatures {
